@@ -187,6 +187,16 @@ class AdminController extends Controller
             if ($request->password) $user->password = md5($request->password);
             if (!$id) $user->token = sha1(microtime() . 'salt' . time());
             $user->save();
+
+            if(!$id) {
+                $userId = $user->id;
+                foreach (Fields::all() as $field) {
+                    $fieldsUser = new FieldsUsers;
+                    $fieldsUser->field_id = $field->id;
+                    $fieldsUser->user_id = $userId;
+                    $fieldsUser->save();
+                }
+            }
         }
         return response()->json(array('errors' => $errors, 'data' => $user), $httpStatus);
     }

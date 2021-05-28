@@ -295,6 +295,186 @@ define({ "api": [
   },
   {
     "type": "post",
+    "url": "/api/fields/create",
+    "title": "Create Field",
+    "name": "CreateField",
+    "group": "AdminFields",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "name",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminFields"
+  },
+  {
+    "type": "get",
+    "url": "/api/fields/delete/:id",
+    "title": "Delete Field",
+    "name": "DeleteField",
+    "group": "AdminFields",
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminFields"
+  },
+  {
+    "type": "post",
+    "url": "/api/fields/edit/:id",
+    "title": "Edit Field",
+    "name": "EditField",
+    "group": "AdminFields",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "name",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminFields"
+  },
+  {
+    "type": "get",
+    "url": "/api/fields/get/:id",
+    "title": "Get Field",
+    "name": "GetField",
+    "group": "AdminFields",
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminFields"
+  },
+  {
+    "type": "get",
+    "url": "/api/fields/list",
+    "title": "Get Fields List",
+    "name": "GetFieldsList",
+    "group": "AdminFields",
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminFields"
+  },
+  {
+    "type": "post",
+    "url": "/api/outlets/create",
+    "title": "Create Outlet",
+    "name": "CreateOutlet",
+    "group": "AdminOutlets",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "name",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "phone",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "address",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminOutlets"
+  },
+  {
+    "type": "get",
+    "url": "/api/outlets/delete/:id",
+    "title": "Delete Outlet",
+    "name": "DeleteOutlet",
+    "group": "AdminOutlets",
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminOutlets"
+  },
+  {
+    "type": "post",
+    "url": "/api/outlets/edit/:id",
+    "title": "Edit Outlet",
+    "name": "EditOutlet",
+    "group": "AdminOutlets",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "name",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "phone",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "address",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminOutlets"
+  },
+  {
+    "type": "get",
+    "url": "/api/outlets/get/:id",
+    "title": "Get Outlet",
+    "name": "GetOutlet",
+    "group": "AdminOutlets",
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminOutlets"
+  },
+  {
+    "type": "get",
+    "url": "/api/outlets/list",
+    "title": "Get Outlets List",
+    "name": "GetOutletsList",
+    "group": "AdminOutlets",
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminOutlets"
+  },
+  {
+    "type": "post",
     "url": "/api/users/create",
     "title": "Create User",
     "name": "CreateUser",

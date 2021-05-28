@@ -7,7 +7,11 @@ use App\Models\BillPrograms;
 use App\Models\Bills;
 use App\Models\BillTypes;
 use App\Models\Cards;
+use App\Models\Outlet;
+use App\Models\Sales;
 use App\Models\Users;
+use App\Models\Fields;
+use App\Models\FieldsUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -51,12 +55,14 @@ class AdminController extends Controller
             $billType->name = $request->name;
             $billType->save();
 
-            $billTypeId = $billType->id;
-            foreach (Cards::all() as $card) {
-                $bill = new Bills;
-                $bill->card_id = $card->id;
-                $bill->bill_type_id = $billTypeId;
-                $bill->save();
+            if(!$id) {
+                $billTypeId = $billType->id;
+                foreach (Cards::all() as $card) {
+                    $bill = new Bills;
+                    $bill->card_id = $card->id;
+                    $bill->bill_type_id = $billTypeId;
+                    $bill->save();
+                }
             }
         }
         return response()->json(array('errors' => $errors, 'data' => $billType), $httpStatus);
@@ -320,12 +326,14 @@ class AdminController extends Controller
             if ($request->number) $card->number = $request->number;
             $card->save();
 
-            $cardId = $card->id;
-            foreach (BillTypes::all() as $billType) {
-                $bill = new Bills;
-                $bill->card_id = $cardId;
-                $bill->bill_type_id = $billType->id;
-                $bill->save();
+            if (!$id) {
+                $cardId = $card->id;
+                foreach (BillTypes::all() as $billType) {
+                    $bill = new Bills;
+                    $bill->card_id = $cardId;
+                    $bill->bill_type_id = $billType->id;
+                    $bill->save();
+                }
             }
         }
         return response()->json(array('errors' => $errors, 'data' => $card), $httpStatus);
@@ -544,6 +552,215 @@ class AdminController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) BillPrograms::where('id', '=', $id)->delete();
+        return response()->json(array('errors' => $errors, 'data' => null), $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/outlets/create Create Outlet
+     * @apiName CreateOutlet
+     * @apiGroup AdminOutlets
+     *
+     * @apiParam {string} name
+     * @apiParam {string} phone
+     * @apiParam {string} address
+     */
+
+    /**
+     * @api {post} /api/outlets/edit/:id Edit Outlet
+     * @apiName EditOutlet
+     * @apiGroup AdminOutlets
+     *
+     * @apiParam {string} [name]
+     * @apiParam {string} [phone]
+     * @apiParam {string} [address]
+     */
+
+    public function edit_outlet(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $outlet = null;
+        $validatorData = $request->all();
+        if ($request->phone) $validatorData['phone'] = str_replace(array("(", ")", " ", "-"), "", $request->phone);
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validatorRules = [];
+        if(!$id) {
+            $validatorRules['name'] = 'required';
+            $validatorRules['phone'] = 'required|unique:outlets';
+            $validatorRules['address'] = 'required';
+        } else $validatorRules['id'] = 'exists:outlets,id';
+
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $outlet = $id ? Outlet::where('id', '=', $id)->first() : new Outlet;
+            if ($request->name) $outlet->name = $request->name;
+            if ($request->phone) $outlet->phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
+            if ($request->address) $outlet->address = $request->address;
+            $outlet->save();
+        }
+        return response()->json(array('errors' => $errors, 'data' => $outlet), $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/outlets/list Get Outlets List
+     * @apiName GetOutletsList
+     * @apiGroup AdminOutlets
+     */
+
+    /**
+     * @api {get} /api/outlets/get/:id Get Outlet
+     * @apiName GetOutlet
+     * @apiGroup AdminOutlets
+     */
+
+    public function list_outlets($id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        if($id) {
+            $validator = Validator::make(['id' => $id], ['id' => 'exists:outlets,id']);
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                $httpStatus = 400;
+            }
+        }
+        if (empty($errors)) {
+            $query = Outlet::select('*');
+            if ($id) $query->where('id', '=', $id);
+            $data = $query->get();
+        }
+        return response()->json(array('errors' => $errors, 'data' => $data), $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/outlets/delete/:id Delete Outlet
+     * @apiName DeleteOutlet
+     * @apiGroup AdminOutlets
+     */
+
+    public function delete_outlet($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:outlets,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            Sales::where('outlet_id', '=', $id)->delete();
+            Outlet::where('id', '=', $id)->delete();
+        }
+        return response()->json(array('errors' => $errors, 'data' => null), $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/fields/create Create Field
+     * @apiName CreateField
+     * @apiGroup AdminFields
+     *
+     * @apiParam {string} name
+     */
+
+    /**
+     * @api {post} /api/fields/edit/:id Edit Field
+     * @apiName EditField
+     * @apiGroup AdminFields
+     *
+     * @apiParam {string} [name]
+     */
+
+    public function edit_field(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $field = null;
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validatorRules = [];
+        if(!$id) {
+            $validatorRules['name'] = 'required';
+        } else $validatorRules['id'] = 'exists:fields,id';
+
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $field = $id ? Fields::where('id', '=', $id)->first() : new Fields;
+            if ($request->name) $field->name = $request->name;
+            $field->save();
+
+            if (!$id) {
+                $fieldId = $field->id;
+                foreach (Users::all() as $user) {
+                    $fieldsUser = new FieldsUsers;
+                    $fieldsUser->user_id = $user->id;
+                    $fieldsUser->field_id = $fieldId;
+                    $fieldsUser->save();
+                }
+            }
+        }
+        return response()->json(array('errors' => $errors, 'data' => $field), $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/fields/list Get Fields List
+     * @apiName GetFieldsList
+     * @apiGroup AdminFields
+     */
+
+    /**
+     * @api {get} /api/fields/get/:id Get Field
+     * @apiName GetField
+     * @apiGroup AdminFields
+     */
+
+    public function list_fields($id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        if($id) {
+            $validator = Validator::make(['id' => $id], ['id' => 'exists:fields,id']);
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                $httpStatus = 400;
+            }
+        }
+        if (empty($errors)) {
+            $query = Fields::select('*');
+            if ($id) $query->where('id', '=', $id);
+            $data = $query->get();
+        }
+        return response()->json(array('errors' => $errors, 'data' => $data), $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/fields/delete/:id Delete Field
+     * @apiName DeleteField
+     * @apiGroup AdminFields
+     */
+
+    public function delete_field($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:fields,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            FieldsUsers::where('field_id', '=', $id)->delete();
+            Fields::where('id', '=', $id)->delete();
+        }
         return response()->json(array('errors' => $errors, 'data' => null), $httpStatus);
     }
 

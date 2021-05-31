@@ -57,8 +57,7 @@ class AdminController extends Controller
             if (empty($user)) {
                 $errors['user'] = 'User not found';
                 $httpStatus = 400;
-            }
-            $user->token = md5($user->token);
+            } else $user->token = md5($user->token);
         }
         return response()->json(array('errors' => $errors, 'data' => $user), $httpStatus);
     }
@@ -198,7 +197,7 @@ class AdminController extends Controller
      * @apiParam {string} second_name
      * @apiParam {string} password
      * @apiParam {string} phone
-     * @apiParam {integer=0,1} type
+     * @apiParam {integer=0,1,2} type
      */
 
     /**
@@ -212,7 +211,7 @@ class AdminController extends Controller
      * @apiParam {string} [second_name]
      * @apiParam {string} [password]
      * @apiParam {string} [phone]
-     * @apiParam {integer=0,1} [type]
+     * @apiParam {integer=0,1,2} [type]
      */
 
     public function edit_user(Request $request, $id = null)
@@ -231,7 +230,7 @@ class AdminController extends Controller
         } else {
             $validatorRules['id'] = 'exists:users,id';
         }
-        $validatorRules['type'] = ($id ? 'required|' : '') . 'in:0,1';
+        $validatorRules['type'] = (!$id ? 'required|' : '') . 'in:0,1';
 
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
@@ -473,7 +472,10 @@ class AdminController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            Bills::where('card_id', '=', $id)->delete();
+            $bills = Bills::where('card_id', '=', $id);
+            $ids = array_column($bills->get()->toArray(), 'id');
+            BillPrograms::whereIn('bill_id', $ids)->delete();
+            $bills->delete();
             Cards::where('id', '=', $id)->delete();
         }
         return response()->json(array('errors' => $errors, 'data' => null), $httpStatus);
@@ -761,7 +763,7 @@ class AdminController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            Sales::where('outlet_id', '=', $id)->delete();
+            //Sales::where('outlet_id', '=', $id)->delete();
             Outlet::where('id', '=', $id)->delete();
         }
         return response()->json(array('errors' => $errors, 'data' => null), $httpStatus);
@@ -881,4 +883,92 @@ class AdminController extends Controller
         }
         return response()->json(array('errors' => $errors, 'data' => null), $httpStatus);
     }
+
+    /**
+     * @api {get} /api/sales/list Get Sales List
+     * @apiName GetSalesList
+     * @apiGroup AdminSales
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    /**
+     * @api {get} /api/sales/get/:id Get Sale
+     * @apiName GetSale
+     * @apiGroup AdminSales
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function list_sales($id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        if($id) {
+            $validator = Validator::make(['id' => $id], ['id' => 'exists:sales,id']);
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                $httpStatus = 400;
+            }
+        }
+        if (empty($errors)) {
+            $query = Sales::select('sales.*',
+                'users.id as user_id', 'users.phone as users_phone',
+                'outlets.id as outlet_id', 'outlets.name as outlet_name',
+                'cards.id as card_id', 'cards.number as card_number')
+                ->join('users', 'users.id', '=', 'sales.user_id')
+                ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')
+                ->join('cards', 'cards.id', '=', 'sales.card_id');
+
+            if ($id) $query->where('sales.id', '=', $id);
+            $data = $query->get();
+        }
+        return response()->json(array('errors' => $errors, 'data' => $data), $httpStatus);
+    }
+
+    /*public function edit_sale(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $sale = null;
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validator = Validator::make($validatorData,
+            [
+                'amount' => (!$id ? 'required|' : '') . 'integer',
+                'outlet_id' => (!$id ? 'required|' : '') . 'exists:outlets,id',
+                'bill_id' => (!$id ? 'required|' : '') . 'exists:bills,id',
+                'user_id' => (!$id ? 'required|' : '') . 'exists:users,id',
+                'id' => 'exists:sales,id',
+            ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $sale = $id ? Sales::where('id', '=', $id)->first() : new Sales;
+            if(isset($request->user_id)) $sale->user_id = $request->user_id;
+            if(isset($request->outlet_id)) $sale->outlet_id = $request->outlet_id;
+            if(isset($request->bill_id)) $sale->card_id = Bills::where('id', '=', $request->bill_id)->first()->card_id;
+            if(isset($request->bill_id)) $sale->bill_id = $request->bill_id;
+            if(isset($request->amount)) $sale->amount = $request->amount;
+            $sale->dt = date('Y-m-d H:i:s');
+            //$sale->outlet_name = Outlet::where('id', '=', $request->outlet_id)->first()->name;
+            $sale->save();
+            $program = null;
+            foreach (BillPrograms::where('bill_id', '=', $request->bill_id)->get() as $row) {
+                if ($request->amount >= $row->from && $request->amount <= $row->to) {
+                    $program = $row;
+                    break;
+                }
+            }
+            if ($program) {
+                $bill = Bills::where('id', '=', $program->bill_id)->first();
+                $bill->value = intval($bill->value) + $program->percent * 0.01 * $request->amount;
+                $bill->save();
+            }
+        }
+        return response()->json(array('errors' => $errors, 'data' => $sale), $httpStatus);
+    }*/
 }

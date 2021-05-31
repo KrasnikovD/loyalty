@@ -55,3 +55,14 @@ Route::post('/fields/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_
 Route::get('/fields/list', 'App\Http\Controllers\Api\AdminController@list_fields');
 Route::get('/fields/get/{id}', 'App\Http\Controllers\Api\AdminController@list_fields');
 Route::get('/fields/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_field');
+
+//Route::post('/sales/create', 'App\Http\Controllers\Api\AdminController@edit_sale');
+//Route::post('/sales/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_sale');
+Route::get('/sales/list', 'App\Http\Controllers\Api\AdminController@list_sales');
+Route::get('/sales/get/{id}', 'App\Http\Controllers\Api\AdminController@list_sales');
+//Route::get('/sales/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_sale');
+
+
+Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');
+Route::post('/clients/login', 'App\Http\Controllers\Api\ClientController@login');
+Route::post('/clients/sales/create', 'App\Http\Controllers\Api\ClientController@edit_sale');

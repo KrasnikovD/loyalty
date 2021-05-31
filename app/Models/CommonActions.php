@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Http;
 
 class CommonActions extends Model
 {
@@ -29,5 +30,15 @@ class CommonActions extends Model
             }
         }
         return false;
+    }
+
+    public static function sendSms($phone, $message)
+    {
+        return Http::post('https://api.c-eda.ru/public/v1/send_sms',
+            [
+                'phone' => $phone,
+                'message' => $message,
+                'key' => "baeb7c755d0aedc018bf52475374c0a8804e3565"
+            ]);
     }
 }

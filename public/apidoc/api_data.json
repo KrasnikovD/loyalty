@@ -842,6 +842,52 @@
     "groupTitle": "AdminOutlets"
   },
   {
+    "type": "get",
+    "url": "/api/sales/get/:id",
+    "title": "Get Sale",
+    "name": "GetSale",
+    "group": "AdminSales",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminSales"
+  },
+  {
+    "type": "get",
+    "url": "/api/sales/list",
+    "title": "Get Sales List",
+    "name": "GetSalesList",
+    "group": "AdminSales",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminSales"
+  },
+  {
     "type": "post",
     "url": "/api/users/create",
     "title": "Create User",
@@ -896,7 +942,8 @@
             "type": "integer",
             "allowedValues": [
               "0",
-              "1"
+              "1",
+              "2"
             ],
             "optional": false,
             "field": "type",
@@ -987,7 +1034,8 @@
             "type": "integer",
             "allowedValues": [
               "0",
-              "1"
+              "1",
+              "2"
             ],
             "optional": true,
             "field": "type",
@@ -1045,5 +1093,101 @@
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminUsers"
+  },
+  {
+    "type": "post",
+    "url": "/api/clients/login",
+    "title": "Login",
+    "name": "Login",
+    "group": "ClientAuth",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "code",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientAuth"
+  },
+  {
+    "type": "post",
+    "url": "/api/clients/sms",
+    "title": "Send Auth Sms",
+    "name": "SendAuthSms",
+    "group": "ClientAuth",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "phone",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientAuth"
+  },
+  {
+    "type": "post",
+    "url": "/api/clients/sales/create",
+    "title": "Create Sale",
+    "name": "CreateSale",
+    "group": "ClientSales",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "outlet_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "bill_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "amount",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientSales"
   }
 ]

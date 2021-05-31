@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-class AuthenticateClientByToken
+class AuthenticateOutletByToken
 {
     /**
      * Handle an incoming request.

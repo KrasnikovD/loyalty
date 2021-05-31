@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Route;
     return $request->user();
 });*/
 
+Route::post('/admin/login', 'App\Http\Controllers\Api\AdminController@login');
+
 Route::post('/bill_types/create', 'App\Http\Controllers\Api\AdminController@edit_bill_type');
 Route::post('/bill_types/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_bill_type');
 Route::get('/bill_types/list', 'App\Http\Controllers\Api\AdminController@list_bill_types');

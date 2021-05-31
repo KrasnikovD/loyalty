@@ -7,6 +7,7 @@ use App\Models\BillPrograms;
 use App\Models\Bills;
 use App\Models\BillTypes;
 use App\Models\Cards;
+use App\Models\CommonActions;
 use App\Models\Outlet;
 use App\Models\Sales;
 use App\Models\Users;
@@ -17,10 +18,57 @@ use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('admin.token',
+            ['except' => [
+                'login'
+            ]]);
+    }
+
+    /**
+     * @api {post} /api/admin/login Login
+     * @apiName Login
+     * @apiGroup AdminAuth
+     *
+     * @apiParam {string} phone
+     * @apiParam {string} password
+     */
+
+    public function login(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $user = null;
+        $validatorData = $request->all();
+        $validator = Validator::make($validatorData,
+            [
+                'phone' => 'required',
+                'password' => 'required'
+            ]
+        );
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
+            $user = Users::where([['type', '=', 0], ['phone', '=', $phone], ['password', '=', md5($request->password)]])->first();
+            if (empty($user)) {
+                $errors['user'] = 'User not found';
+                $httpStatus = 400;
+            }
+            $user->token = md5($user->token);
+        }
+        return response()->json(array('errors' => $errors, 'data' => $user), $httpStatus);
+    }
+
     /**
      * @api {post} /api/bill_types/create Create Bill Type
      * @apiName CreateBillType
      * @apiGroup AdminBillTypes
+     *
+     * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {string} name
      */
@@ -29,6 +77,8 @@ class AdminController extends Controller
      * @api {post} /api/bill_types/edit/:id Edit Bill Type
      * @apiName EditBillType
      * @apiGroup AdminBillTypes
+     *
+     * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {string} name
      */
@@ -72,12 +122,16 @@ class AdminController extends Controller
      * @api {get} /api/bill_types/list Get Bill Type List
      * @apiName GetBillTypeList
      * @apiGroup AdminBillTypes
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     /**
      * @api {get} /api/bill_types/get/:id Get Bill Type
      * @apiName GetBillType
      * @apiGroup AdminBillTypes
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     public function list_bill_types($id = null)
@@ -109,6 +163,8 @@ class AdminController extends Controller
      * @api {get} /api/bill_types/delete/:id Delete Bill Type
      * @apiName DeleteBillType
      * @apiGroup AdminBillTypes
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     public function delete_bill_type($id)
@@ -136,6 +192,8 @@ class AdminController extends Controller
      * @apiName CreateUser
      * @apiGroup AdminUsers
      *
+     * @apiHeader {string} Authorization Basic current user token
+     *
      * @apiParam {string} first_name
      * @apiParam {string} second_name
      * @apiParam {string} password
@@ -147,6 +205,8 @@ class AdminController extends Controller
      * @api {post} /api/users/edit/:id Edit User
      * @apiName EditUser
      * @apiGroup AdminUsers
+     *
+     * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {string} [first_name]
      * @apiParam {string} [second_name]
@@ -205,12 +265,16 @@ class AdminController extends Controller
      * @api {get} /api/users/list Get Users List
      * @apiName GetUsersList
      * @apiGroup AdminUsers
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     /**
      * @api {get} /api/users/get/:id Get User
      * @apiName GetUser
      * @apiGroup AdminUsers
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     public function list_users($id = null)
@@ -278,6 +342,8 @@ class AdminController extends Controller
      * @api {get} /api/users/delete/:id Delete User
      * @apiName DeleteUser
      * @apiGroup AdminUsers
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     public function delete_user($id)
@@ -300,6 +366,8 @@ class AdminController extends Controller
      * @apiName CreateCard
      * @apiGroup AdminCards
      *
+     * @apiHeader {string} Authorization Basic current user token
+     *
      * @apiParam {string} number
      * @apiParam {integer} user_id
      */
@@ -308,6 +376,8 @@ class AdminController extends Controller
      * @api {post} /api/cards/edit/:id Edit Card
      * @apiName EditCard
      * @apiGroup AdminCards
+     *
+     * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {string} [number]
      * @apiParam {integer} [user_id]
@@ -353,12 +423,16 @@ class AdminController extends Controller
      * @api {get} /api/cards/list Get Cards List
      * @apiName GetCardsList
      * @apiGroup AdminCards
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     /**
      * @api {get} /api/cards/get/:id Get Card
      * @apiName GetCard
      * @apiGroup AdminCards
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     public function list_cards($id = null)
@@ -385,6 +459,8 @@ class AdminController extends Controller
      * @api {get} /api/cards/delete/:id Delete Card
      * @apiName DeleteCard
      * @apiGroup AdminCards
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     public function delete_card($id)
@@ -408,6 +484,8 @@ class AdminController extends Controller
      * @apiName CreateBillProgram
      * @apiGroup AdminBillPrograms
      *
+     * @apiHeader {string} Authorization Basic current user token
+     *
      * @apiParam {integer} from
      * @apiParam {integer} to
      * @apiParam {integer} percent
@@ -418,6 +496,8 @@ class AdminController extends Controller
      * @api {post} /api/bill_programs/edit/:id Edit Bill Program
      * @apiName EditBillProgram
      * @apiGroup AdminBillPrograms
+     *
+     * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {integer} [from]
      * @apiParam {integer} [to]
@@ -452,7 +532,7 @@ class AdminController extends Controller
                 for ($i = 0; $i < count($programs); $i ++) {
                     $sections[] = [$programs[$i]->from, $programs[$i]->to];
                 }
-                return !$this->intersection($sections, $from, $to);
+                return !CommonActions::intersection($sections, $from, $to);
             }
             return true;
         });
@@ -493,12 +573,16 @@ class AdminController extends Controller
      * @api {get} /api/bill_programs/list Get Bill Programs List
      * @apiName GetBillProgramsList
      * @apiGroup AdminBillPrograms
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     /**
      * @api {get} /api/bill_programs/list/:bill_id Get Bill Programs List for Bill
      * @apiName GetBillProgramsListForBill
      * @apiGroup AdminBillPrograms
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     public function list_bill_programs($billId = null)
@@ -526,6 +610,8 @@ class AdminController extends Controller
      * @api {get} /api/bill_programs/get/:id Get Bill Program
      * @apiName GetBillProgram
      * @apiGroup AdminBillPrograms
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     public function get_bill_program($id)
@@ -550,6 +636,8 @@ class AdminController extends Controller
      * @api {get} /api/bill_programs/delete/:id Delete Bill Program
      * @apiName DeleteBillProgram
      * @apiGroup AdminBillPrograms
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     public function delete_bill_program($id)
@@ -570,6 +658,8 @@ class AdminController extends Controller
      * @apiName CreateOutlet
      * @apiGroup AdminOutlets
      *
+     * @apiHeader {string} Authorization Basic current user token
+     *
      * @apiParam {string} name
      * @apiParam {string} phone
      * @apiParam {string} address
@@ -579,6 +669,8 @@ class AdminController extends Controller
      * @api {post} /api/outlets/edit/:id Edit Outlet
      * @apiName EditOutlet
      * @apiGroup AdminOutlets
+     *
+     * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {string} [name]
      * @apiParam {string} [phone]
@@ -619,12 +711,16 @@ class AdminController extends Controller
      * @api {get} /api/outlets/list Get Outlets List
      * @apiName GetOutletsList
      * @apiGroup AdminOutlets
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     /**
      * @api {get} /api/outlets/get/:id Get Outlet
      * @apiName GetOutlet
      * @apiGroup AdminOutlets
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     public function list_outlets($id = null)
@@ -651,6 +747,8 @@ class AdminController extends Controller
      * @api {get} /api/outlets/delete/:id Delete Outlet
      * @apiName DeleteOutlet
      * @apiGroup AdminOutlets
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     public function delete_outlet($id)
@@ -674,6 +772,8 @@ class AdminController extends Controller
      * @apiName CreateField
      * @apiGroup AdminFields
      *
+     * @apiHeader {string} Authorization Basic current user token
+     *
      * @apiParam {string} name
      */
 
@@ -681,6 +781,8 @@ class AdminController extends Controller
      * @api {post} /api/fields/edit/:id Edit Field
      * @apiName EditField
      * @apiGroup AdminFields
+     *
+     * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {string} [name]
      */
@@ -724,12 +826,16 @@ class AdminController extends Controller
      * @api {get} /api/fields/list Get Fields List
      * @apiName GetFieldsList
      * @apiGroup AdminFields
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     /**
      * @api {get} /api/fields/get/:id Get Field
      * @apiName GetField
      * @apiGroup AdminFields
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     public function list_fields($id = null)
@@ -756,6 +862,8 @@ class AdminController extends Controller
      * @api {get} /api/fields/delete/:id Delete Field
      * @apiName DeleteField
      * @apiGroup AdminFields
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     public function delete_field($id)
@@ -772,27 +880,5 @@ class AdminController extends Controller
             Fields::where('id', '=', $id)->delete();
         }
         return response()->json(array('errors' => $errors, 'data' => null), $httpStatus);
-    }
-
-    private function intersection($sections, $from, $to)
-    {
-        $sets = [];
-        foreach ($sections as $item) {
-            $sets[] = [];
-            for ($i = $item[0]; $i <= $item[1]; $i ++) {
-                $sets[count($sets)-1][] = $i;
-            }
-        }
-        $targetSet = [];
-        for ($i = $from; $i <= $to; $i ++) {
-            $targetSet[] = $i;
-        }
-        foreach ($sets as $set) {
-            foreach ($set as $i) {
-                if(in_array($i, $targetSet))
-                    return true;
-            }
-        }
-        return false;
     }
 }

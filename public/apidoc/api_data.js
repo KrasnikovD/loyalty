@@ -1,10 +1,53 @@
 define({ "api": [
   {
     "type": "post",
+    "url": "/api/admin/login",
+    "title": "Login",
+    "name": "Login",
+    "group": "AdminAuth",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "phone",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "password",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminAuth"
+  },
+  {
+    "type": "post",
     "url": "/api/bill_programs/create",
     "title": "Create Bill Program",
     "name": "CreateBillProgram",
     "group": "AdminBillPrograms",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "parameter": {
       "fields": {
         "Parameter": [
@@ -49,6 +92,19 @@ define({ "api": [
     "title": "Delete Bill Program",
     "name": "DeleteBillProgram",
     "group": "AdminBillPrograms",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminBillPrograms"
@@ -59,6 +115,19 @@ define({ "api": [
     "title": "Edit Bill Program",
     "name": "EditBillProgram",
     "group": "AdminBillPrograms",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "parameter": {
       "fields": {
         "Parameter": [
@@ -103,6 +172,19 @@ define({ "api": [
     "title": "Get Bill Program",
     "name": "GetBillProgram",
     "group": "AdminBillPrograms",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminBillPrograms"
@@ -113,6 +195,19 @@ define({ "api": [
     "title": "Get Bill Programs List",
     "name": "GetBillProgramsList",
     "group": "AdminBillPrograms",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminBillPrograms"
@@ -123,6 +218,19 @@ define({ "api": [
     "title": "Get Bill Programs List for Bill",
     "name": "GetBillProgramsListForBill",
     "group": "AdminBillPrograms",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminBillPrograms"
@@ -133,6 +241,19 @@ define({ "api": [
     "title": "Create Bill Type",
     "name": "CreateBillType",
     "group": "AdminBillTypes",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "parameter": {
       "fields": {
         "Parameter": [
@@ -156,6 +277,19 @@ define({ "api": [
     "title": "Delete Bill Type",
     "name": "DeleteBillType",
     "group": "AdminBillTypes",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminBillTypes"
@@ -166,6 +300,19 @@ define({ "api": [
     "title": "Edit Bill Type",
     "name": "EditBillType",
     "group": "AdminBillTypes",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "parameter": {
       "fields": {
         "Parameter": [
@@ -189,6 +336,19 @@ define({ "api": [
     "title": "Get Bill Type",
     "name": "GetBillType",
     "group": "AdminBillTypes",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminBillTypes"
@@ -199,6 +359,19 @@ define({ "api": [
     "title": "Get Bill Type List",
     "name": "GetBillTypeList",
     "group": "AdminBillTypes",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminBillTypes"
@@ -209,6 +382,19 @@ define({ "api": [
     "title": "Create Card",
     "name": "CreateCard",
     "group": "AdminCards",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "parameter": {
       "fields": {
         "Parameter": [
@@ -239,6 +425,19 @@ define({ "api": [
     "title": "Delete Card",
     "name": "DeleteCard",
     "group": "AdminCards",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminCards"
@@ -249,6 +448,19 @@ define({ "api": [
     "title": "Edit Card",
     "name": "EditCard",
     "group": "AdminCards",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "parameter": {
       "fields": {
         "Parameter": [
@@ -279,6 +491,19 @@ define({ "api": [
     "title": "Get Card",
     "name": "GetCard",
     "group": "AdminCards",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminCards"
@@ -289,6 +514,19 @@ define({ "api": [
     "title": "Get Cards List",
     "name": "GetCardsList",
     "group": "AdminCards",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminCards"
@@ -299,6 +537,19 @@ define({ "api": [
     "title": "Create Field",
     "name": "CreateField",
     "group": "AdminFields",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "parameter": {
       "fields": {
         "Parameter": [
@@ -322,6 +573,19 @@ define({ "api": [
     "title": "Delete Field",
     "name": "DeleteField",
     "group": "AdminFields",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminFields"
@@ -332,6 +596,19 @@ define({ "api": [
     "title": "Edit Field",
     "name": "EditField",
     "group": "AdminFields",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "parameter": {
       "fields": {
         "Parameter": [
@@ -355,6 +632,19 @@ define({ "api": [
     "title": "Get Field",
     "name": "GetField",
     "group": "AdminFields",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminFields"
@@ -365,6 +655,19 @@ define({ "api": [
     "title": "Get Fields List",
     "name": "GetFieldsList",
     "group": "AdminFields",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminFields"
@@ -375,6 +678,19 @@ define({ "api": [
     "title": "Create Outlet",
     "name": "CreateOutlet",
     "group": "AdminOutlets",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "parameter": {
       "fields": {
         "Parameter": [
@@ -412,6 +728,19 @@ define({ "api": [
     "title": "Delete Outlet",
     "name": "DeleteOutlet",
     "group": "AdminOutlets",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminOutlets"
@@ -422,6 +751,19 @@ define({ "api": [
     "title": "Edit Outlet",
     "name": "EditOutlet",
     "group": "AdminOutlets",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "parameter": {
       "fields": {
         "Parameter": [
@@ -459,6 +801,19 @@ define({ "api": [
     "title": "Get Outlet",
     "name": "GetOutlet",
     "group": "AdminOutlets",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminOutlets"
@@ -469,6 +824,19 @@ define({ "api": [
     "title": "Get Outlets List",
     "name": "GetOutletsList",
     "group": "AdminOutlets",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminOutlets"
@@ -479,6 +847,19 @@ define({ "api": [
     "title": "Create User",
     "name": "CreateUser",
     "group": "AdminUsers",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "parameter": {
       "fields": {
         "Parameter": [
@@ -534,6 +915,19 @@ define({ "api": [
     "title": "Delete User",
     "name": "DeleteUser",
     "group": "AdminUsers",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminUsers"
@@ -544,6 +938,19 @@ define({ "api": [
     "title": "Edit User",
     "name": "EditUser",
     "group": "AdminUsers",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "parameter": {
       "fields": {
         "Parameter": [
@@ -599,6 +1006,19 @@ define({ "api": [
     "title": "Get User",
     "name": "GetUser",
     "group": "AdminUsers",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminUsers"
@@ -609,6 +1029,19 @@ define({ "api": [
     "title": "Get Users List",
     "name": "GetUsersList",
     "group": "AdminUsers",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminUsers"

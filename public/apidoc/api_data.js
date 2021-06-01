@@ -1142,23 +1142,10 @@ define({ "api": [
   },
   {
     "type": "post",
-    "url": "/api/clients/sales/create",
+    "url": "/api/outlets/sales/create",
     "title": "Create Sale",
     "name": "CreateSale",
-    "group": "ClientSales",
-    "header": {
-      "fields": {
-        "Header": [
-          {
-            "group": "Header",
-            "type": "string",
-            "optional": false,
-            "field": "Authorization",
-            "description": "<p>Basic current user token</p>"
-          }
-        ]
-      }
-    },
+    "group": "OutletSales",
     "parameter": {
       "fields": {
         "Parameter": [
@@ -1167,6 +1154,13 @@ define({ "api": [
             "type": "integer",
             "optional": false,
             "field": "outlet_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "user_id",
             "description": ""
           },
           {
@@ -1187,7 +1181,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "../app/Http/Controllers/Api/ClientController.php",
-    "groupTitle": "ClientSales"
+    "filename": "../app/Http/Controllers/Api/OutletController.php",
+    "groupTitle": "OutletSales"
   }
 ] });

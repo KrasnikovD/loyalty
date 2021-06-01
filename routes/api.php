@@ -65,4 +65,6 @@ Route::get('/sales/get/{id}', 'App\Http\Controllers\Api\AdminController@list_sal
 
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');
 Route::post('/clients/login', 'App\Http\Controllers\Api\ClientController@login');
-Route::post('/clients/sales/create', 'App\Http\Controllers\Api\ClientController@edit_sale');
+
+
+Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');

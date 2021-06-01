@@ -1072,7 +1072,7 @@ define({ "api": [
     "groupTitle": "AdminUsers"
   },
   {
-    "type": "get",
+    "type": "post",
     "url": "/api/users/list",
     "title": "Get Users List",
     "name": "GetUsersList",
@@ -1086,6 +1086,40 @@ define({ "api": [
             "optional": false,
             "field": "Authorization",
             "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "order",
+            "description": "<p>order field name</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "dir",
+            "description": "<p>order direction</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "offset",
+            "description": "<p>start row number, used only when limit is set</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>row count</p>"
           }
         ]
       }
@@ -1176,6 +1210,80 @@ define({ "api": [
             "optional": false,
             "field": "amount",
             "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/OutletController.php",
+    "groupTitle": "OutletSales"
+  },
+  {
+    "type": "post",
+    "url": "/api/outlets/users/find_by_phone",
+    "title": "Find User By Phone",
+    "name": "FindUserByPhone",
+    "group": "OutletSales",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "phone",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/OutletController.php",
+    "groupTitle": "OutletSales"
+  },
+  {
+    "type": "post",
+    "url": "/api/outlets/users/list",
+    "title": "Get Users List",
+    "name": "GetUsersList",
+    "group": "OutletSales",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "like",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "order",
+            "description": "<p>order field name</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "dir",
+            "description": "<p>order direction</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "offset",
+            "description": "<p>start row number, used only when limit is set</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>row count</p>"
           }
         ]
       }

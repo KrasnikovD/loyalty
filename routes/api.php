@@ -28,7 +28,7 @@ Route::get('/bill_types/delete/{id}', 'App\Http\Controllers\Api\AdminController@
 
 Route::post('/users/create', 'App\Http\Controllers\Api\AdminController@edit_user');
 Route::post('/users/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_user');
-Route::get('/users/list', 'App\Http\Controllers\Api\AdminController@list_users');
+Route::post('/users/list', 'App\Http\Controllers\Api\AdminController@list_users');
 Route::get('/users/get/{id}', 'App\Http\Controllers\Api\AdminController@list_users');
 Route::get('/users/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_user');
 
@@ -68,3 +68,5 @@ Route::post('/clients/login', 'App\Http\Controllers\Api\ClientController@login')
 
 
 Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');
+Route::post('/outlets/users/list', 'App\Http\Controllers\Api\OutletController@list_users');
+Route::post('/outlets/users/find_by_phone', 'App\Http\Controllers\Api\OutletController@find_user_by_phone');

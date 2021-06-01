@@ -8,6 +8,7 @@ use App\Models\Bills;
 use App\Models\BillTypes;
 use App\Models\Cards;
 use App\Models\CommonActions;
+use App\Models\DataHelper;
 use App\Models\Outlet;
 use App\Models\Sales;
 use App\Models\Users;
@@ -261,11 +262,16 @@ class AdminController extends Controller
     }
 
     /**
-     * @api {get} /api/users/list Get Users List
+     * @api {post} /api/users/list Get Users List
      * @apiName GetUsersList
      * @apiGroup AdminUsers
      *
      * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
      */
 
     /**
@@ -276,7 +282,7 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      */
 
-    public function list_users($id = null)
+    public function list_users(Request $request, $id = null)
     {
         $errors = [];
         $httpStatus = 200;
@@ -291,48 +297,20 @@ class AdminController extends Controller
         if (empty($errors)) {
             $query = Users::select('*');
             if ($id) $query->where('id', '=', $id);
-            $data = $query->get();
-            $usersIds = array_column($data->toArray(), 'id');
+            else {
+                $order = $request->order ?: 'users.id';
+                $dir = $request->dir ?: 'desc';
+                $offset = $request->offset;
+                $limit = $request->limit;
 
-            $cardList = Cards::select('id', 'number', 'user_id')->whereIn('user_id', $usersIds)->get();
-            $cardsIds = array_column($cardList->toArray(), 'id');
-            $billsList = Bills::join('bill_types', 'bills.bill_type_id', '=', 'bill_types.id')
-                ->select('bills.id', 'bills.value', 'bills.card_id', 'bill_types.name')
-                ->whereIn('bills.card_id', $cardsIds)->get();
-            $billsIds = array_column($billsList->toArray(), 'id');
-
-            $billsProgramsList = BillPrograms::select('id', 'bill_id', 'from', 'to', 'percent')
-                ->whereIn('bill_id', $billsIds)->get();
-            $billsProgramsMap = [];
-            foreach ($billsProgramsList as $billsProgram) {
-                if(!isset($billsProgramsMap[$billsProgram['bill_id']])) $billsProgramsMap[$billsProgram['bill_id']] = [];
-                $billsProgramsMap[$billsProgram['bill_id']][] = $billsProgram->toArray();
+                $query->orderBy($order, $dir);
+                if ($limit) {
+                    $query->limit($limit);
+                    if ($offset) $query->offset($offset);
+                }
             }
-
-            foreach ($billsList as &$billItem) {
-                $billItem->programs = @$billsProgramsMap[$billItem->id];
-            }
-
-            $billsMap = [];
-            foreach ($billsList as $bill) {
-                if(!isset($billsMap[$bill['card_id']])) $billsMap[$bill['card_id']] = [];
-                $billsMap[$bill['card_id']][] = $bill->toArray();
-            }
-
-            foreach ($cardList as &$cardItem) {
-                $cardItem->bills = @$billsMap[$cardItem->id];
-            }
-
-            $cardMap = [];
-            foreach ($cardList as $card) {
-                if(!isset($cardMap[$card['user_id']])) $cardMap[$card['user_id']] = [];
-                $cardMap[$card['user_id']][] = $card->toArray();
-            }
-
-            foreach ($data as &$item) {
-                $item->cardList = @$cardMap[$item->id];
-            }
-
+            $data = $query->get()->toArray();
+            DataHelper::collectUsersInfo($data);
         }
         return response()->json(array('errors' => $errors, 'data' => $data), $httpStatus);
     }

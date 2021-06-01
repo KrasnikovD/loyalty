@@ -18,7 +18,8 @@ class ClientController extends Controller
     {
         $this->middleware('client.token',
             ['except' => [
-                'login'
+                'login',
+                'send_auth_sms'
             ]]);
     }
 

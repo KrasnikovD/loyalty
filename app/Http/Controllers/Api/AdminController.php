@@ -247,7 +247,7 @@ class AdminController extends Controller
             if (!$id) $user->token = sha1(microtime() . 'salt' . time());
             $user->save();
 
-            if(!$id) {
+            if(!$id && ($request->type == 1)) {
                 $userId = $user->id;
                 foreach (Fields::all() as $field) {
                     $fieldsUser = new FieldsUsers;

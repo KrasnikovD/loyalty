@@ -16,6 +16,7 @@ use App\Models\Fields;
 use App\Models\FieldsUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -338,6 +339,18 @@ class AdminController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
+            $cards = DB::table('cards')->select('cards.id', 'bills.id as bills_id', 'bill_programs.id as bill_programs_id')
+                ->leftJoin('bills', 'bills.card_id', '=', 'cards.id')
+                ->leftJoin('bill_programs', 'bill_programs.bill_id', '=', 'bills.id')->get()->toArray();
+            $cardsIds = array_unique(array_column($cards, 'id'));
+            $billProgramsIds = array_unique(array_column($cards, 'bill_programs_id'));
+            $billProgramsIds = array_filter($billProgramsIds, function($value) {return !is_null($value) && $value !== '';});
+            $billsIds = array_unique(array_column($cards, 'bills_id'));
+            $billsIds = array_filter($billsIds, function($value) {return !is_null($value) && $value !== '';});
+            BillPrograms::whereIn('id', $billProgramsIds)->delete();
+            Bills::whereIn('id', $billsIds)->delete();
+            Cards::whereIn('id', $cardsIds)->delete();
+            FieldsUsers::where('user_id', '=', $id)->delete();
             Users::where('id', '=', $id)->delete();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
@@ -909,49 +922,4 @@ class AdminController extends Controller
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
-
-    /*public function edit_sale(Request $request, $id = null)
-    {
-        $errors = [];
-        $httpStatus = 200;
-        $sale = null;
-        $validatorData = $request->all();
-        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
-        $validator = Validator::make($validatorData,
-            [
-                'amount' => (!$id ? 'required|' : '') . 'integer',
-                'outlet_id' => (!$id ? 'required|' : '') . 'exists:outlets,id',
-                'bill_id' => (!$id ? 'required|' : '') . 'exists:bills,id',
-                'user_id' => (!$id ? 'required|' : '') . 'exists:users,id',
-                'id' => 'exists:sales,id',
-            ]);
-        if ($validator->fails()) {
-            $errors = $validator->errors()->toArray();
-            $httpStatus = 400;
-        }
-        if (empty($errors)) {
-            $sale = $id ? Sales::where('id', '=', $id)->first() : new Sales;
-            if(isset($request->user_id)) $sale->user_id = $request->user_id;
-            if(isset($request->outlet_id)) $sale->outlet_id = $request->outlet_id;
-            if(isset($request->bill_id)) $sale->card_id = Bills::where('id', '=', $request->bill_id)->first()->card_id;
-            if(isset($request->bill_id)) $sale->bill_id = $request->bill_id;
-            if(isset($request->amount)) $sale->amount = $request->amount;
-            $sale->dt = date('Y-m-d H:i:s');
-            //$sale->outlet_name = Outlet::where('id', '=', $request->outlet_id)->first()->name;
-            $sale->save();
-            $program = null;
-            foreach (BillPrograms::where('bill_id', '=', $request->bill_id)->get() as $row) {
-                if ($request->amount >= $row->from && $request->amount <= $row->to) {
-                    $program = $row;
-                    break;
-                }
-            }
-            if ($program) {
-                $bill = Bills::where('id', '=', $program->bill_id)->first();
-                $bill->value = intval($bill->value) + $program->percent * 0.01 * $request->amount;
-                $bill->save();
-            }
-        }
-        return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);
-    }*/
 }

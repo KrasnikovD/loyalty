@@ -42,13 +42,14 @@ class ClientController extends Controller
             $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
             $user = Users::where([['type', '=', 1], ['phone', '=', $phone]])->first();
             if (empty($user)) {
-                $errors['user'] = 'User not found';
-                $httpStatus = 400;
-            } else {
-                $user->code = mt_rand(10000,90000);
-                $user->save();
-                $data = CommonActions::sendSms($phone, $user->code);
+                $user = new Users;
+                $user->phone = $phone;
+                $user->type = 1;
+                $user->token = sha1(microtime() . 'salt' . time());
             }
+            $user->code = mt_rand(10000,90000);
+            $user->save();
+            $data = CommonActions::sendSms($phone, $user->code);
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

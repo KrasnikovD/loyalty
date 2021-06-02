@@ -7,6 +7,7 @@ use App\Models\BillPrograms;
 use App\Models\Bills;
 use App\Models\BillTypes;
 use App\Models\Cards;
+use App\Models\Categories;
 use App\Models\CommonActions;
 use App\Models\DataHelper;
 use App\Models\Outlet;
@@ -921,5 +922,163 @@ class AdminController extends Controller
             $data = $query->get();
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/categories/create Create Category
+     * @apiName CreateCategory
+     * @apiGroup AdminCategories
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} name
+     */
+
+    /**
+     * @api {post} /api/categories/edit/:id Edit Category
+     * @apiName EditCategory
+     * @apiGroup AdminCategories
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [name]
+     */
+
+    public function edit_category(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $category = null;
+
+        Validator::extend('is_root', function($attribute, $value, $parameters, $validator) {
+            return Categories::where([['id', '=', $value], ['parent_id', '=', 0]])->exists();
+        });
+
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validatorRules = [];
+        if(!$id) $validatorRules['name'] = 'required';
+        else $validatorRules['id'] = 'is_root';
+
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $category = $id ? Categories::where('id', '=', $id)->first() : new Categories;
+            $category->parent_id = 0;
+            if (isset($request->name)) $category->name = $request->name;
+            $category->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => $category], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/categories/sub_create Create Sub Category
+     * @apiName CreateSubCategory
+     * @apiGroup AdminCategories
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} name
+     * @apiParam {integer} parent_id
+     */
+
+    /**
+     * @api {post} /api/categories/sub_edit/:id Edit Sub Category
+     * @apiName EditSubCategory
+     * @apiGroup AdminCategories
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [name]
+     * @apiParam {integer} [parent_id]
+     */
+
+    public function edit_subcategory(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $category = null;
+
+        Validator::extend('is_root', function($attribute, $value, $parameters, $validator) {
+            return Categories::where([['id', '=', $value], ['parent_id', '=', 0]])->exists();
+        });
+        Validator::extend('is_child', function($attribute, $value, $parameters, $validator) {
+            return Categories::where([['id', '=', $value], ['parent_id', '<>', 0]])->exists();
+        });
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validatorRules = [];
+        if(!$id) $validatorRules['name'] = 'required';
+        else $validatorRules['id'] = 'is_child';
+        $validatorRules['parent_id'] = (!$id ? 'required|' : '') . 'is_root';
+
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $category = $id ? Categories::where('id', '=', $id)->first() : new Categories;
+            if (isset($request->parent_id)) $category->parent_id = $request->parent_id;
+            if (isset($request->name)) $category->name = $request->name;
+            $category->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => $category], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/categories/list Get Categories List
+     * @apiName GetCategoriesList
+     * @apiGroup AdminCategories
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function list_categories()
+    {
+        $errors = [];
+        $httpStatus = 200;
+
+        $data = Categories::where('parent_id', '=', 0)->get();
+        $parentIds = array_column($data->toArray(), 'id');
+        $subCategoriesMap = [];
+        if (!empty($parentIds)) {
+            $subCategories = Categories::whereIn('parent_id', $parentIds)->get();
+            foreach ($subCategories as $category) {
+                if (!isset($subCategoriesMap[$category['parent_id']])) $subCategoriesMap[$category['parent_id']] = [];
+                $subCategoriesMap[$category['parent_id']][] = $category;
+            }
+        }
+        foreach ($data as &$item) {
+            $item->sub_categories = @$subCategoriesMap[$item['id']];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/categories/delete/:id Delete Category
+     * @apiName DeleteCategory
+     * @apiGroup AdminCategories
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function delete_category($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:categories,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            Categories::where('parent_id', '=', $id)->delete();
+            Categories::where('id', '=', $id)->delete();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 }

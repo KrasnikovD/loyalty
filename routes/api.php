@@ -62,6 +62,13 @@ Route::get('/sales/list', 'App\Http\Controllers\Api\AdminController@list_sales')
 Route::get('/sales/get/{id}', 'App\Http\Controllers\Api\AdminController@list_sales');
 //Route::get('/sales/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_sale');
 
+Route::post('/categories/create', 'App\Http\Controllers\Api\AdminController@edit_category');
+Route::post('/categories/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_category');
+Route::post('/categories/sub_create', 'App\Http\Controllers\Api\AdminController@edit_subcategory');
+Route::post('/categories/sub_edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_subcategory');
+Route::get('/categories/list', 'App\Http\Controllers\Api\AdminController@list_categories');
+Route::get('/categories/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_category');
+
 
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');
 Route::post('/clients/login', 'App\Http\Controllers\Api\ClientController@login');

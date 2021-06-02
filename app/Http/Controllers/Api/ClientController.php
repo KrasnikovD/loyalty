@@ -3,13 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\BillPrograms;
-use App\Models\Bills;
 use App\Models\CommonActions;
-use App\Models\Sales;
 use App\Models\Users;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class ClientController extends Controller
@@ -54,7 +50,7 @@ class ClientController extends Controller
                 $data = CommonActions::sendSms($phone, $user->code);
             }
         }
-        return response()->json(array('errors' => $errors, 'data' => $data), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 
     /**
@@ -83,6 +79,6 @@ class ClientController extends Controller
                 $httpStatus = 400;
             } else $user->token = md5($user->token);
         }
-        return response()->json(array('errors' => $errors, 'data' => $user), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $user], $httpStatus);
     }
 }

@@ -66,7 +66,7 @@ class OutletController extends Controller
                 $bill->save();
             }
         }
-        return response()->json(array('errors' => $errors, 'data' => $sale), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);
     }
 
     /**
@@ -102,7 +102,12 @@ class OutletController extends Controller
         }
         $data = $query->get()->toArray();
         DataHelper::collectUsersInfo($data);
-        return response()->json(array('errors' => $errors, 'data' => $data), $httpStatus);
+        return response()->json([
+            'errors' => $errors,
+            'data' => [
+                'count' => Users::count(),
+                'list' => $data
+            ]], $httpStatus);
     }
 
     /**
@@ -119,7 +124,7 @@ class OutletController extends Controller
         $httpStatus = 200;
         $data = null;
         $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
-        
+
         Validator::extend('phone_exists', function($attribute, $value, $parameters, $validator) {
             return Users::where([['type', '=', 1],['phone', '=', $value]])->exists();
         });
@@ -136,6 +141,6 @@ class OutletController extends Controller
             $data = $query->get()->toArray();
             DataHelper::collectUsersInfo($data);
         }
-        return response()->json(array('errors' => $errors, 'data' => $data), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 }

@@ -60,7 +60,7 @@ class AdminController extends Controller
                 $httpStatus = 400;
             } else $user->token = md5($user->token);
         }
-        return response()->json(array('errors' => $errors, 'data' => $user), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $user], $httpStatus);
     }
 
     /**
@@ -115,7 +115,7 @@ class AdminController extends Controller
                 }
             }
         }
-        return response()->json(array('errors' => $errors, 'data' => $billType), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $billType], $httpStatus);
     }
 
     /**
@@ -156,7 +156,7 @@ class AdminController extends Controller
             if ($id) $query->where('id', '=', $id);
             $data = $query->get();
         }
-        return response()->json(array('errors' => $errors, 'data' => $data), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 
     /**
@@ -184,7 +184,7 @@ class AdminController extends Controller
             Bills::where('bill_type_id', '=', $id)->delete();
             BillTypes::where('id', '=', $id)->delete();
         }
-        return response()->json(array('errors' => $errors, 'data' => null), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 
     /**
@@ -258,7 +258,7 @@ class AdminController extends Controller
                 }
             }
         }
-        return response()->json(array('errors' => $errors, 'data' => $user), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $user], $httpStatus);
     }
 
     /**
@@ -299,7 +299,7 @@ class AdminController extends Controller
             if ($id) $query->where('id', '=', $id);
             else {
                 $order = $request->order ?: 'users.id';
-                $dir = $request->dir ?: 'desc';
+                $dir = $request->dir ?: 'asc';
                 $offset = $request->offset;
                 $limit = $request->limit;
 
@@ -309,10 +309,15 @@ class AdminController extends Controller
                     if ($offset) $query->offset($offset);
                 }
             }
-            $data = $query->get()->toArray();
-            DataHelper::collectUsersInfo($data);
+            $list = $query->get()->toArray();
+            DataHelper::collectUsersInfo($list);
+            if ($id) $data = $list[0];
+            else $data = [
+                'count' => Users::count(),
+                'list' => $list
+            ];
         }
-        return response()->json(array('errors' => $errors, 'data' => $data), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 
     /**
@@ -335,7 +340,7 @@ class AdminController extends Controller
         if (empty($errors)) {
             Users::where('id', '=', $id)->delete();
         }
-        return response()->json(array('errors' => $errors, 'data' => null), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 
     /**
@@ -393,7 +398,7 @@ class AdminController extends Controller
                 }
             }
         }
-        return response()->json(array('errors' => $errors, 'data' => $card), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $card], $httpStatus);
     }
 
     /**
@@ -429,7 +434,7 @@ class AdminController extends Controller
             if ($id) $query->where('id', '=', $id);
             $data = $query->get();
         }
-        return response()->json(array('errors' => $errors, 'data' => $data), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 
     /**
@@ -456,7 +461,7 @@ class AdminController extends Controller
             $bills->delete();
             Cards::where('id', '=', $id)->delete();
         }
-        return response()->json(array('errors' => $errors, 'data' => null), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 
     /**
@@ -546,7 +551,7 @@ class AdminController extends Controller
             if(isset($request->bill_id)) $billProgram->bill_id = $request->bill_id;
             $billProgram->save();
         }
-        return response()->json(array('errors' => $errors, 'data' => $billProgram), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $billProgram], $httpStatus);
     }
 
     /**
@@ -583,7 +588,7 @@ class AdminController extends Controller
             if ($billId) $query->where('bill_id', '=', $billId);
             $data = $query->get();
         }
-        return response()->json(array('errors' => $errors, 'data' => $data), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 
     /**
@@ -609,7 +614,7 @@ class AdminController extends Controller
         if (empty($errors)) {
             $bill = BillPrograms::where('id', '=', $id)->first();
         }
-        return response()->json(array('errors' => $errors, 'data' => $bill), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $bill], $httpStatus);
     }
 
     /**
@@ -630,7 +635,7 @@ class AdminController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) BillPrograms::where('id', '=', $id)->delete();
-        return response()->json(array('errors' => $errors, 'data' => null), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 
     /**
@@ -684,7 +689,7 @@ class AdminController extends Controller
             if ($request->address) $outlet->address = $request->address;
             $outlet->save();
         }
-        return response()->json(array('errors' => $errors, 'data' => $outlet), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $outlet], $httpStatus);
     }
 
     /**
@@ -720,7 +725,7 @@ class AdminController extends Controller
             if ($id) $query->where('id', '=', $id);
             $data = $query->get();
         }
-        return response()->json(array('errors' => $errors, 'data' => $data), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 
     /**
@@ -744,7 +749,7 @@ class AdminController extends Controller
             //Sales::where('outlet_id', '=', $id)->delete();
             Outlet::where('id', '=', $id)->delete();
         }
-        return response()->json(array('errors' => $errors, 'data' => null), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 
     /**
@@ -799,7 +804,7 @@ class AdminController extends Controller
                 }
             }
         }
-        return response()->json(array('errors' => $errors, 'data' => $field), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $field], $httpStatus);
     }
 
     /**
@@ -835,7 +840,7 @@ class AdminController extends Controller
             if ($id) $query->where('id', '=', $id);
             $data = $query->get();
         }
-        return response()->json(array('errors' => $errors, 'data' => $data), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 
     /**
@@ -859,7 +864,7 @@ class AdminController extends Controller
             FieldsUsers::where('field_id', '=', $id)->delete();
             Fields::where('id', '=', $id)->delete();
         }
-        return response()->json(array('errors' => $errors, 'data' => null), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 
     /**
@@ -902,7 +907,7 @@ class AdminController extends Controller
             if ($id) $query->where('sales.id', '=', $id);
             $data = $query->get();
         }
-        return response()->json(array('errors' => $errors, 'data' => $data), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 
     /*public function edit_sale(Request $request, $id = null)
@@ -947,6 +952,6 @@ class AdminController extends Controller
                 $bill->save();
             }
         }
-        return response()->json(array('errors' => $errors, 'data' => $sale), $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);
     }*/
 }

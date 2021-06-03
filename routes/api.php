@@ -77,6 +77,9 @@ Route::get('/products/delete/{id}', 'App\Http\Controllers\Api\AdminController@de
 
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');
 Route::post('/clients/login', 'App\Http\Controllers\Api\ClientController@login');
+Route::get('/clients/categories/list', 'App\Http\Controllers\Api\ClientController@list_categories');
+Route::post('/clients/products/list', 'App\Http\Controllers\Api\ClientController@list_products');
+Route::get('/clients/products/get/{id}', 'App\Http\Controllers\Api\ClientController@get_product');
 
 
 Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');

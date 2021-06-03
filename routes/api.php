@@ -69,6 +69,11 @@ Route::post('/categories/sub_edit/{id}', 'App\Http\Controllers\Api\AdminControll
 Route::get('/categories/list', 'App\Http\Controllers\Api\AdminController@list_categories');
 Route::get('/categories/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_category');
 
+Route::post('/products/create', 'App\Http\Controllers\Api\AdminController@edit_product');
+Route::post('/products/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_product');
+Route::post('/products/list', 'App\Http\Controllers\Api\AdminController@list_products');
+Route::get('/products/get/{id}', 'App\Http\Controllers\Api\AdminController@get_product');
+Route::get('/products/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_product');
 
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');
 Route::post('/clients/login', 'App\Http\Controllers\Api\ClientController@login');

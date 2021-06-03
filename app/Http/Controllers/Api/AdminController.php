@@ -11,12 +11,14 @@ use App\Models\Categories;
 use App\Models\CommonActions;
 use App\Models\DataHelper;
 use App\Models\Outlet;
+use App\Models\Product;
 use App\Models\Sales;
 use App\Models\Users;
 use App\Models\Fields;
 use App\Models\FieldsUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
@@ -1080,5 +1082,207 @@ class AdminController extends Controller
             Categories::where('id', '=', $id)->delete();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/products/create Create Product
+     * @apiName CreateProduct
+     * @apiGroup AdminProducts
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} outlet_id
+     * @apiParam {integer} category_id
+     * @apiParam {string} name
+     * @apiParam {string} description
+     * @apiParam {integer} price
+     * @apiParam {integer} file_content
+     */
+
+    /**
+     * @api {post} /api/products/edit/:id Edit Product
+     * @apiName EditProduct
+     * @apiGroup AdminProducts
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} [outlet_id]
+     * @apiParam {integer} [category_id]
+     * @apiParam {string} [name]
+     * @apiParam {string} [description]
+     * @apiParam {integer} [price]
+     * @apiParam {integer} [file_content]
+     */
+
+    public function edit_product(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $product = null;
+
+        Validator::extend('is_child', function($attribute, $value, $parameters, $validator) {
+            return Categories::where([['id', '=', $value], ['parent_id', '<>', 0]])->exists();
+        });
+
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validatorRules = [];
+        if(!$id) {
+            $validatorRules['name'] = 'required';
+            $validatorRules['description'] = 'required';
+            $validatorRules['file_content'] = 'required';
+        } else
+            $validatorRules['id'] = 'exists:products,id';
+        $validatorRules['category_id'] = (!$id ? 'required|' : '') . 'is_child';
+        $validatorRules['outlet_id'] = (!$id ? 'required|' : '') . 'exists:outlets,id';
+        $validatorRules['price'] = (!$id ? 'required|' : '') . 'integer';
+
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $product = $id ? Product::where('id', '=', $id)->first() : new Product;
+            if (isset($request->outlet_id)) $product->outlet_id = $request->outlet_id;
+            if (isset($request->category_id)) $product->category_id = $request->category_id;
+            if (isset($request->name)) $product->name = $request->name;
+            if (isset($request->description)) $product->description = $request->description;
+            if (isset($request->price)) $product->price = $request->price;
+            if (isset($request->file_content)) {
+                if ($id) @unlink(Storage::path("images/{$product->file}"));
+                $fileName = uniqid() . ".jpeg";
+                Storage::disk('local')->put("images/$fileName", '');
+                $path = Storage::path("images/$fileName");
+                $imageTmp = imagecreatefromstring(base64_decode($request->file_content));
+                imagejpeg($imageTmp, $path);
+                imagedestroy($imageTmp);
+                $product->file = $fileName;
+            }
+            $product->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => $product], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/products/list Get Products List
+     * @apiName GetProductsList
+     * @apiGroup AdminProducts
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     * @apiParam {integer} [outlet_id]
+     * @apiParam {integer} [category_id]
+     */
+
+    public function list_products(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+
+        $validatorRules = [
+            'dir' => 'in:asc,desc',
+            'order' => 'in:id,outlet_id,category_id,name,description,file,price,created_at,updated_at',
+            'offset' => 'integer',
+            'limit' => 'integer',
+            'outlet_id' => 'exists:outlets,id',
+            'category_id' => 'exists:categories,id',
+        ];
+        $validator = Validator::make($request->all(), $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $products = Product::select('products.*', 'outlets.name as outlet_name', 'categories.name as category_name')
+                ->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')
+                ->leftJoin('categories', 'categories.id', '=', 'products.category_id');
+            if (isset($request->category_id)) {
+                if(Categories::where('id', '=', $request->category_id)->value('parent_id') == 0) {
+                    $categories = Categories::where('parent_id', '=', $request->category_id)->get()->toArray();
+                    $categoriesIds = array_column($categories, 'id');
+                    if(!empty($categoriesIds)) {
+                        $products->whereIn('category_id', $categoriesIds);
+                    }
+                } else {
+                    $products->where('category_id', '=', $request->category_id);
+                }
+            }
+            if (isset($request->outlet_id)) {
+                $products->where('outlet_id', '=', $request->outlet_id);
+            }
+
+            $order = $request->order ?: 'products.id';
+            $dir = $request->dir ?: 'asc';
+            $offset = $request->offset;
+            $limit = $request->limit;
+
+            $products->orderBy($order, $dir);
+            if ($limit) {
+                $products->limit($limit);
+                if ($offset) $products->offset($offset);
+            }
+
+            $data = ['count' => $products->count(), 'data' => $products->get()];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/products/get/:id Get Product
+     * @apiName GetProduct
+     * @apiGroup AdminProducts
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function get_product($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $product = null;
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:products,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $product = Product::select('products.*', 'outlets.name as outlet_name', 'categories.name as category_name')
+                ->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')
+                ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
+                ->where('products.id', '=', $id)->first();
+        }
+        return response()->json(['errors' => $errors, 'data' => $product], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/products/delete/:id Delete Product
+     * @apiName DeleteProduct
+     * @apiGroup AdminProducts
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function delete_product($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $product = null;
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:products,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $query = Product::where('id', '=', $id);
+            @unlink(Storage::path("images/{$query->first()->file}"));
+            $query->delete();
+        }
+        return response()->json(['errors' => $errors, 'data' => $product], $httpStatus);
     }
 }

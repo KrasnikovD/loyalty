@@ -299,9 +299,11 @@ class AdminController extends Controller
             }
         }
         if (empty($errors)) {
+            $count = 0;
             $query = Users::select('*');
             if ($id) $query->where('id', '=', $id);
             else {
+                $count = $query->count();
                 $order = $request->order ?: 'users.id';
                 $dir = $request->dir ?: 'asc';
                 $offset = $request->offset;
@@ -316,10 +318,7 @@ class AdminController extends Controller
             $list = $query->get()->toArray();
             DataHelper::collectUsersInfo($list);
             if ($id) $data = $list[0];
-            else $data = [
-                'count' => Users::count(),
-                'list' => $list
-            ];
+            else $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
@@ -1224,6 +1223,8 @@ class AdminController extends Controller
                 $products->where('outlet_id', '=', $request->outlet_id);
             }
 
+            $count = $products->count();
+
             $order = $request->order ?: 'products.id';
             $dir = $request->dir ?: 'asc';
             $offset = $request->offset;
@@ -1235,7 +1236,7 @@ class AdminController extends Controller
                 if ($offset) $products->offset($offset);
             }
 
-            $data = ['count' => $products->count(), 'data' => $products->get()];
+            $data = ['count' => $count, 'data' => $products->get()];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

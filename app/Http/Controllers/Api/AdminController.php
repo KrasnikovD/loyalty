@@ -1078,7 +1078,10 @@ class AdminController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            Categories::where('parent_id', '=', $id)->delete();
+            $query = Categories::where('parent_id', '=', $id);
+            $subCategoriesIds = array_column($query->get()->toArray(), 'id');
+            Product::whereIn('category_id', $subCategoriesIds)->delete();
+            $query->delete();
             Categories::where('id', '=', $id)->delete();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);

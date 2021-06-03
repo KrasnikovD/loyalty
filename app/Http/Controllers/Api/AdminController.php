@@ -1080,6 +1080,10 @@ class AdminController extends Controller
         if (empty($errors)) {
             $query = Categories::where('parent_id', '=', $id);
             $subCategoriesIds = array_column($query->get()->toArray(), 'id');
+            $productsQuery = Product::whereIn('category_id', $subCategoriesIds);
+            foreach ($productsQuery->get() as $item) {
+                @unlink(Storage::path("images/{$item->file}"));
+            }
             Product::whereIn('category_id', $subCategoriesIds)->delete();
             $query->delete();
             Categories::where('id', '=', $id)->delete();

@@ -11,6 +11,7 @@ use App\Models\Cards;
 use App\Models\Categories;
 use App\Models\CommonActions;
 use App\Models\DataHelper;
+use App\Models\News;
 use App\Models\Orders;
 use App\Models\Outlet;
 use App\Models\Product;
@@ -1489,6 +1490,150 @@ class AdminController extends Controller
         if (empty($errors)) {
             Baskets::where('order_id', '=', $id)->delete();
             Orders::where('id', '=', $id)->delete();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/news/create Create News
+     * @apiName CreateNews
+     * @apiGroup AdminNews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} name
+     * @apiParam {string} description
+     * @apiParam {integer} file_content
+     */
+
+    /**
+     * @api {post} /api/news/edit/:id Edit News
+     * @apiName EditNews
+     * @apiGroup AdminNews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [name]
+     * @apiParam {string} [description]
+     * @apiParam {integer} [file_content]
+     */
+
+    public function edit_news(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $news = null;
+
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validatorRules = [];
+        if(!$id) {
+            $validatorRules['name'] = 'required';
+            $validatorRules['description'] = 'required';
+            $validatorRules['file_content'] = 'required';
+        } else
+            $validatorRules['id'] = 'exists:news,id';
+
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $news = $id ? News::where('id', '=', $id)->first() : new News;
+            if (isset($request->name)) $news->name = $request->name;
+            if (isset($request->description)) $news->description = $request->description;
+            if (isset($request->file_content)) {
+                if ($id) @unlink(Storage::path("images/{$news->file}"));
+                $fileName = uniqid() . ".jpeg";
+                Storage::disk('local')->put("images/$fileName", '');
+                $path = Storage::path("images/$fileName");
+                $imageTmp = imagecreatefromstring(base64_decode($request->file_content));
+                imagejpeg($imageTmp, $path);
+                imagedestroy($imageTmp);
+                $news->file = $fileName;
+            }
+            $news->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => $news], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/news/list Get News List
+     * @apiName GetNewsList
+     * @apiGroup AdminNews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    /**
+     * @api {get} /api/news/get/:id Get News
+     * @apiName GetNews
+     * @apiGroup AdminNews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function list_news(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        if($id) {
+            $validator = Validator::make(['id' => $id], ['id' => 'exists:news,id']);
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                $httpStatus = 400;
+            }
+        }
+        if (empty($errors)) {
+            $count = 0;
+            $query = News::select('*');
+            if ($id) $query->where('id', '=', $id);
+            else {
+                $count = $query->count();
+                $order = $request->order ?: 'news.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+
+                $query->orderBy($order, $dir);
+                if ($limit) {
+                    $query->limit($limit);
+                    if ($offset) $query->offset($offset);
+                }
+            }
+            $list = $query->get()->toArray();
+            if ($id) $data = $list[0];
+            else $data = ['count' => $count, 'list' => $list];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/news/delete/:id Delete News
+     * @apiName DeleteNews
+     * @apiGroup AdminNews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function delete_news($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:news,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            News::where('id', '=', $id)->delete();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }

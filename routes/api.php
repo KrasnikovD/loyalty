@@ -81,6 +81,12 @@ Route::post('/orders/list', 'App\Http\Controllers\Api\AdminController@list_order
 Route::get('/orders/get/{id}', 'App\Http\Controllers\Api\AdminController@list_orders');
 Route::get('/orders/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_order');
 
+Route::post('/news/create', 'App\Http\Controllers\Api\AdminController@edit_news');
+Route::post('/news/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_news');
+Route::post('/news/list', 'App\Http\Controllers\Api\AdminController@list_news');
+Route::get('/news/get/{id}', 'App\Http\Controllers\Api\AdminController@list_news');
+Route::get('/news/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_news');
+
 /****** CLIENTS ******/
 
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');
@@ -91,6 +97,8 @@ Route::get('/clients/products/get/{id}', 'App\Http\Controllers\Api\ClientControl
 Route::post('/clients/orders/create', 'App\Http\Controllers\Api\ClientController@edit_order');
 Route::post('/clients/orders/list', 'App\Http\Controllers\Api\ClientController@list_order');
 Route::get('/clients/orders/get/{id}', 'App\Http\Controllers\Api\ClientController@list_order');
+Route::post('/clients/news/list', 'App\Http\Controllers\Api\ClientController@list_news');
+Route::get('/clients/news/get/{id}', 'App\Http\Controllers\Api\ClientController@list_news');
 
 /****** OUTLETS ******/
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Baskets;
 use App\Models\Categories;
 use App\Models\CommonActions;
+use App\Models\News;
 use App\Models\Orders;
 use App\Models\Product;
 use App\Models\Users;
@@ -382,6 +383,63 @@ class ClientController extends Controller
                 $item['basket'] = @$basketsMap[$item['id']];
             }
             $data = $id ? $list[0] : ['count' => $count, 'data' => $list];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/news/list Get News List
+     * @apiName GetNewsList
+     * @apiGroup ClientNews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    /**
+     * @api {get} /api/clients/news/get/:id Get News
+     * @apiName GetNews
+     * @apiGroup ClientNews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function list_news(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        if($id) {
+            $validator = Validator::make(['id' => $id], ['id' => 'exists:news,id']);
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                $httpStatus = 400;
+            }
+        }
+        if (empty($errors)) {
+            $count = 0;
+            $query = News::select('*');
+            if ($id) $query->where('id', '=', $id);
+            else {
+                $count = $query->count();
+                $order = $request->order ?: 'news.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+
+                $query->orderBy($order, $dir);
+                if ($limit) {
+                    $query->limit($limit);
+                    if ($offset) $query->offset($offset);
+                }
+            }
+            $list = $query->get()->toArray();
+            if ($id) $data = $list[0];
+            else $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

@@ -128,8 +128,11 @@ class ClientController extends Controller
      * @apiParam {string} [dir] order direction
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
-     * @apiParam {integer} [outlet_id]
-     * @apiParam {integer} [category_id]
+     * @apiParam {integer[]} [category_ids] Array of category ids
+     * @apiParam {integer} [is_hit]
+     * @apiParam {integer} [is_novelty]
+     * @apiParam {integer} [min_price]
+     * @apiParam {integer} [max_price]
      */
 
     public function list_products(Request $request)
@@ -143,8 +146,13 @@ class ClientController extends Controller
             'order' => 'in:id,outlet_id,category_id,name,description,file,price,created_at,updated_at',
             'offset' => 'integer',
             'limit' => 'integer',
-            'outlet_id' => 'exists:outlets,id',
-            'category_id' => 'exists:categories,id',
+            //'outlet_id' => 'exists:outlets,id',
+            'category_ids' => 'array',
+            'category_ids.*' => 'exists:categories,id',
+            'is_hit' => 'in:0,1,true,false',
+            'is_novelty' => 'in:0,1,true,false',
+            'min_price' => 'integer',
+            'max_price' => 'integer',
         ];
         $validator = Validator::make($request->all(), $validatorRules);
         if ($validator->fails()) {
@@ -152,11 +160,13 @@ class ClientController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $products = Product::select('products.*', 'outlets.name as outlet_name', 'categories.name as category_name')
-                ->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')
+            $products = Product::select('products.*', /*'outlets.name as outlet_name',*/ 'categories.name as category_name')
+                /*->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')*/
                 ->leftJoin('categories', 'categories.id', '=', 'products.category_id');
-            if (isset($request->category_id)) {
-                if(Categories::where('id', '=', $request->category_id)->value('parent_id') == 0) {
+
+            $categoryIds = $request->category_ids;
+            if ($categoryIds && count($categoryIds) > 0) {
+                /*if(Categories::where('id', '=', $request->category_id)->value('parent_id') == 0) {
                     $categories = Categories::where('parent_id', '=', $request->category_id)->get()->toArray();
                     $categoriesIds = array_column($categories, 'id');
                     if(!empty($categoriesIds)) {
@@ -164,11 +174,28 @@ class ClientController extends Controller
                     }
                 } else {
                     $products->where('category_id', '=', $request->category_id);
-                }
+                }*/
+                $products->whereIn('category_id', $request->category_ids);
             }
-            if (isset($request->outlet_id)) {
+            if (isset($request->is_hit)) {
+                $isHit = intval($request->is_hit === 'true' ||
+                    $request->is_hit === true ||
+                    intval($request->is_hit) === 1);
+                $products->where('is_hit', '=', $isHit);
+            }
+            if (isset($request->is_novelty)) {
+                $isNovelty = intval($request->is_novelty === 'true' ||
+                    $request->is_novelty === true ||
+                    intval($request->is_novelty) === 1);
+                $products->where('is_novelty', '=', $isNovelty);
+            }
+            if (isset($request->max_price))
+                $products->where('price', '<=', $request->max_price);
+            if (isset($request->min_price))
+                $products->where('price', '>=', $request->min_price);
+            /*if (isset($request->outlet_id)) {
                 $products->where('outlet_id', '=', $request->outlet_id);
-            }
+            }*/
 
             $order = $request->order ?: 'products.id';
             $dir = $request->dir ?: 'asc';
@@ -205,8 +232,8 @@ class ClientController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $product = Product::select('products.*', 'outlets.name as outlet_name', 'categories.name as category_name')
-                ->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')
+            $product = Product::select('products.*', /*'outlets.name as outlet_name',*/ 'categories.name as category_name')
+                /*->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')*/
                 ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
                 ->where('products.id', '=', $id)->first();
         }

@@ -1104,6 +1104,8 @@ class AdminController extends Controller
      * @apiParam {string} description
      * @apiParam {integer} price
      * @apiParam {integer} file_content
+     * @apiParam {integer} [is_hit]
+     * @apiParam {integer} [is_novelty]
      */
 
     /**
@@ -1118,6 +1120,8 @@ class AdminController extends Controller
      * @apiParam {string} [description]
      * @apiParam {integer} [price]
      * @apiParam {integer} [file_content]
+     * @apiParam {integer} [is_hit]
+     * @apiParam {integer} [is_novelty]
      */
 
     public function edit_product(Request $request, $id = null)
@@ -1141,7 +1145,9 @@ class AdminController extends Controller
             $validatorRules['id'] = 'exists:products,id';
         $validatorRules['category_id'] = (!$id ? 'required|' : '') . 'is_child';
        // $validatorRules['outlet_id'] = (!$id ? 'required|' : '') . 'exists:outlets,id';
-        $validatorRules['price'] = (!$id ? 'required|' : '') . 'integer';
+        $validatorRules['price'] = 'integer';
+        $validatorRules['is_hit'] = 'in:0,1,true,false';
+        $validatorRules['is_novelty'] = 'in:0,1,true,false';
 
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
@@ -1155,6 +1161,18 @@ class AdminController extends Controller
             if (isset($request->name)) $product->name = $request->name;
             if (isset($request->description)) $product->description = $request->description;
             if (isset($request->price)) $product->price = $request->price;
+            if (isset($request->is_hit)) {
+                $isHit = intval($request->is_hit === 'true' ||
+                    $request->is_hit === true ||
+                    intval($request->is_hit) === 1);
+                $product->is_hit = $isHit;
+            }
+            if (isset($request->is_novelty)) {
+                $isNovelty = intval($request->is_novelty === 'true' ||
+                    $request->is_novelty === true ||
+                    intval($request->is_novelty) === 1);
+                $product->is_novelty = $isNovelty;
+            }
             if (isset($request->file_content)) {
                 if ($id) @unlink(Storage::path("images/{$product->file}"));
                 $fileName = uniqid() . ".jpeg";

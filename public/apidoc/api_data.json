@@ -1290,6 +1290,20 @@
             "optional": false,
             "field": "file_content",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "is_hit",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "is_novelty",
+            "description": ""
           }
         ]
       }
@@ -1376,6 +1390,20 @@
             "type": "integer",
             "optional": true,
             "field": "file_content",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "is_hit",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "is_novelty",
             "description": ""
           }
         ]
@@ -2026,16 +2054,37 @@
           },
           {
             "group": "Parameter",
+            "type": "integer[]",
+            "optional": true,
+            "field": "category_ids",
+            "description": "<p>Array of category ids</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "integer",
             "optional": true,
-            "field": "outlet_id",
+            "field": "is_hit",
             "description": ""
           },
           {
             "group": "Parameter",
             "type": "integer",
             "optional": true,
-            "field": "category_id",
+            "field": "is_novelty",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "min_price",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "max_price",
             "description": ""
           }
         ]

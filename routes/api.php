@@ -81,6 +81,10 @@ Route::post('/orders/list', 'App\Http\Controllers\Api\AdminController@list_order
 Route::get('/orders/get/{id}', 'App\Http\Controllers\Api\AdminController@list_orders');
 Route::get('/orders/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_order');
 
+Route::get('/orders/delete_basket/{id}', 'App\Http\Controllers\Api\AdminController@delete_basket');
+Route::post('/orders/edit_basket/{id}', 'App\Http\Controllers\Api\AdminController@edit_basket');
+Route::post('/orders/add_basket/{order_id}', 'App\Http\Controllers\Api\AdminController@add_basket');
+
 Route::post('/news/create', 'App\Http\Controllers\Api\AdminController@edit_news');
 Route::post('/news/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_news');
 Route::post('/news/list', 'App\Http\Controllers\Api\AdminController@list_news');

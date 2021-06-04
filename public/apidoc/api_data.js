@@ -1131,6 +1131,29 @@ define({ "api": [
   },
   {
     "type": "get",
+    "url": "/api/orders/delete_basket/:id",
+    "title": "Delete Basket",
+    "name": "DeleteBasket",
+    "group": "AdminOrders",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminOrders"
+  },
+  {
+    "type": "get",
     "url": "/api/orders/delete/:id",
     "title": "Delete Order",
     "name": "DeleteOrder",
@@ -1144,6 +1167,42 @@ define({ "api": [
             "optional": false,
             "field": "Authorization",
             "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminOrders"
+  },
+  {
+    "type": "post",
+    "url": "/api/orders/edit_basket/:id",
+    "title": "Edit Basket",
+    "name": "EditBasket",
+    "group": "AdminOrders",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "count",
+            "description": ""
           }
         ]
       }

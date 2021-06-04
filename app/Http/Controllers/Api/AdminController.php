@@ -1495,6 +1495,76 @@ class AdminController extends Controller
     }
 
     /**
+     * @api {get} /api/orders/delete_basket/:id Delete Basket
+     * @apiName DeleteBasket
+     * @apiGroup AdminOrders
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function delete_basket($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:baskets,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $orderId = Baskets::where('id', '=', $id)->value('order_id');
+            Baskets::where('id', '=', $id)->delete();
+            $amount = 0;
+            foreach (Baskets::where('order_id', '=', $orderId)->get() as $item) {
+                $amount += $item->amount * $item->count;
+            }
+            $order = Orders::where('id', '=', $orderId)->first();
+            $order->amount = $order->amount_now = $amount;
+            $order->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/orders/edit_basket/:id Edit Basket
+     * @apiName EditBasket
+     * @apiGroup AdminOrders
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} count
+     */
+
+    public function edit_basket(Request $request, $id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+
+        $validatorData = array_merge($request->all(), ['id' => $id]);
+        $validator = Validator::make($validatorData,
+            ['id' => 'exists:baskets,id', 'count' => 'required|integer']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $basket = Baskets::where('id', '=', $id)->first();
+            $basket->count = $request->count;
+            $basket->save();
+
+            $orderId = $basket->order_id;
+            $order = Orders::where('id', '=', $orderId)->first();
+            $amount = 0;
+            foreach (Baskets::where('order_id', '=', $orderId)->get() as $item) {
+                $amount += $item->amount * $item->count;
+            }
+            $order->amount = $order->amount_now = $amount;
+            $order->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
      * @api {post} /api/news/create Create News
      * @apiName CreateNews
      * @apiGroup AdminNews

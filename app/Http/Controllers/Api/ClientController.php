@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Baskets;
 use App\Models\Categories;
 use App\Models\CommonActions;
+use App\Models\Orders;
 use App\Models\Product;
 use App\Models\Users;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class ClientController extends Controller
@@ -208,5 +211,151 @@ class ClientController extends Controller
                 ->where('products.id', '=', $id)->first();
         }
         return response()->json(['errors' => $errors, 'data' => $product], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/orders/create Create Order
+     * @apiName CreateOrder
+     * @apiGroup ClientOrders
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} address
+     * @apiParam {object[]} products
+     */
+
+    public function edit_order(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $order = null;
+        Validator::extend('check_product', function($attribute, $value, $parameters, $validator) {
+            if (!isset($value['count']) || !is_integer($value['count']) || $value['count'] === 0)
+                return false;
+            return Product::where('id', '=', $value['product_id'])->exists();
+        });
+
+        $validatorRules = [];
+        $validatorRules['address'] = 'required';
+        $validatorRules['products'] = 'required|array';
+        $validatorRules['products.*'] = 'check_product';
+
+        $validator = Validator::make($request->all(), $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $order = new Orders;
+            $order->address = $request->address;
+            $order->user_id = Auth::user()->id;
+            $productsIds = array_column($request->products, 'product_id');
+            $productsMap = [];
+            foreach (Product::whereIn('id', $productsIds)->get() as $item) {
+                $productsMap[$item->id] = $item->price;
+            }
+            $amount = 0;
+            foreach ($request->products as $product) {
+                $amount += $productsMap[$product['product_id']] * $product['count'];
+            }
+            $order->amount = $order->amount_now = $amount;
+            $order->status = 0;
+            $order->save();
+            foreach ($request->products as $product) {
+                $basket = new Baskets;
+                $basket->order_id = $order->id;
+                $basket->product_id = $product['product_id'];
+                $basket->amount = $productsMap[$product['product_id']];
+                $basket->count = $product['count'];
+                $basket->save();
+            }
+        }
+        return response()->json(['errors' => $errors, 'data' => $order], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/orders/list Get Orders List
+     * @apiName GetOrdersList
+     * @apiGroup ClientOrders
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    /**
+     * @api {get} /api/clients/orders/get/:id Get Order
+     * @apiName GetOrder
+     * @apiGroup ClientOrders
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function list_order(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $count = 0;
+
+        Validator::extend('check_user', function($attribute, $value, $parameters, $validator) {
+            return Orders::where([['id', '=', $value], ['user_id', '=', $parameters[0]]])->exists();
+        });
+
+        if (!$id) {
+            $validatorRules = [
+                'dir' => 'in:asc,desc',
+                'order' => 'in:id,address,status,amount,amount_now,created_at,updated_at',
+                'offset' => 'integer',
+                'limit' => 'integer',
+            ];
+        } else {
+            $validatorRules = ['id' => "check_user:" . Auth::user()->id];
+        }
+        $validatorData = $request->all();
+        $validatorData = array_merge($validatorData, ['user_id' => Auth::user()->id]);
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $orders = Orders::select('orders.*', 'users.first_name as user_first_name', 'users.second_name as user_second_name')
+                ->leftJoin('users', 'users.id', '=', 'orders.user_id');
+            if (!$id) {
+                $count = $orders->count();
+
+                $order = $request->order ?: 'orders.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+
+                $orders->orderBy($order, $dir);
+                if ($limit) {
+                    $orders->limit($limit);
+                    if ($offset) $orders->offset($offset);
+                }
+            } else $orders->where('orders.id', '=', $id);
+
+            $orders->where('user_id', '=', Auth::user()->id);
+
+            $list = $orders->get()->toArray();
+
+            $ordersIds = array_column($list, 'id');
+            $basketsMap = [];
+            foreach (Baskets::whereIn('order_id', $ordersIds)->get() as $basket) {
+                if(!isset($basketsMap[$basket->order_id])) $basketsMap[$basket->order_id] = [];
+                $basketsMap[$basket->order_id][] = $basket->toArray();
+            }
+            foreach ($list as &$item) {
+                $item['basket'] = @$basketsMap[$item['id']];
+            }
+            $data = $id ? $list[0] : ['count' => $count, 'data' => $list];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 }

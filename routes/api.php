@@ -75,12 +75,24 @@ Route::post('/products/list', 'App\Http\Controllers\Api\AdminController@list_pro
 Route::get('/products/get/{id}', 'App\Http\Controllers\Api\AdminController@get_product');
 Route::get('/products/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_product');
 
+Route::post('/orders/create', 'App\Http\Controllers\Api\AdminController@edit_order');
+Route::post('/orders/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_order');
+Route::post('/orders/list', 'App\Http\Controllers\Api\AdminController@list_orders');
+Route::get('/orders/get/{id}', 'App\Http\Controllers\Api\AdminController@list_orders');
+Route::get('/orders/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_order');
+
+/****** CLIENTS ******/
+
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');
 Route::post('/clients/login', 'App\Http\Controllers\Api\ClientController@login');
 Route::get('/clients/categories/list', 'App\Http\Controllers\Api\ClientController@list_categories');
 Route::post('/clients/products/list', 'App\Http\Controllers\Api\ClientController@list_products');
 Route::get('/clients/products/get/{id}', 'App\Http\Controllers\Api\ClientController@get_product');
+Route::post('/clients/orders/create', 'App\Http\Controllers\Api\ClientController@edit_order');
+Route::post('/clients/orders/list', 'App\Http\Controllers\Api\ClientController@list_order');
+Route::get('/clients/orders/get/{id}', 'App\Http\Controllers\Api\ClientController@list_order');
 
+/****** OUTLETS ******/
 
 Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');
 Route::post('/outlets/users/list', 'App\Http\Controllers\Api\OutletController@list_users');

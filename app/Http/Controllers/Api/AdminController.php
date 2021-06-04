@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Baskets;
 use App\Models\BillPrograms;
 use App\Models\Bills;
 use App\Models\BillTypes;
@@ -10,6 +11,7 @@ use App\Models\Cards;
 use App\Models\Categories;
 use App\Models\CommonActions;
 use App\Models\DataHelper;
+use App\Models\Orders;
 use App\Models\Outlet;
 use App\Models\Product;
 use App\Models\Sales;
@@ -1097,7 +1099,6 @@ class AdminController extends Controller
      *
      * @apiHeader {string} Authorization Basic current user token
      *
-     * @apiParam {integer} outlet_id
      * @apiParam {integer} category_id
      * @apiParam {string} name
      * @apiParam {string} description
@@ -1112,7 +1113,6 @@ class AdminController extends Controller
      *
      * @apiHeader {string} Authorization Basic current user token
      *
-     * @apiParam {integer} [outlet_id]
      * @apiParam {integer} [category_id]
      * @apiParam {string} [name]
      * @apiParam {string} [description]
@@ -1140,7 +1140,7 @@ class AdminController extends Controller
         } else
             $validatorRules['id'] = 'exists:products,id';
         $validatorRules['category_id'] = (!$id ? 'required|' : '') . 'is_child';
-        $validatorRules['outlet_id'] = (!$id ? 'required|' : '') . 'exists:outlets,id';
+       // $validatorRules['outlet_id'] = (!$id ? 'required|' : '') . 'exists:outlets,id';
         $validatorRules['price'] = (!$id ? 'required|' : '') . 'integer';
 
         $validator = Validator::make($validatorData, $validatorRules);
@@ -1150,7 +1150,7 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $product = $id ? Product::where('id', '=', $id)->first() : new Product;
-            if (isset($request->outlet_id)) $product->outlet_id = $request->outlet_id;
+         //   if (isset($request->outlet_id)) $product->outlet_id = $request->outlet_id;
             if (isset($request->category_id)) $product->category_id = $request->category_id;
             if (isset($request->name)) $product->name = $request->name;
             if (isset($request->description)) $product->description = $request->description;
@@ -1181,7 +1181,6 @@ class AdminController extends Controller
      * @apiParam {string} [dir] order direction
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
-     * @apiParam {integer} [outlet_id]
      * @apiParam {integer} [category_id]
      */
 
@@ -1193,10 +1192,10 @@ class AdminController extends Controller
 
         $validatorRules = [
             'dir' => 'in:asc,desc',
-            'order' => 'in:id,outlet_id,category_id,name,description,file,price,created_at,updated_at',
+            'order' => 'in:id,category_id,name,description,file,price,created_at,updated_at',
             'offset' => 'integer',
             'limit' => 'integer',
-            'outlet_id' => 'exists:outlets,id',
+           // 'outlet_id' => 'exists:outlets,id',
             'category_id' => 'exists:categories,id',
         ];
         $validator = Validator::make($request->all(), $validatorRules);
@@ -1205,8 +1204,8 @@ class AdminController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $products = Product::select('products.*', 'outlets.name as outlet_name', 'categories.name as category_name')
-                ->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')
+            $products = Product::select('products.*', /*'outlets.name as outlet_name',*/ 'categories.name as category_name')
+               // ->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')
                 ->leftJoin('categories', 'categories.id', '=', 'products.category_id');
             if (isset($request->category_id)) {
                 if(Categories::where('id', '=', $request->category_id)->value('parent_id') == 0) {
@@ -1219,9 +1218,9 @@ class AdminController extends Controller
                     $products->where('category_id', '=', $request->category_id);
                 }
             }
-            if (isset($request->outlet_id)) {
+           /* if (isset($request->outlet_id)) {
                 $products->where('outlet_id', '=', $request->outlet_id);
-            }
+            }*/
 
             $count = $products->count();
 
@@ -1260,8 +1259,8 @@ class AdminController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $product = Product::select('products.*', 'outlets.name as outlet_name', 'categories.name as category_name')
-                ->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')
+            $product = Product::select('products.*', /*'outlets.name as outlet_name',*/ 'categories.name as category_name')
+                //->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')
                 ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
                 ->where('products.id', '=', $id)->first();
         }
@@ -1280,7 +1279,6 @@ class AdminController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
-        $product = null;
         $validator = Validator::make(['id' => $id], ['id' => 'exists:products,id']);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
@@ -1291,6 +1289,189 @@ class AdminController extends Controller
             @unlink(Storage::path("images/{$query->first()->file}"));
             $query->delete();
         }
-        return response()->json(['errors' => $errors, 'data' => $product], $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/orders/create Create Order
+     * @apiName CreateOrder
+     * @apiGroup AdminOrders
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} user_id
+     * @apiParam {string} address
+     * @apiParam {object[]} products
+     */
+
+    /**
+     * @api {post} /api/orders/create/:id Edit Order
+     * @apiName EditOrder
+     * @apiGroup AdminOrders
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} [address]
+     */
+
+    public function edit_order(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $order = null;
+        Validator::extend('check_product', function($attribute, $value, $parameters, $validator) {
+            if (!isset($value['count']) || !is_integer($value['count']) || $value['count'] === 0)
+                return false;
+            return Product::where('id', '=', $value['product_id'])->exists();
+        });
+        Validator::extend('check_user', function($attribute, $value, $parameters, $validator) {
+            return Users::where([['id', '=', $value], ['type', '=', 1]])->exists();
+        });
+
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validatorRules = [];
+        if (!$id) {
+            $validatorRules['address'] = 'required';
+            $validatorRules['products'] = 'required|array';
+            $validatorRules['products.*'] = 'check_product';
+            $validatorRules['user_id'] = 'required|check_user';
+        }
+
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $order = $id ? Orders::where('id', '=', $id)->first() : new Orders;
+            if (isset($request->address)) $order->address = $request->address;
+            if (!$id) {
+                $order->user_id = $request->user_id;
+                $productsIds = array_column($request->products, 'product_id');
+                $productsMap = [];
+                foreach (Product::whereIn('id', $productsIds)->get() as $item) {
+                    $productsMap[$item->id] = $item->price;
+                }
+                $amount = 0;
+                foreach ($request->products as $product) {
+                    $amount += $productsMap[$product['product_id']] * $product['count'];
+                }
+                $order->amount = $order->amount_now = $amount;
+                $order->status = 0;
+                $order->save();
+                foreach ($request->products as $product) {
+                    $basket = new Baskets;
+                    $basket->order_id = $order->id;
+                    $basket->product_id = $product['product_id'];
+                    $basket->amount = $productsMap[$product['product_id']];
+                    $basket->count = $product['count'];
+                    $basket->save();
+                }
+            }
+        }
+        return response()->json(['errors' => $errors, 'data' => $order], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/orders/list Get Orders List
+     * @apiName GetOrdersList
+     * @apiGroup AdminOrders
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    /**
+     * @api {get} /api/orders/get/:id Get Order
+     * @apiName GetOrder
+     * @apiGroup AdminOrders
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function list_orders(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $count = 0;
+
+        if (!$id) {
+            $validatorRules = [
+                'dir' => 'in:asc,desc',
+                'order' => 'in:id,address,status,amount,amount_now,created_at,updated_at',
+                'offset' => 'integer',
+                'limit' => 'integer',
+            ];
+        } else {
+            $validatorRules = ['id' => 'exists:orders,id'];
+        }
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $orders = Orders::select('orders.*', 'users.first_name as user_first_name', 'users.second_name as user_second_name')
+                ->leftJoin('users', 'users.id', '=', 'orders.user_id');
+            if (!$id) {
+                $count = $orders->count();
+
+                $order = $request->order ?: 'orders.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+
+                $orders->orderBy($order, $dir);
+                if ($limit) {
+                    $orders->limit($limit);
+                    if ($offset) $orders->offset($offset);
+                }
+            } else $orders->where('orders.id', '=', $id);
+
+            $list = $orders->get()->toArray();
+            $ordersIds = array_column($list, 'id');
+            $basketsMap = [];
+            foreach (Baskets::whereIn('order_id', $ordersIds)->get() as $basket) {
+                if(!isset($basketsMap[$basket->order_id])) $basketsMap[$basket->order_id] = [];
+                $basketsMap[$basket->order_id][] = $basket->toArray();
+            }
+            foreach ($list as &$item) {
+                $item['basket'] = @$basketsMap[$item['id']];
+            }
+            $data = $id ? $list[0] : ['count' => $count, 'data' => $list];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/orders/delete/:id Delete Order
+     * @apiName DeleteOrder
+     * @apiGroup AdminOrders
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function delete_order($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:orders,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            Baskets::where('order_id', '=', $id)->delete();
+            Orders::where('id', '=', $id)->delete();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 }

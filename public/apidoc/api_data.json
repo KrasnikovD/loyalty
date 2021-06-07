@@ -1081,6 +1081,49 @@
   },
   {
     "type": "post",
+    "url": "/api/orders/add_basket/:order_id",
+    "title": "Add Basket",
+    "name": "AddBasket",
+    "group": "AdminOrders",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "count",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "product_id",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminOrders"
+  },
+  {
+    "type": "post",
     "url": "/api/orders/create",
     "title": "Create Order",
     "name": "CreateOrder",

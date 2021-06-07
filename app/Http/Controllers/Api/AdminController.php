@@ -1565,6 +1565,48 @@ class AdminController extends Controller
     }
 
     /**
+     * @api {post} /api/orders/add_basket/:order_id Add Basket
+     * @apiName AddBasket
+     * @apiGroup AdminOrders
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} count
+     * @apiParam {integer} product_id
+     */
+
+    public function add_basket(Request $request, $orderId)
+    {
+        $errors = [];
+        $httpStatus = 200;
+
+        $validatorData = array_merge($request->all(), ['order_id' => $orderId]);
+        $validator = Validator::make($validatorData,
+            ['order_id' => 'exists:orders,id', 'count' => 'required|integer', 'product_id' => 'required|exists:products,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $basket = new Baskets;
+            $basket->order_id = $orderId;
+            $basket->product_id = $request->product_id;
+            $basket->count = $request->count;
+            $basket->amount = Product::where('id', '=', $request->product_id)->first()->price;
+            $basket->save();
+
+            $order = Orders::where('id', '=', $orderId)->first();
+            $amount = 0;
+            foreach (Baskets::where('order_id', '=', $orderId)->get() as $item) {
+                $amount += $item->amount * $item->count;
+            }
+            $order->amount = $order->amount_now = $amount;
+            $order->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
      * @api {post} /api/news/create Create News
      * @apiName CreateNews
      * @apiGroup AdminNews

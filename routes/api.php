@@ -113,6 +113,10 @@ Route::post('/clients/reviews/list', 'App\Http\Controllers\Api\ClientController@
 Route::get('/clients/reviews/get/{id}', 'App\Http\Controllers\Api\ClientController@list_reviews');
 Route::get('/clients/reviews/delete/{id}', 'App\Http\Controllers\Api\ClientController@delete_review');
 
+Route::post('/clients/favorites/add', 'App\Http\Controllers\Api\ClientController@add_favorites');
+Route::post('/clients/favorites/list', 'App\Http\Controllers\Api\ClientController@list_favorites');
+Route::get('/clients/favorites/delete/{id}', 'App\Http\Controllers\Api\ClientController@delete_favorites');
+
 /****** OUTLETS ******/
 
 Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');

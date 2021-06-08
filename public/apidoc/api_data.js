@@ -2162,6 +2162,122 @@ define({ "api": [
     "groupTitle": "ClientCategories"
   },
   {
+    "type": "post",
+    "url": "/api/clients/favorites/add",
+    "title": "Add Favorite",
+    "name": "AddFavorite",
+    "group": "ClientFavorites",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "product_id",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientFavorites"
+  },
+  {
+    "type": "get",
+    "url": "/api/clients/favorites/delete/:id",
+    "title": "Delete Favorite",
+    "name": "DeleteFavorite",
+    "group": "ClientFavorites",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientFavorites"
+  },
+  {
+    "type": "post",
+    "url": "/api/clients/favorites/list",
+    "title": "Get Favorite Products List",
+    "name": "GetFavoriteProductsList",
+    "group": "ClientFavorites",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "order",
+            "description": "<p>order field name</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "dir",
+            "description": "<p>order direction</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "offset",
+            "description": "<p>start row number, used only when limit is set</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>row count</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientFavorites"
+  },
+  {
     "type": "get",
     "url": "/api/clients/news/get/:id",
     "title": "Get News",

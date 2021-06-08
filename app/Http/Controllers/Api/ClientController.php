@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Baskets;
 use App\Models\Categories;
 use App\Models\CommonActions;
+use App\Models\Favorites;
 use App\Models\News;
 use App\Models\Orders;
 use App\Models\Product;
@@ -605,6 +606,127 @@ class ClientController extends Controller
         }
         if (empty($errors)) {
             Reviews::where('id', '=', $id)->delete();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/favorites/add Add Favorite
+     * @apiName AddFavorite
+     * @apiGroup ClientFavorites
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} product_id
+     */
+
+    public function add_favorites(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $favorite = null;
+
+        $validatorRules = ['product_id' => 'required|exists:products,id'];
+        $validator = Validator::make($request->all(), $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $favorite = new Favorites;
+            $favorite->product_id = $request->product_id;
+            $favorite->user_id = Auth::user()->id;
+            $favorite->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => $favorite], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/favorites/list Get Favorite Products List
+     * @apiName GetFavoriteProductsList
+     * @apiGroup ClientFavorites
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    public function list_favorites(Request $request)
+    {
+        $products = Product::select('products.*', 'categories.name as category_name')
+            ->leftJoin('categories', 'categories.id', '=', 'products.category_id');
+        $order = $request->order ?: 'products.id';
+        $dir = $request->dir ?: 'asc';
+        $offset = $request->offset;
+        $limit = $request->limit;
+
+        $products->orderBy($order, $dir);
+        if ($limit) {
+            $products->limit($limit);
+            if ($offset) $products->offset($offset);
+        }
+        $favorites = Favorites::select('product_id')
+            ->where('user_id', '=', Auth::user()->id)->get()->toArray();
+        $favoritesIds = array_column($favorites, 'product_id');
+        if (empty($favoritesIds)) $products->where('products.id', '=', 0);
+        else $products->whereIn('products.id', $favoritesIds);
+
+        $count = $products->count();
+        $list = $products->get()->toArray();
+        $productsIds = array_column($list, 'id');
+        $reviewsMap = [];
+        if ($productsIds) {
+            $reviews = Reviews::select('reviews.*',
+                'users.first_name as user_first_name',
+                'users.second_name as user_second_name')
+                ->whereIn('product_id', $productsIds)
+                ->leftJoin('users', 'users.id', '=', 'reviews.user_id')
+                ->get();
+            foreach ($reviews as $item) {
+                if(!isset($reviewsMap[$item['product_id']])) $reviewsMap[$item['product_id']] = [];
+                $reviewsMap[$item['product_id']][] = $item;
+            }
+        }
+        foreach ($list as &$item) {
+            $item['reviewsList'] = @$reviewsMap[$item['id']];
+        }
+
+        return response()->json([
+            'errors' => [],
+            'data' => [
+                'count' => $count,
+                'data' => $list
+            ]
+        ], 200);
+    }
+
+    /**
+     * @api {get} /api/clients/favorites/delete/:id Delete Favorite
+     * @apiName DeleteFavorite
+     * @apiGroup ClientFavorites
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function delete_favorites($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+
+        Validator::extend('is_creator', function($attribute, $value, $parameters, $validator) {
+            return Favorites::where([['id', '=', $value], ['user_id', '=', $parameters[0]]])->exists();
+        });
+
+        $validator = Validator::make(['id' => $id], ['id' => "is_creator:" . Auth::user()->id]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            Favorites::where('id', '=', $id)->delete();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }

@@ -96,13 +96,22 @@ Route::get('/news/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');
 Route::post('/clients/login', 'App\Http\Controllers\Api\ClientController@login');
 Route::get('/clients/categories/list', 'App\Http\Controllers\Api\ClientController@list_categories');
+
 Route::post('/clients/products/list', 'App\Http\Controllers\Api\ClientController@list_products');
 Route::get('/clients/products/get/{id}', 'App\Http\Controllers\Api\ClientController@get_product');
+
 Route::post('/clients/orders/create', 'App\Http\Controllers\Api\ClientController@edit_order');
 Route::post('/clients/orders/list', 'App\Http\Controllers\Api\ClientController@list_order');
 Route::get('/clients/orders/get/{id}', 'App\Http\Controllers\Api\ClientController@list_order');
+
 Route::post('/clients/news/list', 'App\Http\Controllers\Api\ClientController@list_news');
 Route::get('/clients/news/get/{id}', 'App\Http\Controllers\Api\ClientController@list_news');
+
+Route::post('/clients/reviews/create', 'App\Http\Controllers\Api\ClientController@edit_review');
+Route::post('/clients/reviews/edit/{id}', 'App\Http\Controllers\Api\ClientController@edit_review');
+Route::post('/clients/reviews/list', 'App\Http\Controllers\Api\ClientController@list_reviews');
+Route::get('/clients/reviews/get/{id}', 'App\Http\Controllers\Api\ClientController@list_reviews');
+Route::get('/clients/reviews/delete/{id}', 'App\Http\Controllers\Api\ClientController@delete_review');
 
 /****** OUTLETS ******/
 

@@ -9,6 +9,7 @@ use App\Models\CommonActions;
 use App\Models\News;
 use App\Models\Orders;
 use App\Models\Product;
+use App\Models\Reviews;
 use App\Models\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -442,5 +443,148 @@ class ClientController extends Controller
             else $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/reviews/create Create Review
+     * @apiName CreateReview
+     * @apiGroup ClientReviews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} message
+     * @apiParam {integer} product_id
+     */
+
+    /**
+     * @api {post} /api/clients/reviews/edit/:id Edit Review
+     * @apiName EditReview
+     * @apiGroup ClientReviews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [message]
+     */
+
+    public function edit_review(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $review = null;
+
+        Validator::extend('is_creator', function($attribute, $value, $parameters, $validator) {
+            return Reviews::where([['id', '=', $value], ['user_id', '=', $parameters[0]]])->exists();
+        });
+
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validatorRules = [
+            'product_id' => (!$id ? 'required|' : '') . 'exists:products,id',
+            'id' => "exists:reviews,id|is_creator:" . Auth::user()->id
+        ];
+        if(!$id) $validatorRules['message'] = 'required';
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $review = $id ? Reviews::where('id', '=', $id)->first() : new Reviews;
+            if (isset($request->message)) $review->message = $request->message;
+            if (isset($request->product_id)) $review->product_id = $request->product_id;
+            if (!$id) $review->user_id = Auth::user()->id;
+            $review->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => $review], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/reviews/list Get Reviews List
+     * @apiName GetReviewsList
+     * @apiGroup ClientReviews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} [product_id]
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    /**
+     * @api {get} /api/clients/reviews/get/:id Get Review
+     * @apiName GetReview
+     * @apiGroup ClientReviews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function list_reviews(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validator = Validator::make($validatorData, [
+            'id' => 'exists:reviews,id',
+            'product_id' => 'exists:products,id',
+        ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $count = 0;
+            $query = Reviews::select('id', 'message');
+            if ($id) $query->where('id', '=', $id);
+            else {
+                if ($request->product_id) $query->where('product_id', '=', $request->product_id);
+                $count = $query->count();
+                $order = $request->order ?: 'reviews.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+
+                $query->orderBy($order, $dir);
+                if ($limit) {
+                    $query->limit($limit);
+                    if ($offset) $query->offset($offset);
+                }
+            }
+            $list = $query->get()->toArray();
+            if ($id) $data = $list[0];
+            else $data = ['count' => $count, 'list' => $list];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/clients/reviews/delete/:id Delete Review
+     * @apiName DeleteReview
+     * @apiGroup ClientReviews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function delete_review($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+
+        Validator::extend('is_creator', function($attribute, $value, $parameters, $validator) {
+            return Reviews::where([['id', '=', $value], ['user_id', '=', $parameters[0]]])->exists();
+        });
+
+        $validator = Validator::make(['id' => $id], ['id' => "is_creator:" . Auth::user()->id]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            Reviews::where('id', '=', $id)->delete();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 }

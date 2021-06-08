@@ -141,7 +141,6 @@ class ClientController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
-        $data = null;
 
         $validatorRules = [
             'dir' => 'in:asc,desc',
@@ -210,9 +209,31 @@ class ClientController extends Controller
                 if ($offset) $products->offset($offset);
             }
 
-            $data = ['count' => $products->count(), 'data' => $products->get()];
+            $count = $products->count();
+            $list = $products->get()->toArray();
+            $productsIds = array_column($list, 'id');
+            $reviewsMap = [];
+            if ($productsIds) {
+                $reviews = Reviews::select('reviews.*', 'users.first_name as user_first_name', 'users.second_name as user_second_name')
+                    ->whereIn('product_id', $productsIds)
+                    ->leftJoin('users', 'users.id', '=', 'reviews.user_id')
+                    ->get();
+                foreach ($reviews as $item) {
+                    if(!isset($reviewsMap[$item['product_id']])) $reviewsMap[$item['product_id']] = [];
+                    $reviewsMap[$item['product_id']][] = $item;
+                }
+            }
+            foreach ($list as &$item) {
+                $item['reviewsList'] = @$reviewsMap[$item['id']];
+            }
         }
-        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+        return response()->json([
+            'errors' => $errors,
+            'data' => [
+                'count' => $count,
+                'data' => $list
+            ]
+        ], $httpStatus);
     }
 
     /**

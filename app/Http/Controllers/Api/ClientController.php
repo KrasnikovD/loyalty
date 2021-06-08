@@ -224,8 +224,14 @@ class ClientController extends Controller
                     $reviewsMap[$item['product_id']][] = $item;
                 }
             }
+
+            $favorites = Favorites::select('product_id')
+                ->where('user_id', '=', Auth::user()->id)->get()->toArray();
+            $favoritesIds = array_column($favorites, 'product_id');
+
             foreach ($list as &$item) {
-                $item['reviewsList'] = @$reviewsMap[$item['id']];
+                $item['is_favorite'] = intval(in_array($item['id'], $favoritesIds));
+                $item['reviews_list'] = @$reviewsMap[$item['id']];
             }
         }
         return response()->json([
@@ -691,7 +697,8 @@ class ClientController extends Controller
             }
         }
         foreach ($list as &$item) {
-            $item['reviewsList'] = @$reviewsMap[$item['id']];
+            $item['is_favorite'] = 1;
+            $item['reviews_list'] = @$reviewsMap[$item['id']];
         }
 
         return response()->json([

@@ -115,7 +115,7 @@ Route::get('/clients/reviews/delete/{id}', 'App\Http\Controllers\Api\ClientContr
 
 Route::post('/clients/favorites/add', 'App\Http\Controllers\Api\ClientController@add_favorites');
 Route::post('/clients/favorites/list', 'App\Http\Controllers\Api\ClientController@list_favorites');
-Route::get('/clients/favorites/delete/{id}', 'App\Http\Controllers\Api\ClientController@delete_favorites');
+Route::get('/clients/favorites/delete/{product_id}', 'App\Http\Controllers\Api\ClientController@delete_favorites');
 
 /****** OUTLETS ******/
 

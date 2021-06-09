@@ -711,29 +711,29 @@ class ClientController extends Controller
     }
 
     /**
-     * @api {get} /api/clients/favorites/delete/:id Delete Favorite
+     * @api {get} /api/clients/favorites/delete/:product_id Delete Favorite
      * @apiName DeleteFavorite
      * @apiGroup ClientFavorites
      *
      * @apiHeader {string} Authorization Basic current user token
      */
 
-    public function delete_favorites($id)
+    public function delete_favorites($productId)
     {
         $errors = [];
         $httpStatus = 200;
 
         Validator::extend('is_creator', function($attribute, $value, $parameters, $validator) {
-            return Favorites::where([['id', '=', $value], ['user_id', '=', $parameters[0]]])->exists();
+            return Favorites::where([['product_id', '=', $value], ['user_id', '=', $parameters[0]]])->exists();
         });
 
-        $validator = Validator::make(['id' => $id], ['id' => "is_creator:" . Auth::user()->id]);
+        $validator = Validator::make(['product_id' => $productId], ['id' => "is_creator:" . Auth::user()->id]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            Favorites::where('id', '=', $id)->delete();
+            Favorites::where([['product_id', '=', $productId], ['user_id', '=', Auth::user()->id]])->delete();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }

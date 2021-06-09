@@ -74,4 +74,27 @@ class CommonActions extends Model
         curl_close($ch);
         return json_decode($response);
     }
+
+    public static function geocode($lon, $lat)
+    {
+        $result = @json_decode(file_get_contents("https://geocode-maps.yandex.ru/1.x/?format=json&apikey=a664588b-adda-4fc4-adac-e497efe25be4&geocode=$lon,$lat"));
+        $rootObject = @$result->response->GeoObjectCollection->featureMember[0]->GeoObject->metaDataProperty->GeocoderMetaData;
+        if ($rootObject) {
+            $cityName = $streetName = $houseName = null;
+            $addressText = $rootObject->text;
+            foreach ($rootObject->Address->Components as $component) {
+                if ($component->kind == 'locality') $cityName = $component->name;
+                if ($component->kind == 'street') $streetName = $component->name;
+                if ($component->kind == 'house') $houseName = $component->name;
+            }
+            return [
+                'city' => $cityName,
+                'street' => $streetName,
+                'house' => $houseName,
+                'address' => $addressText,
+            ];
+        }
+        return null;
+    }
+
 }

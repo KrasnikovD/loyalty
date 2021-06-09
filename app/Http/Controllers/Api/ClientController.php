@@ -9,6 +9,7 @@ use App\Models\CommonActions;
 use App\Models\Favorites;
 use App\Models\News;
 use App\Models\Orders;
+use App\Models\Outlet;
 use App\Models\Product;
 use App\Models\Reviews;
 use App\Models\Users;
@@ -736,5 +737,65 @@ class ClientController extends Controller
             Favorites::where([['product_id', '=', $productId], ['user_id', '=', Auth::user()->id]])->delete();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/outlets/list Get Outlets List
+     * @apiName GetOutletsList
+     * @apiGroup ClientOutlets
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [lon]
+     * @apiParam {string} [lat]
+     */
+
+    public function list_outlets(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $outlets = null;
+        $validatorData = $request->all();
+        $validatorRules = [
+            'lon' => 'regex:/^\d+(\.\d+)?$/',
+            'lat' => 'regex:/^\d+(\.\d+)?$/',
+        ];
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $outlets = Outlet::all()->toArray();
+            $origins = '';
+            $outletMap = [];
+            foreach ($outlets as $outlet) {
+                if($outlet['lat'] && $outlet['lon']) {
+                    $origins .= "{$outlet['lat']},{$outlet['lon']}|";
+                    $outletMap[$outlet['id']] = 0;
+                }
+            }
+            $origins = trim($origins, "|");
+            if ($origins && $request->lat && $request->lon) {
+                $destinations = "{$request->lat},{$request->lon}";
+                $url = "https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins={$origins}&destinations={$destinations}&key=AIzaSyAeTE_kYwFmy1MeEwQDfup0kWVwUUv2gyE";
+                $result = @json_decode(file_get_contents($url));
+                $rows = @$result->rows;
+                if (is_array($rows)) {
+                   $i = 0;
+                   foreach ($outletMap as &$item) {
+                       $item = $rows[$i++]->elements[0]->distance->value;
+                   }
+                }
+                foreach ($outlets as &$outlet) {
+                    $outlet['distance'] = 0;
+                    if (@$outletMap[$outlet['id']]) $outlet['distance'] = $outletMap[$outlet['id']];
+                }
+                usort($outlets, function ($first, $second) {
+                   return $first['distance'] > $second['distance'];
+                });
+            }
+        }
+        return response()->json(['errors' => $errors, 'data' => $outlets], $httpStatus);
     }
 }

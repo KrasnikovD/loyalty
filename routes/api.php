@@ -117,6 +117,8 @@ Route::post('/clients/favorites/add', 'App\Http\Controllers\Api\ClientController
 Route::post('/clients/favorites/list', 'App\Http\Controllers\Api\ClientController@list_favorites');
 Route::get('/clients/favorites/delete/{product_id}', 'App\Http\Controllers\Api\ClientController@delete_favorites');
 
+Route::post('/clients/outlets/list', 'App\Http\Controllers\Api\ClientController@list_outlets');
+
 /****** OUTLETS ******/
 
 Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');

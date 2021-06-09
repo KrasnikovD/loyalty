@@ -1410,7 +1410,14 @@ define({ "api": [
             "group": "Parameter",
             "type": "string",
             "optional": false,
-            "field": "address",
+            "field": "lon",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "lat",
             "description": ""
           }
         ]
@@ -1483,7 +1490,14 @@ define({ "api": [
             "group": "Parameter",
             "type": "string",
             "optional": true,
-            "field": "address",
+            "field": "lon",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "lat",
             "description": ""
           }
         ]
@@ -2479,6 +2493,49 @@ define({ "api": [
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/ClientController.php",
     "groupTitle": "ClientOrders"
+  },
+  {
+    "type": "post",
+    "url": "/api/clients/outlets/list",
+    "title": "Get Outlets List",
+    "name": "GetOutletsList",
+    "group": "ClientOutlets",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "lon",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "lat",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientOutlets"
   },
   {
     "type": "get",

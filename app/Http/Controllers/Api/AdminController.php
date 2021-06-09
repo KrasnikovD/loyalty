@@ -665,7 +665,8 @@ class AdminController extends Controller
      *
      * @apiParam {string} name
      * @apiParam {string} phone
-     * @apiParam {string} address
+     * @apiParam {string} lon
+     * @apiParam {string} lat
      */
 
     /**
@@ -677,7 +678,8 @@ class AdminController extends Controller
      *
      * @apiParam {string} [name]
      * @apiParam {string} [phone]
-     * @apiParam {string} [address]
+     * @apiParam {string} [lon]
+     * @apiParam {string} [lat]
      */
 
     public function edit_outlet(Request $request, $id = null)
@@ -688,12 +690,14 @@ class AdminController extends Controller
         $validatorData = $request->all();
         if ($request->phone) $validatorData['phone'] = str_replace(array("(", ")", " ", "-"), "", $request->phone);
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
-        $validatorRules = [];
-        if(!$id) {
-            $validatorRules['name'] = 'required';
-            $validatorRules['phone'] = 'required|unique:outlets';
-            $validatorRules['address'] = 'required';
-        } else $validatorRules['id'] = 'exists:outlets,id';
+        $validatorRules = [
+            'phone' => (!$id ? 'required|' : '') . 'unique:outlets',
+            'lon' => (!$id ? 'required|' : '') . 'regex:/^\d+(\.\d+)?$/',
+            'lat' => (!$id ? 'required|' : '') . 'regex:/^\d+(\.\d+)?$/',
+        ];
+
+        if (!$id) $validatorRules['name'] = 'required';
+        else $validatorRules['id'] = 'exists:outlets,id';
 
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
@@ -704,7 +708,14 @@ class AdminController extends Controller
             $outlet = $id ? Outlet::where('id', '=', $id)->first() : new Outlet;
             if ($request->name) $outlet->name = $request->name;
             if ($request->phone) $outlet->phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
-            if ($request->address) $outlet->address = $request->address;
+            if ($request->lon) $outlet->lon = $request->lon;
+            if ($request->lat) $outlet->lat = $request->lat;
+            if($request->lon && $request->lat && ($address = CommonActions::geocode($request->lon, $request->lat))) {
+                $outlet->address = $address['address'];
+                $outlet->city_name = $address['city'];
+                $outlet->street_name = $address['street'];
+                $outlet->house_name = $address['house'];
+            }
             $outlet->save();
         }
         return response()->json(['errors' => $errors, 'data' => $outlet], $httpStatus);

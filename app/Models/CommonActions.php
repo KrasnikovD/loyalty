@@ -32,13 +32,24 @@ class CommonActions extends Model
         return false;
     }
 
-    public static function sendSms($phone, $message)
+    public static function sendPhoenixSms($phone, $message)
     {
         return Http::post('https://api.c-eda.ru/public/v1/send_sms',
             [
                 'phone' => $phone,
                 'message' => $message,
                 'key' => "baeb7c755d0aedc018bf52475374c0a8804e3565"
+            ]);
+    }
+
+    public static function sendSms($phone, $message)
+    {
+        return Http::post('https://sms.ru/sms/send',
+            [
+                'to' => $phone,
+                'msg' => $message,
+                'api_id' => "515f19a5-c2c7-fb84-3968-027ff9ad7eaa",
+                'json' => 1
             ]);
     }
 }

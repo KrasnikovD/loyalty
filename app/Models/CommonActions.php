@@ -72,6 +72,6 @@ class CommonActions extends Model
         curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
         $response = curl_exec($ch);
         curl_close($ch);
-        return $response;
+        return json_decode($response);
     }
 }

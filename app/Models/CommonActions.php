@@ -34,7 +34,7 @@ class CommonActions extends Model
 
     public static function sendSms($phone, $message)
     {
-        if (strpos($phone, '071') !== false) {
+       /* if (strpos($phone, '071') !== false) {
             return Http::post('https://api.c-eda.ru/public/v1/send_sms',
                 [
                     'phone' => $phone,
@@ -48,6 +48,30 @@ class CommonActions extends Model
                 'msg' => $message,
                 'api_id' => "515f19a5-c2c7-fb84-3968-027ff9ad7eaa",
                 'json' => 1
-            ]);
+            ]);*/
+        if (strpos($phone, '071') !== false) {
+            $url = 'https://api.c-eda.ru/public/v1/send_sms';
+            $params = [
+                'phone' => $phone,
+                'message' => $message,
+                'key' => "baeb7c755d0aedc018bf52475374c0a8804e3565"
+            ];
+        } else {
+            $url = 'https://sms.ru/sms/send';
+            $params = [
+                'to' => $phone,
+                'msg' => $message,
+                'api_id' => "515f19a5-c2c7-fb84-3968-027ff9ad7eaa",
+                'json' => 1
+            ];
+        }
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        return $response;
     }
 }

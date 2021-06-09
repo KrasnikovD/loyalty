@@ -787,14 +787,14 @@ class ClientController extends Controller
                        $item = $rows[$i++]->elements[0]->distance->value;
                    }
                 }
-                foreach ($outlets as &$outlet) {
-                    $outlet['distance'] = 0;
-                    if (@$outletMap[$outlet['id']]) $outlet['distance'] = $outletMap[$outlet['id']];
-                }
-                usort($outlets, function ($first, $second) {
-                   return $first['distance'] > $second['distance'];
-                });
             }
+            foreach ($outlets as &$outlet) {
+                $outlet['distance'] = 0;
+                if (@$outletMap[$outlet['id']]) $outlet['distance'] = $outletMap[$outlet['id']];
+            }
+            usort($outlets, function ($first, $second) {
+                return $first['distance'] > $second['distance'];
+            });
         }
         return response()->json(['errors' => $errors, 'data' => $outlets], $httpStatus);
     }

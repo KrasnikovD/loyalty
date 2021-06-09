@@ -727,7 +727,7 @@ class ClientController extends Controller
             return Favorites::where([['product_id', '=', $value], ['user_id', '=', $parameters[0]]])->exists();
         });
 
-        $validator = Validator::make(['product_id' => $productId], ['id' => "is_creator:" . Auth::user()->id]);
+        $validator = Validator::make(['product_id' => $productId], ['product_id' => "is_creator:" . Auth::user()->id]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;

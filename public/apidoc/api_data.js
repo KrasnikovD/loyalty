@@ -2199,7 +2199,7 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/api/clients/favorites/delete/:id",
+    "url": "/api/clients/favorites/delete/:product_id",
     "title": "Delete Favorite",
     "name": "DeleteFavorite",
     "group": "ClientFavorites",

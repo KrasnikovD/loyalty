@@ -16,6 +16,7 @@ use App\Models\Orders;
 use App\Models\Outlet;
 use App\Models\Product;
 use App\Models\Sales;
+use App\Models\Stocks;
 use App\Models\Users;
 use App\Models\Fields;
 use App\Models\FieldsUsers;
@@ -126,11 +127,16 @@ class AdminController extends Controller
     }
 
     /**
-     * @api {get} /api/bill_types/list Get Bill Type List
+     * @api {post} /api/bill_types/list Get Bill Type List
      * @apiName GetBillTypeList
      * @apiGroup AdminBillTypes
      *
      * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
      */
 
     /**
@@ -141,27 +147,53 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      */
 
-    public function list_bill_types($id = null)
+    public function list_bill_types(Request $request, $id = null)
     {
         $errors = [];
         $httpStatus = 200;
         $data = null;
-        if($id) {
+
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        if (!$id) {
+            $validatorRules = [
+                'dir' => 'in:asc,desc',
+                'order' => 'in:id,name,created_at,updated_at',
+                'offset' => 'integer',
+                'limit' => 'integer',
+            ];
+        } else {
             Validator::extend('not_default', function($attribute, $value, $parameters, $validator) {
                 $billType = BillTypes::where([['name', '=', 'default'],['id', '=', $value]])->first();
                 return empty($billType);
             });
-
-            $validator = Validator::make(['id' => $id], ['id' => 'exists:bill_types,id|not_default']);
-            if ($validator->fails()) {
-                $errors = $validator->errors()->toArray();
-                $httpStatus = 400;
-            }
+            $validatorRules = ['id' => 'exists:bill_types,id|not_default'];
+        }
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
         }
         if (empty($errors)) {
+            $count = 0;
             $query = BillTypes::where('name', '<>', 'default');
             if ($id) $query->where('id', '=', $id);
-            $data = $query->get();
+            else {
+                $count = $query->count();
+                $order = $request->order ?: 'bill_types.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+
+                $query->orderBy($order, $dir);
+                if ($limit) {
+                    $query->limit($limit);
+                    if ($offset) $query->offset($offset);
+                }
+            }
+            $list = $query->get();
+            if ($id) $data = $list[0];
+            else $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
@@ -294,13 +326,25 @@ class AdminController extends Controller
         $errors = [];
         $httpStatus = 200;
         $data = null;
-        if($id) {
-            $validator = Validator::make(['id' => $id], ['id' => 'exists:users,id']);
-            if ($validator->fails()) {
-                $errors = $validator->errors()->toArray();
-                $httpStatus = 400;
-            }
+
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        if (!$id) {
+            $validatorRules = [
+                'dir' => 'in:asc,desc',
+                'order' => 'in:id,code,first_name,second_name,phone,password,token,type,device_token,created_at,updated_at',
+                'offset' => 'integer',
+                'limit' => 'integer',
+            ];
+        } else {
+            $validatorRules = ['id' => 'exists:users,id'];
         }
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+
         if (empty($errors)) {
             $count = 0;
             $query = Users::select('*');
@@ -311,7 +355,6 @@ class AdminController extends Controller
                 $dir = $request->dir ?: 'asc';
                 $offset = $request->offset;
                 $limit = $request->limit;
-
                 $query->orderBy($order, $dir);
                 if ($limit) {
                     $query->limit($limit);
@@ -420,11 +463,16 @@ class AdminController extends Controller
     }
 
     /**
-     * @api {get} /api/cards/list Get Cards List
+     * @api {post} /api/cards/list Get Cards List
      * @apiName GetCardsList
      * @apiGroup AdminCards
      *
      * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
      */
 
     /**
@@ -435,22 +483,50 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      */
 
-    public function list_cards($id = null)
+    public function list_cards(Request $request, $id = null)
     {
         $errors = [];
         $httpStatus = 200;
         $data = null;
-        if($id) {
-            $validator = Validator::make(['id' => $id], ['id' => 'exists:cards,id']);
-            if ($validator->fails()) {
-                $errors = $validator->errors()->toArray();
-                $httpStatus = 400;
-            }
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        if (!$id) {
+            $validatorRules = [
+                'dir' => 'in:asc,desc',
+                'order' => 'in:id,user_id,number,created_at,updated_at',
+                'offset' => 'integer',
+                'limit' => 'integer',
+            ];
+        } else {
+            $validatorRules = ['id' => 'exists:cards,id'];
+        }
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
         }
         if (empty($errors)) {
+            $count = 0;
             $query = Cards::select('*');
             if ($id) $query->where('id', '=', $id);
-            $data = $query->get();
+            else {
+                $count = $query->count();
+                $order = $request->order ?: 'cards.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+
+                $query->orderBy($order, $dir);
+                if ($limit) {
+                    $query->limit($limit);
+                    if ($offset) $query->offset($offset);
+                }
+            }
+
+            $list = $query->get()->toArray();
+            DataHelper::collectCardsInfo($list);
+            if ($id) $data = $list[0];
+            else $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
@@ -573,38 +649,70 @@ class AdminController extends Controller
     }
 
     /**
-     * @api {get} /api/bill_programs/list Get Bill Programs List
+     * @api {post} /api/bill_programs/list Get Bill Programs List
      * @apiName GetBillProgramsList
      * @apiGroup AdminBillPrograms
      *
      * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
      */
 
     /**
-     * @api {get} /api/bill_programs/list/:bill_id Get Bill Programs List for Bill
+     * @api {post} /api/bill_programs/list/:bill_id Get Bill Programs List for Bill
      * @apiName GetBillProgramsListForBill
      * @apiGroup AdminBillPrograms
      *
      * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
      */
 
-    public function list_bill_programs($billId = null)
+    public function list_bill_programs(Request $request, $billId = null)
     {
         $errors = [];
         $httpStatus = 200;
         $data = null;
 
-        if ($billId) {
-            $validator = Validator::make(['bill_id' => $billId], ['bill_id' => 'exists:bills,id']);
-            if ($validator->fails()) {
-                $errors = $validator->errors()->toArray();
-                $httpStatus = 400;
-            }
+        $validatorData = $request->all();
+        if ($billId) $validatorData = array_merge($validatorData, ['bill_id' => $billId]);
+        if (!$billId) {
+            $validatorRules = [
+                'dir' => 'in:asc,desc',
+                'order' => 'in:id,bill_id,from,to,percent,created_at,updated_at',
+                'offset' => 'integer',
+                'limit' => 'integer',
+            ];
+        } else {
+            $validatorRules = ['bill_id' => 'exists:bills,id'];
         }
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+
         if (empty($errors)) {
             $query = BillPrograms::select('*');
             if ($billId) $query->where('bill_id', '=', $billId);
-            $data = $query->get();
+
+            $count = $query->count();
+            $order = $request->order ?: 'bill_programs.id';
+            $dir = $request->dir ?: 'asc';
+            $offset = $request->offset;
+            $limit = $request->limit;
+            $query->orderBy($order, $dir);
+            if ($limit) {
+                $query->limit($limit);
+                if ($offset) $query->offset($offset);
+            }
+            $data = ['count' => $count, 'list' => $query->get()];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
@@ -722,11 +830,16 @@ class AdminController extends Controller
     }
 
     /**
-     * @api {get} /api/outlets/list Get Outlets List
+     * @api {post} /api/outlets/list Get Outlets List
      * @apiName GetOutletsList
      * @apiGroup AdminOutlets
      *
      * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
      */
 
     /**
@@ -737,22 +850,50 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      */
 
-    public function list_outlets($id = null)
+    public function list_outlets(Request $request, $id = null)
     {
         $errors = [];
         $httpStatus = 200;
         $data = null;
-        if($id) {
-            $validator = Validator::make(['id' => $id], ['id' => 'exists:outlets,id']);
-            if ($validator->fails()) {
-                $errors = $validator->errors()->toArray();
-                $httpStatus = 400;
-            }
+
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        if (!$id) {
+            $validatorRules = [
+                'dir' => 'in:asc,desc',
+                'order' => 'in:id,name,phone,address,city_name,street_name,house_name,lon,lat,created_at,updated_at',
+                'offset' => 'integer',
+                'limit' => 'integer',
+            ];
+        } else {
+            $validatorRules = ['id' => 'exists:outlets,id'];
         }
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+
         if (empty($errors)) {
+            $count = 0;
             $query = Outlet::select('*');
             if ($id) $query->where('id', '=', $id);
-            $data = $query->get();
+            else {
+                $count = $query->count();
+                $order = $request->order ?: 'outlets.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+
+                $query->orderBy($order, $dir);
+                if ($limit) {
+                    $query->limit($limit);
+                    if ($offset) $query->offset($offset);
+                }
+            }
+            $list = $query->get();
+            if ($id) $data = $list[0];
+            else $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
@@ -837,11 +978,16 @@ class AdminController extends Controller
     }
 
     /**
-     * @api {get} /api/fields/list Get Fields List
+     * @api {post} /api/fields/list Get Fields List
      * @apiName GetFieldsList
      * @apiGroup AdminFields
      *
      * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
      */
 
     /**
@@ -852,22 +998,49 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      */
 
-    public function list_fields($id = null)
+    public function list_fields(Request $request, $id = null)
     {
         $errors = [];
         $httpStatus = 200;
         $data = null;
-        if($id) {
-            $validator = Validator::make(['id' => $id], ['id' => 'exists:fields,id']);
-            if ($validator->fails()) {
-                $errors = $validator->errors()->toArray();
-                $httpStatus = 400;
-            }
+
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        if (!$id) {
+            $validatorRules = [
+                'dir' => 'in:asc,desc',
+                'order' => 'in:id,name,created_at,updated_at',
+                'offset' => 'integer',
+                'limit' => 'integer',
+            ];
+        } else {
+            $validatorRules = ['id' => 'exists:fields,id'];
         }
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+
         if (empty($errors)) {
+            $count = 0;
             $query = Fields::select('*');
             if ($id) $query->where('id', '=', $id);
-            $data = $query->get();
+            else {
+                $count = $query->count();
+                $order = $request->order ?: 'fields.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+                $query->orderBy($order, $dir);
+                if ($limit) {
+                    $query->limit($limit);
+                    if ($offset) $query->offset($offset);
+                }
+            }
+            $list = $query->get();
+            if ($id) $data = $list[0];
+            else $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
@@ -897,11 +1070,16 @@ class AdminController extends Controller
     }
 
     /**
-     * @api {get} /api/sales/list Get Sales List
+     * @api {post} /api/sales/list Get Sales List
      * @apiName GetSalesList
      * @apiGroup AdminSales
      *
      * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
      */
 
     /**
@@ -912,19 +1090,32 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      */
 
-    public function list_sales($id = null)
+    public function list_sales(Request $request, $id = null)
     {
         $errors = [];
         $httpStatus = 200;
         $data = null;
-        if($id) {
-            $validator = Validator::make(['id' => $id], ['id' => 'exists:sales,id']);
-            if ($validator->fails()) {
-                $errors = $validator->errors()->toArray();
-                $httpStatus = 400;
-            }
+
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        if (!$id) {
+            $validatorRules = [
+                'dir' => 'in:asc,desc',
+                'order' => 'in:id,user_id,outlet_id,bill_id,card_id,outlet_name,dt,amount,created_at,updated_at',
+                'offset' => 'integer',
+                'limit' => 'integer',
+            ];
+        } else {
+            $validatorRules = ['id' => 'exists:sales,id'];
         }
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+
         if (empty($errors)) {
+            $count = 0;
             $query = Sales::select('sales.*',
                 'users.id as user_id', 'users.phone as users_phone',
                 'outlets.id as outlet_id', 'outlets.name as outlet_name',
@@ -934,7 +1125,22 @@ class AdminController extends Controller
                 ->join('cards', 'cards.id', '=', 'sales.card_id');
 
             if ($id) $query->where('sales.id', '=', $id);
-            $data = $query->get();
+            else {
+                $count = $query->count();
+                $order = $request->order ?: 'sales.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+
+                $query->orderBy($order, $dir);
+                if ($limit) {
+                    $query->limit($limit);
+                    if ($offset) $query->offset($offset);
+                }
+            }
+            $list = $query->get();
+            if ($id) $data = $list[0];
+            else $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
@@ -1429,7 +1635,6 @@ class AdminController extends Controller
         $errors = [];
         $httpStatus = 200;
         $data = null;
-        $count = 0;
 
         if (!$id) {
             $validatorRules = [
@@ -1449,6 +1654,7 @@ class AdminController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
+            $count = 0;
             $orders = Orders::select('orders.*', 'users.first_name as user_first_name', 'users.second_name as user_second_name')
                 ->leftJoin('users', 'users.id', '=', 'orders.user_id');
             if (!$id) {
@@ -1757,6 +1963,150 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             News::where('id', '=', $id)->delete();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/stocks/create Create Stock
+     * @apiName CreateStock
+     * @apiGroup AdminStocks
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} name
+     * @apiParam {string} description
+     * @apiParam {integer} file_content
+     */
+
+    /**
+     * @api {post} /api/stocks/edit/:id Edit News
+     * @apiName EditStock
+     * @apiGroup AdminStocks
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [name]
+     * @apiParam {string} [description]
+     * @apiParam {integer} [file_content]
+     */
+
+    public function edit_stock(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $stock = null;
+
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validatorRules = [];
+        if(!$id) {
+            $validatorRules['name'] = 'required';
+            $validatorRules['description'] = 'required';
+            $validatorRules['file_content'] = 'required';
+        } else
+            $validatorRules['id'] = 'exists:stocks,id';
+
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $stock = $id ? Stocks::where('id', '=', $id)->first() : new Stocks;
+            if (isset($request->name)) $stock->name = $request->name;
+            if (isset($request->description)) $stock->description = $request->description;
+            if (isset($request->file_content)) {
+                if ($id) @unlink(Storage::path("images/{$stock->file}"));
+                $fileName = uniqid() . ".jpeg";
+                Storage::disk('local')->put("images/$fileName", '');
+                $path = Storage::path("images/$fileName");
+                $imageTmp = imagecreatefromstring(base64_decode($request->file_content));
+                imagejpeg($imageTmp, $path);
+                imagedestroy($imageTmp);
+                $stock->file = $fileName;
+            }
+            $stock->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => $stock], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/stocks/list Get Stocks List
+     * @apiName GetStocksList
+     * @apiGroup AdminStocks
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    /**
+     * @api {get} /api/stocks/get/:id Get Stock
+     * @apiName GetStock
+     * @apiGroup AdminStocks
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function list_stocks(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        if($id) {
+            $validator = Validator::make(['id' => $id], ['id' => 'exists:stocks,id']);
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                $httpStatus = 400;
+            }
+        }
+        if (empty($errors)) {
+            $count = 0;
+            $query = Stocks::select('*');
+            if ($id) $query->where('id', '=', $id);
+            else {
+                $count = $query->count();
+                $order = $request->order ?: 'stocks.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+
+                $query->orderBy($order, $dir);
+                if ($limit) {
+                    $query->limit($limit);
+                    if ($offset) $query->offset($offset);
+                }
+            }
+            $list = $query->get()->toArray();
+            if ($id) $data = $list[0];
+            else $data = ['count' => $count, 'list' => $list];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/stocks/delete/:id Delete Stock
+     * @apiName DeleteStock
+     * @apiGroup AdminStocks
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function delete_stock($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:stocks,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            Stocks::where('id', '=', $id)->delete();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }

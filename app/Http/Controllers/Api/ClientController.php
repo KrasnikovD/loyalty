@@ -4,14 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Baskets;
+use App\Models\Cards;
 use App\Models\Categories;
 use App\Models\CommonActions;
+use App\Models\DataHelper;
 use App\Models\Favorites;
 use App\Models\News;
 use App\Models\Orders;
 use App\Models\Outlet;
 use App\Models\Product;
 use App\Models\Reviews;
+use App\Models\Stocks;
 use App\Models\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -797,5 +800,113 @@ class ClientController extends Controller
             });
         }
         return response()->json(['errors' => $errors, 'data' => $outlets], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/stocks/list Get Stocks List
+     * @apiName GetStocksList
+     * @apiGroup ClientStocks
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    /**
+     * @api {get} /api/clients/stocks/get/:id Get Stock
+     * @apiName GetStock
+     * @apiGroup ClientStocks
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function list_stocks(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        if($id) {
+            $validator = Validator::make(['id' => $id], ['id' => 'exists:stocks,id']);
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                $httpStatus = 400;
+            }
+        }
+        if (empty($errors)) {
+            $count = 0;
+            $query = Stocks::select('*');
+            if ($id) $query->where('id', '=', $id);
+            else {
+                $count = $query->count();
+                $order = $request->order ?: 'stocks.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+
+                $query->orderBy($order, $dir);
+                if ($limit) {
+                    $query->limit($limit);
+                    if ($offset) $query->offset($offset);
+                }
+            }
+            $list = $query->get()->toArray();
+            if ($id) $data = $list[0];
+            else $data = ['count' => $count, 'list' => $list];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/cards/list Get Cards List
+     * @apiName GetCardsList
+     * @apiGroup ClientCards
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    public function list_cards(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validatorRules = [
+            'dir' => 'in:asc,desc',
+            'order' => 'in:id,user_id,number,created_at,updated_at',
+            'offset' => 'integer',
+            'limit' => 'integer',
+        ];
+        $validator = Validator::make($request->all(), $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $query = Cards::select('*');
+            $query->where('user_id', '=', Auth::user()->id);
+
+            $count = $query->count();
+            $order = $request->order ?: 'cards.id';
+            $dir = $request->dir ?: 'asc';
+            $offset = $request->offset;
+            $limit = $request->limit;
+
+            $query->orderBy($order, $dir);
+            if ($limit) {
+                $query->limit($limit);
+                if ($offset) $query->offset($offset);
+            }
+            $list = $query->get()->toArray();
+            DataHelper::collectCardsInfo($list);
+            $data = ['count' => $count, 'list' => $list];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 }

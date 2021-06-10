@@ -22,7 +22,7 @@ Route::post('/admin/login', 'App\Http\Controllers\Api\AdminController@login');
 
 Route::post('/bill_types/create', 'App\Http\Controllers\Api\AdminController@edit_bill_type');
 Route::post('/bill_types/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_bill_type');
-Route::get('/bill_types/list', 'App\Http\Controllers\Api\AdminController@list_bill_types');
+Route::post('/bill_types/list', 'App\Http\Controllers\Api\AdminController@list_bill_types');
 Route::get('/bill_types/get/{id}', 'App\Http\Controllers\Api\AdminController@list_bill_types');
 Route::get('/bill_types/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_bill_type');
 
@@ -34,31 +34,31 @@ Route::get('/users/delete/{id}', 'App\Http\Controllers\Api\AdminController@delet
 
 Route::post('/cards/create', 'App\Http\Controllers\Api\AdminController@edit_card');
 Route::post('/cards/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_card');
-Route::get('/cards/list', 'App\Http\Controllers\Api\AdminController@list_cards');
+Route::post('/cards/list', 'App\Http\Controllers\Api\AdminController@list_cards');
 Route::get('/cards/get/{id}', 'App\Http\Controllers\Api\AdminController@list_cards');
 Route::get('/cards/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_card');
 
 Route::post('/bill_programs/create', 'App\Http\Controllers\Api\AdminController@edit_bill_program');
 Route::post('/bill_programs/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_bill_program');
-Route::get('/bill_programs/list/{bill_id?}', 'App\Http\Controllers\Api\AdminController@list_bill_programs');
+Route::post('/bill_programs/list/{bill_id?}', 'App\Http\Controllers\Api\AdminController@list_bill_programs');
 Route::get('/bill_programs/get/{id}', 'App\Http\Controllers\Api\AdminController@get_bill_program');
 Route::get('/bill_programs/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_bill_program');
 
 Route::post('/outlets/create', 'App\Http\Controllers\Api\AdminController@edit_outlet');
 Route::post('/outlets/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_outlet');
-Route::get('/outlets/list', 'App\Http\Controllers\Api\AdminController@list_outlets');
+Route::post('/outlets/list', 'App\Http\Controllers\Api\AdminController@list_outlets');
 Route::get('/outlets/get/{id}', 'App\Http\Controllers\Api\AdminController@list_outlets');
 Route::get('/outlets/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_outlet');
 
 Route::post('/fields/create', 'App\Http\Controllers\Api\AdminController@edit_field');
 Route::post('/fields/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_field');
-Route::get('/fields/list', 'App\Http\Controllers\Api\AdminController@list_fields');
+Route::post('/fields/list', 'App\Http\Controllers\Api\AdminController@list_fields');
 Route::get('/fields/get/{id}', 'App\Http\Controllers\Api\AdminController@list_fields');
 Route::get('/fields/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_field');
 
 //Route::post('/sales/create', 'App\Http\Controllers\Api\AdminController@edit_sale');
 //Route::post('/sales/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_sale');
-Route::get('/sales/list', 'App\Http\Controllers\Api\AdminController@list_sales');
+Route::post('/sales/list', 'App\Http\Controllers\Api\AdminController@list_sales');
 Route::get('/sales/get/{id}', 'App\Http\Controllers\Api\AdminController@list_sales');
 //Route::get('/sales/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_sale');
 
@@ -91,6 +91,12 @@ Route::post('/news/list', 'App\Http\Controllers\Api\AdminController@list_news');
 Route::get('/news/get/{id}', 'App\Http\Controllers\Api\AdminController@list_news');
 Route::get('/news/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_news');
 
+Route::post('/stocks/create', 'App\Http\Controllers\Api\AdminController@edit_stock');
+Route::post('/stocks/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_stock');
+Route::post('/stocks/list', 'App\Http\Controllers\Api\AdminController@list_stocks');
+Route::get('/stocks/get/{id}', 'App\Http\Controllers\Api\AdminController@list_stocks');
+Route::get('/stocks/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_stock');
+
 /****** CLIENTS ******/
 
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');
@@ -118,6 +124,11 @@ Route::post('/clients/favorites/list', 'App\Http\Controllers\Api\ClientControlle
 Route::get('/clients/favorites/delete/{product_id}', 'App\Http\Controllers\Api\ClientController@delete_favorites');
 
 Route::post('/clients/outlets/list', 'App\Http\Controllers\Api\ClientController@list_outlets');
+
+Route::post('/clients/stocks/list', 'App\Http\Controllers\Api\ClientController@list_stocks');
+Route::get('/clients/stocks/get/{id}', 'App\Http\Controllers\Api\ClientController@list_stocks');
+
+Route::post('/clients/cards/list', 'App\Http\Controllers\Api\ClientController@list_cards');
 
 /****** OUTLETS ******/
 

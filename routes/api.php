@@ -130,6 +130,9 @@ Route::get('/clients/stocks/get/{id}', 'App\Http\Controllers\Api\ClientControlle
 
 Route::post('/clients/cards/list', 'App\Http\Controllers\Api\ClientController@list_cards');
 
+Route::get('/clients/profile', 'App\Http\Controllers\Api\ClientController@profile');
+Route::post('/clients/profile/edit', 'App\Http\Controllers\Api\ClientController@edit_profile');
+
 /****** OUTLETS ******/
 
 Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');

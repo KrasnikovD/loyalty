@@ -9,6 +9,8 @@ use App\Models\Categories;
 use App\Models\CommonActions;
 use App\Models\DataHelper;
 use App\Models\Favorites;
+use App\Models\Fields;
+use App\Models\FieldsUsers;
 use App\Models\News;
 use App\Models\Orders;
 use App\Models\Outlet;
@@ -908,5 +910,52 @@ class ClientController extends Controller
             $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/clients/profile Get Profile
+     * @apiName GetProfile
+     * @apiGroup ClientProfile
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function profile()
+    {
+        $user = Auth::user();
+        $data = [
+            'id' => $user->id,
+            'first_name' => $user->first_name,
+            'second_name' => $user->second_name,
+            'phone' => $user->phone,
+        ];
+        return response()->json(['errors' => [], 'data' => $data], 200);
+    }
+
+    /**
+     * @api {post} /api/clients/profile/edit Edit Profile
+     * @apiName EditProfile
+     * @apiGroup ClientProfile
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [first_name]
+     * @apiParam {string} [second_name]
+     * @apiParam {string} [password]
+     */
+
+    public function edit_profile(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $user = null;
+
+        $user = Users::where('id', '=', Auth::user()->id)->first();
+        if ($request->first_name) $user->first_name = $request->first_name;
+        if ($request->second_name) $user->second_name = $request->second_name;
+        if ($request->password) $user->password = md5($request->password);
+        $user->save();
+
+        return response()->json(['errors' => $errors, 'data' => $user], $httpStatus);
     }
 }

@@ -1348,9 +1348,9 @@ class AdminController extends Controller
         $httpStatus = 200;
         $product = null;
 
-        Validator::extend('is_child', function($attribute, $value, $parameters, $validator) {
+       /* Validator::extend('is_child', function($attribute, $value, $parameters, $validator) {
             return Categories::where([['id', '=', $value], ['parent_id', '<>', 0]])->exists();
-        });
+        });*/
 
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
@@ -1361,7 +1361,8 @@ class AdminController extends Controller
             $validatorRules['file_content'] = 'required';
         } else
             $validatorRules['id'] = 'exists:products,id';
-        $validatorRules['category_id'] = (!$id ? 'required|' : '') . 'is_child';
+       // $validatorRules['category_id'] = (!$id ? 'required|' : '') . 'is_child';
+        $validatorRules['category_id'] = (!$id ? 'required|' : '') . 'exists:categories,id';
        // $validatorRules['outlet_id'] = (!$id ? 'required|' : '') . 'exists:outlets,id';
         $validatorRules['price'] = 'integer';
         $validatorRules['is_hit'] = 'in:0,1,true,false';

@@ -3152,6 +3152,79 @@ define({ "api": [
   },
   {
     "type": "post",
+    "url": "/api/clients/profile/edit",
+    "title": "Edit Profile",
+    "name": "EditProfile",
+    "group": "ClientProfile",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "first_name",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "second_name",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "password",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientProfile"
+  },
+  {
+    "type": "get",
+    "url": "/api/clients/profile",
+    "title": "Get Profile",
+    "name": "GetProfile",
+    "group": "ClientProfile",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientProfile"
+  },
+  {
+    "type": "post",
     "url": "/api/clients/reviews/create",
     "title": "Create Review",
     "name": "CreateReview",

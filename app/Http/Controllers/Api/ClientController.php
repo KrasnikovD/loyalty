@@ -535,8 +535,9 @@ class ClientController extends Controller
             $data->id = $review->id;
             $data->product_id = $review->product_id;
             $data->user_id = $review->user_id;
-            $data->first_name = $user->first_name;
-            $data->second_name = $user->second_name;
+            $data->created_at = $review->created_at;
+            $data->user_first_name = $user->first_name;
+            $data->user_second_name = $user->second_name;
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

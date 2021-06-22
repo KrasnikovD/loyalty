@@ -504,7 +504,7 @@ class ClientController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
-        $review = null;
+        $data = null;
 
         Validator::extend('is_creator', function($attribute, $value, $parameters, $validator) {
             return Reviews::where([['id', '=', $value], ['user_id', '=', $parameters[0]]])->exists();
@@ -528,8 +528,17 @@ class ClientController extends Controller
             if (isset($request->product_id)) $review->product_id = $request->product_id;
             if (!$id) $review->user_id = Auth::user()->id;
             $review->save();
+
+            $user = Users::where('id', '=', Auth::user()->id)->first();
+            $data = new \stdClass;
+            $data->message = $review->message;
+            $data->id = $review->id;
+            $data->product_id = $review->product_id;
+            $data->user_id = $review->user_id;
+            $data->first_name = $user->first_name;
+            $data->second_name = $user->second_name;
         }
-        return response()->json(['errors' => $errors, 'data' => $review], $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 
     /**

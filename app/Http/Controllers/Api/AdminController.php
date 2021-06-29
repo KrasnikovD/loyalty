@@ -1676,7 +1676,10 @@ class AdminController extends Controller
             $list = $orders->get()->toArray();
             $ordersIds = array_column($list, 'id');
             $basketsMap = [];
-            foreach (Baskets::whereIn('order_id', $ordersIds)->get() as $basket) {
+			$baskets = Baskets::select('baskets.*', 'products.name as product_name')
+				->leftJoin('products', 'products.id', '=', 'baskets.product_id')
+				->whereIn('order_id', $ordersIds)->get();
+            foreach ($baskets as $basket) {
                 if(!isset($basketsMap[$basket->order_id])) $basketsMap[$basket->order_id] = [];
                 $basketsMap[$basket->order_id][] = $basket->toArray();
             }

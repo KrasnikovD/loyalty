@@ -1153,6 +1153,7 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {string} name
+     * @apiParam {integer} file_content
      */
 
     /**
@@ -1163,6 +1164,7 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {string} [name]
+     * @apiParam {integer} [file_content]
      */
 
     public function edit_category(Request $request, $id = null)
@@ -1178,7 +1180,10 @@ class AdminController extends Controller
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [];
-        if(!$id) $validatorRules['name'] = 'required';
+        if(!$id) {
+            $validatorRules['name'] = 'required';
+            $validatorRules['file_content'] = 'required';
+        }
         else $validatorRules['id'] = 'is_root';
 
         $validator = Validator::make($validatorData, $validatorRules);
@@ -1190,6 +1195,16 @@ class AdminController extends Controller
             $category = $id ? Categories::where('id', '=', $id)->first() : new Categories;
             $category->parent_id = 0;
             if (isset($request->name)) $category->name = $request->name;
+            if (isset($request->file_content)) {
+                if ($id) @unlink(Storage::path("images/{$category->file}"));
+                $fileName = uniqid() . ".jpeg";
+                Storage::disk('local')->put("images/$fileName", '');
+                $path = Storage::path("images/$fileName");
+                $imageTmp = imagecreatefromstring(base64_decode($request->file_content));
+                imagejpeg($imageTmp, $path);
+                imagedestroy($imageTmp);
+                $category->file = $fileName;
+            }
             $category->save();
         }
         return response()->json(['errors' => $errors, 'data' => $category], $httpStatus);

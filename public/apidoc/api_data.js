@@ -695,6 +695,13 @@ define({ "api": [
             "optional": false,
             "field": "name",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "file_content",
+            "description": ""
           }
         ]
       }
@@ -796,6 +803,13 @@ define({ "api": [
             "type": "string",
             "optional": true,
             "field": "name",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "file_content",
             "description": ""
           }
         ]

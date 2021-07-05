@@ -71,13 +71,6 @@ define({ "api": [
             "optional": false,
             "field": "percent",
             "description": ""
-          },
-          {
-            "group": "Parameter",
-            "type": "integer",
-            "optional": false,
-            "field": "bill_id",
-            "description": ""
           }
         ]
       }
@@ -150,13 +143,6 @@ define({ "api": [
             "type": "integer",
             "optional": true,
             "field": "percent",
-            "description": ""
-          },
-          {
-            "group": "Parameter",
-            "type": "integer",
-            "optional": true,
-            "field": "bill_id",
             "description": ""
           }
         ]

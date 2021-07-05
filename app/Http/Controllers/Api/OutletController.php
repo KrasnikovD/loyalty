@@ -44,6 +44,8 @@ class OutletController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
+            $currentAmount = Sales::where('bill_id', '=', $request->bill_id)->sum('amount');
+
             $sale = $id ? Sales::where('id', '=', $id)->first() : new Sales;
             if(isset($request->user_id)) $sale->user_id = $request->user_id;
             if(isset($request->outlet_id)) $sale->outlet_id = $request->outlet_id;
@@ -52,19 +54,26 @@ class OutletController extends Controller
             if(isset($request->amount)) $sale->amount = $request->amount;
             $sale->dt = date('Y-m-d H:i:s');
             //$sale->outlet_name = Outlet::where('id', '=', $request->outlet_id)->first()->name;
-            $sale->save();
+
             $program = null;
-            foreach (BillPrograms::where('bill_id', '=', $request->bill_id)->get() as $row) {
-                if ($request->amount >= $row->from && $request->amount <= $row->to) {
+            foreach (BillPrograms::all() as $row) {
+                if ($currentAmount >= $row->from && $currentAmount <= $row->to) {
                     $program = $row;
                     break;
                 }
             }
+            $bill = Bills::where('id', '=', $request->bill_id)->first();
+            $currentFrom = 0;
             if ($program) {
-                $bill = Bills::where('id', '=', $program->bill_id)->first();
-                $bill->value = intval($bill->value) + $program->percent * 0.01 * $request->amount;
-                $bill->save();
+                $currentFrom = $program->from;
+                $sale->bill_program_id = $program->id;
+                $bill->bill_program_id = $program->id;
+                $bill->value = floatval($bill->value) + $program->percent * 0.01 * $request->amount;
             }
+            $nextFrom = BillPrograms::where('from', '>', $currentFrom)->min('from');
+            $bill->remaining_amount = $nextFrom - $currentAmount;
+            $bill->save();
+            $sale->save();
         }
         return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);
     }

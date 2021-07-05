@@ -391,11 +391,8 @@ class AdminController extends Controller
                 ->leftJoin('bills', 'bills.card_id', '=', 'cards.id')
                 ->leftJoin('bill_programs', 'bill_programs.bill_id', '=', 'bills.id')->get()->toArray();
             $cardsIds = array_unique(array_column($cards, 'id'));
-            $billProgramsIds = array_unique(array_column($cards, 'bill_programs_id'));
-            $billProgramsIds = array_filter($billProgramsIds, function($value) {return !is_null($value) && $value !== '';});
             $billsIds = array_unique(array_column($cards, 'bills_id'));
             $billsIds = array_filter($billsIds, function($value) {return !is_null($value) && $value !== '';});
-            BillPrograms::whereIn('id', $billProgramsIds)->delete();
             Bills::whereIn('id', $billsIds)->delete();
             Cards::whereIn('id', $cardsIds)->delete();
             FieldsUsers::where('user_id', '=', $id)->delete();
@@ -550,8 +547,6 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $bills = Bills::where('card_id', '=', $id);
-            $ids = array_column($bills->get()->toArray(), 'id');
-            BillPrograms::whereIn('bill_id', $ids)->delete();
             $bills->delete();
             Cards::where('id', '=', $id)->delete();
         }
@@ -568,7 +563,6 @@ class AdminController extends Controller
      * @apiParam {integer} from
      * @apiParam {integer} to
      * @apiParam {integer} percent
-     * @apiParam {integer} bill_id
      */
 
     /**
@@ -581,7 +575,6 @@ class AdminController extends Controller
      * @apiParam {integer} [from]
      * @apiParam {integer} [to]
      * @apiParam {integer} [percent]
-     * @apiParam {integer} [bill_id]
      */
 
     public function edit_bill_program(Request $request, $id = null)
@@ -589,24 +582,21 @@ class AdminController extends Controller
         $errors = [];
         $httpStatus = 200;
         $billProgram = null;
-        $billId = @$request->bill_id;
         $from = @$request->from;
         $to = @$request->to;
         if($id) {
             $bill = BillPrograms::where('id', '=', $id)->first();
-            if (!isset($billId)) $billId = $bill->bill_id;
             if (!isset($from)) $from = $bill->from;
             if (!isset($to)) $to = $bill->to;
         }
         Validator::extend('from_to_valid', function($attribute, $value, $parameters, $validator) {
-            if (!empty($parameters[0]) && (!empty($parameters[1]) || $parameters[1] === '0') && !empty($parameters[2])) {
-                list($billId, $from, $to) = $parameters;
+            if ((!empty($parameters[0]) || $parameters[0] === '0') && !empty($parameters[1])) {
+                list($from, $to) = $parameters;
                 if ($from >= $to) return false;
-                $q = BillPrograms::where('bill_id', '=', $billId);
+                $q = BillPrograms::select('*');
                 if (isset($value))
                     $q->where('id', '<>', $value);
                 $programs = $q->orderBy('from')->get();
-
                 $sections = [];
                 for ($i = 0; $i < count($programs); $i ++) {
                     $sections[] = [$programs[$i]->from, $programs[$i]->to];
@@ -615,22 +605,17 @@ class AdminController extends Controller
             }
             return true;
         });
-        Validator::extend('is_default', function($attribute, $value, $parameters, $validator) {
-            $name = Bills::join('bill_types', 'bills.bill_type_id', '=', 'bill_types.id')
-                ->where('bills.id', '=', $value)->first()->name;
-            return $name == 'default';
-        });
+
         $validatorData = $request->all();
+        $validatorData = array_merge($validatorData, ['section' => $id]);
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
-        if (isset($from) && isset($to)) $validatorData = array_merge($validatorData, ['section' => $id]);
         $validator = Validator::make($validatorData,
             [
                 'from' => (!$id ? 'required|' : '') . "integer",
                 'to' => (!$id ? 'required|' : '') . "integer",
                 'percent' => (!$id ? 'required|' : '') . 'integer|max:100',
-                'bill_id' => (!$id ? 'required|' : '') . 'exists:bills,id|is_default',
                 'id' => 'exists:bill_programs,id',
-                'section' => "from_to_valid:{$billId},{$from},{$to}"
+                'section' => "from_to_valid:{$from},{$to}"
             ]
         );
         if ($validator->fails()) {
@@ -642,7 +627,6 @@ class AdminController extends Controller
             if(isset($request->from)) $billProgram->from = $request->from;
             if(isset($request->to)) $billProgram->to = $request->to;
             if(isset($request->percent)) $billProgram->percent = $request->percent;
-            if(isset($request->bill_id)) $billProgram->bill_id = $request->bill_id;
             $billProgram->save();
         }
         return response()->json(['errors' => $errors, 'data' => $billProgram], $httpStatus);

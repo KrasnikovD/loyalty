@@ -13,24 +13,12 @@ class DataHelper extends Model
     {
         $usersIds = array_column($data, 'id');
 
-        $cardList = Cards::select('id', 'number', 'user_id')->whereIn('user_id', $usersIds)->get();
-        $cardsIds = array_column($cardList->toArray(), 'id');
+        $cardList = Cards::select('id', 'number', 'user_id')->whereIn('user_id', $usersIds)->get()->toArray();
+        self::collectCardsInfo($cardList);
+        /*$cardsIds = array_column($cardList->toArray(), 'id');
         $billsList = Bills::join('bill_types', 'bills.bill_type_id', '=', 'bill_types.id')
             ->select('bills.id', 'bills.value', 'bills.card_id', 'bill_types.name')
             ->whereIn('bills.card_id', $cardsIds)->get();
-        $billsIds = array_column($billsList->toArray(), 'id');
-
-        $billsProgramsList = BillPrograms::select('id', 'bill_id', 'from', 'to', 'percent')
-            ->whereIn('bill_id', $billsIds)->get();
-        $billsProgramsMap = [];
-        foreach ($billsProgramsList as $billsProgram) {
-            if(!isset($billsProgramsMap[$billsProgram['bill_id']])) $billsProgramsMap[$billsProgram['bill_id']] = [];
-            $billsProgramsMap[$billsProgram['bill_id']][] = $billsProgram->toArray();
-        }
-
-        foreach ($billsList as &$billItem) {
-            $billItem->programs = @$billsProgramsMap[$billItem->id];
-        }
 
         $billsMap = [];
         foreach ($billsList as $bill) {
@@ -40,12 +28,12 @@ class DataHelper extends Model
 
         foreach ($cardList as &$cardItem) {
             $cardItem->bills = @$billsMap[$cardItem->id];
-        }
+        }*/
 
         $cardMap = [];
         foreach ($cardList as $card) {
             if(!isset($cardMap[$card['user_id']])) $cardMap[$card['user_id']] = [];
-            $cardMap[$card['user_id']][] = $card->toArray();
+            $cardMap[$card['user_id']][] = $card;
         }
 
         foreach ($data as &$item) {
@@ -57,21 +45,8 @@ class DataHelper extends Model
     {
         $cardsIds = array_column($data, 'id');
         $billsList = Bills::join('bill_types', 'bills.bill_type_id', '=', 'bill_types.id')
-            ->select('bills.id', 'bills.value', 'bills.card_id', 'bill_types.name')
+            ->select('bills.id', 'bills.value', 'bills.card_id', 'bills.remaining_amount', 'bills.bill_program_id', 'bill_types.name as type_name')
             ->whereIn('bills.card_id', $cardsIds)->get();
-        $billsIds = array_column($billsList->toArray(), 'id');
-
-        $billsProgramsList = BillPrograms::select('id', 'bill_id', 'from', 'to', 'percent')
-            ->whereIn('bill_id', $billsIds)->get();
-        $billsProgramsMap = [];
-        foreach ($billsProgramsList as $billsProgram) {
-            if(!isset($billsProgramsMap[$billsProgram['bill_id']])) $billsProgramsMap[$billsProgram['bill_id']] = [];
-            $billsProgramsMap[$billsProgram['bill_id']][] = $billsProgram->toArray();
-        }
-
-        foreach ($billsList as &$billItem) {
-            $billItem->programs = @$billsProgramsMap[$billItem->id];
-        }
 
         $billsMap = [];
         foreach ($billsList as $bill) {

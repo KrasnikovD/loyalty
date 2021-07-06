@@ -133,6 +133,8 @@ Route::post('/clients/cards/list', 'App\Http\Controllers\Api\ClientController@li
 Route::get('/clients/profile', 'App\Http\Controllers\Api\ClientController@profile');
 Route::post('/clients/profile/edit', 'App\Http\Controllers\Api\ClientController@edit_profile');
 
+Route::post('/clients/device_init', 'App\Http\Controllers\Api\ClientController@device_init');
+
 /****** OUTLETS ******/
 
 Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');

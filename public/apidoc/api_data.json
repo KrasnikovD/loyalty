@@ -2790,6 +2790,29 @@
     "groupTitle": "ClientFavorites"
   },
   {
+    "type": "post",
+    "url": "/api/clients/device_init",
+    "title": "Device Init",
+    "name": "DeviceInit",
+    "group": "ClientInit",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "expo_token",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientInit"
+  },
+  {
     "type": "get",
     "url": "/api/clients/news/get/:id",
     "title": "Get News",
@@ -3609,5 +3632,15 @@
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/OutletController.php",
     "groupTitle": "OutletSales"
+  },
+  {
+    "type": "post",
+    "url": "/api/test",
+    "title": "Test",
+    "name": "Test",
+    "group": "TestApi",
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/TestController.php",
+    "groupTitle": "TestApi"
   }
 ]

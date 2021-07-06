@@ -8,9 +8,8 @@ use App\Models\Cards;
 use App\Models\Categories;
 use App\Models\CommonActions;
 use App\Models\DataHelper;
+use App\Models\Devices;
 use App\Models\Favorites;
-use App\Models\Fields;
-use App\Models\FieldsUsers;
 use App\Models\News;
 use App\Models\Orders;
 use App\Models\Outlet;
@@ -29,8 +28,38 @@ class ClientController extends Controller
         $this->middleware('client.token',
             ['except' => [
                 'login',
-                'send_auth_sms'
+                'send_auth_sms',
+                'device_init'
             ]]);
+    }
+
+    /**
+     * @api {post} /api/clients/device_init Device Init
+     * @apiName DeviceInit
+     * @apiGroup ClientInit
+     *
+     * @apiParam {string} expo_token
+     */
+
+    public function device_init(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $device = null;
+        $validator = Validator::make($request->all(), ['expo_token' => 'required']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $device = Devices::where('expo_token', '=', $request->expo_token)->first();
+            if (empty($device)) {
+                $device = new Devices;
+                $device->expo_token = $request->expo_token;
+                $device->save();
+            }
+        }
+        return response()->json(['errors' => $errors, 'data' => $device], $httpStatus);
     }
 
     /**

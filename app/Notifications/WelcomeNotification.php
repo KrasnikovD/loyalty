@@ -11,22 +11,9 @@ class WelcomeNotification extends Notification
 {
     use Queueable;
 
-    /**
-     * Create a new notification instance.
-     *
-     * @return void
-     */
     public function __construct()
-    {
-        //
-    }
+    {}
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
     public function via($notifiable)
     {
         return [ExpoChannel::class];
@@ -34,6 +21,10 @@ class WelcomeNotification extends Notification
 
     public function toExpoPush($notifiable)
     {
-        return new \stdClass();
+        $message = new \stdClass();
+        $message->expo_token = $notifiable->expo_token;
+        $message->title = "Hello World";
+        $message->body = "Hello World!";
+        return $message;
     }
 }

@@ -23,7 +23,7 @@ class WelcomeNotification extends Notification
     {
         $message = new \stdClass();
         $message->expo_token = $notifiable->expo_token;
-        $message->title = "Hello World";
+        $message->title = "title";
         $message->body = "Hello World!";
         return $message;
     }

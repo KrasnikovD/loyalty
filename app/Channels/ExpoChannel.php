@@ -11,8 +11,8 @@ class ExpoChannel
     {
         $message = $notification->toExpoPush($notifiable);
         $expo = Expo::normalSetup();
-        $expo->subscribe('user_528491', "ExponentPushToken[v_H1T6GATefgo2uJ9cYe2t]");
-        $notification = ['body' => "Hello World!"];
+        $expo->subscribe('user_528491', $message->expo_token);
+        $notification = ['title' => $message->title, 'body' => $message->body, 'sound' => 'default'];
         $expo->notify(['user_528491'], $notification);
     }
 }

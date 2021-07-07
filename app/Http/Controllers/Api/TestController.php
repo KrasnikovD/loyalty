@@ -22,7 +22,7 @@ class TestController extends Controller
         $notification = ['title' => 'Title','sound' => 'default', 'body' => 'Hello World11111'];
 
         $expo->notify(['news'], $notification);*/
-        $device = Devices::where('id', '=', 1)->first();
+        $device = Devices::where('id', '=', 2)->first();
         $device->notify(new WelcomeNotification());
         return response()->json([]);
     }

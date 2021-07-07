@@ -956,6 +956,20 @@ define({ "api": [
             "optional": false,
             "field": "devices_ids",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "title",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "body",
+            "description": ""
           }
         ]
       }

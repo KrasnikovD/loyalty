@@ -21,6 +21,7 @@ use App\Models\Stocks;
 use App\Models\Users;
 use App\Models\Fields;
 use App\Models\FieldsUsers;
+use App\Notifications\WelcomeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -2160,6 +2161,8 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {integer[]} devices_ids
+     * @apiParam {string} title
+     * @apiParam {string} body
      */
 
     public function send_pushes(Request $request)
@@ -2170,13 +2173,18 @@ class AdminController extends Controller
         $validator = Validator::make($request->all(), [
             'devices_ids' => 'required|array',
             'devices_ids.*' => 'exists:devices,id',
+            'title' => 'required',
+            'body' => 'required',
         ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
         if (empty($errors)) {
-
+            foreach ($request->devices_ids as $devices_id) {
+                $device = Devices::where('id', '=', $devices_id)->first();
+                $device->notify(new WelcomeNotification($request->title, $request->body));
+            }
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }

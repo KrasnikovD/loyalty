@@ -11,6 +11,7 @@ use App\Models\Cards;
 use App\Models\Categories;
 use App\Models\CommonActions;
 use App\Models\DataHelper;
+use App\Models\Devices;
 use App\Models\News;
 use App\Models\Orders;
 use App\Models\Outlet;
@@ -1620,6 +1621,7 @@ class AdminController extends Controller
      * @apiParam {string} [dir] order direction
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
+     * @apiParam {integer} [user_id] user id
      */
 
     /**
@@ -1642,6 +1644,7 @@ class AdminController extends Controller
                 'order' => 'in:id,address,status,amount,amount_now,created_at,updated_at',
                 'offset' => 'integer',
                 'limit' => 'integer',
+                'user_id' => 'integer|exists:users,id',
             ];
         } else {
             $validatorRules = ['id' => 'exists:orders,id'];
@@ -1658,6 +1661,8 @@ class AdminController extends Controller
             $orders = Orders::select('orders.*', 'users.first_name as user_first_name', 'users.second_name as user_second_name')
                 ->leftJoin('users', 'users.id', '=', 'orders.user_id');
             if (!$id) {
+                if ($request->user_id) $orders->where('user_id', '=', $request->user_id);
+
                 $count = $orders->count();
 
                 $order = $request->order ?: 'orders.id';
@@ -2110,6 +2115,68 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             Stocks::where('id', '=', $id)->delete();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/devices/list Get Devices
+     * @apiName GetDevices
+     * @apiGroup AdminDevices
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    public function devices_list(Request $request)
+    {
+        $query = Devices::select('*');
+        $count = $query->count();
+        $order = $request->order ?: 'devices.id';
+        $dir = $request->dir ?: 'asc';
+        $offset = $request->offset;
+        $limit = $request->limit;
+
+        $query->orderBy($order, $dir);
+        if ($limit) {
+            $query->limit($limit);
+            if ($offset) $query->offset($offset);
+        }
+
+        $list = $query->get()->toArray();
+        $data = ['count' => $count, 'list' => $list];
+        return response()->json(['errors' => [], 'data' => $data]);
+    }
+
+    /**
+     * @api {post} /api/devices/send_pushes Send Pushes
+     * @apiName SendPushes
+     * @apiGroup AdminDevices
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer[]} devices_ids
+     */
+
+    public function send_pushes(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+
+        $validator = Validator::make($request->all(), [
+            'devices_ids' => 'required|array',
+            'devices_ids.*' => 'exists:devices,id',
+        ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }

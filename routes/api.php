@@ -97,6 +97,9 @@ Route::post('/stocks/list', 'App\Http\Controllers\Api\AdminController@list_stock
 Route::get('/stocks/get/{id}', 'App\Http\Controllers\Api\AdminController@list_stocks');
 Route::get('/stocks/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_stock');
 
+Route::post('/devices/list', 'App\Http\Controllers\Api\AdminController@devices_list');
+Route::post('/devices/send_pushes', 'App\Http\Controllers\Api\AdminController@send_pushes');
+
 /****** CLIENTS ******/
 
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');
@@ -140,3 +143,7 @@ Route::post('/clients/device_init', 'App\Http\Controllers\Api\ClientController@d
 Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');
 Route::post('/outlets/users/list', 'App\Http\Controllers\Api\OutletController@list_users');
 Route::post('/outlets/users/find_by_phone', 'App\Http\Controllers\Api\OutletController@find_user_by_phone');
+
+/****** TEST ******/
+
+Route::post('/test', 'App\Http\Controllers\Api\TestController@test');

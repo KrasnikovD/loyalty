@@ -873,6 +873,99 @@ define({ "api": [
   },
   {
     "type": "post",
+    "url": "/api/devices/list",
+    "title": "Get Devices",
+    "name": "GetDevices",
+    "group": "AdminDevices",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "order",
+            "description": "<p>order field name</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "dir",
+            "description": "<p>order direction</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "offset",
+            "description": "<p>start row number, used only when limit is set</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>row count</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminDevices"
+  },
+  {
+    "type": "post",
+    "url": "/api/devices/send_pushes",
+    "title": "Send Pushes",
+    "name": "SendPushes",
+    "group": "AdminDevices",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer[]",
+            "optional": false,
+            "field": "devices_ids",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminDevices"
+  },
+  {
+    "type": "post",
     "url": "/api/fields/create",
     "title": "Create Field",
     "name": "CreateField",
@@ -1532,6 +1625,13 @@ define({ "api": [
             "optional": true,
             "field": "limit",
             "description": "<p>row count</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "user_id",
+            "description": "<p>user id</p>"
           }
         ]
       }
@@ -2561,6 +2661,13 @@ define({ "api": [
             "type": "string",
             "optional": false,
             "field": "code",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "expo_token",
             "description": ""
           }
         ]

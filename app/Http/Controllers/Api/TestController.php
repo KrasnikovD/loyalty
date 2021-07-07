@@ -16,6 +16,10 @@ class TestController extends Controller
     public function test()
     {
         $expo = Expo::normalSetup();
-        return response()->json([]);
+        $expo->subscribe('news', 'ExponentPushToken[HcbduaCnrfgrk6AD5aP7Qv]');
+        $notification = ['title' => 'Title','sound' => 'default', 'body' => 'Hello World11111'];
+
+        $expo->notify(['news'], $notification);
+        return response()->json([11]);
     }
 }

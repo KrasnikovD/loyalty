@@ -103,6 +103,7 @@ class ClientController extends Controller
      * @apiGroup ClientAuth
      *
      * @apiParam {string} code
+     * @apiParam {string} [expo_token]
      */
 
     public function login(Request $request)
@@ -121,7 +122,12 @@ class ClientController extends Controller
             if (empty($user)) {
                 $errors['user'] = 'User not found';
                 $httpStatus = 400;
-            } else $user->token = md5($user->token);
+            } else {
+                $user->token = md5($user->token);
+                if (!empty($request->expo_token)) {
+                    Devices::where('expo_token', '=', $request->expo_token)->update(['user_id' => $user->id]);
+                }
+            }
         }
         return response()->json(['errors' => $errors, 'data' => $user], $httpStatus);
     }

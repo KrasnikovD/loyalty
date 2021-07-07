@@ -11,8 +11,14 @@ class WelcomeNotification extends Notification
 {
     use Queueable;
 
-    public function __construct()
-    {}
+    private $title;
+    private $body;
+
+    public function __construct($title, $body)
+    {
+        $this->title = $title;
+        $this->body = $body;
+    }
 
     public function via($notifiable)
     {
@@ -23,8 +29,8 @@ class WelcomeNotification extends Notification
     {
         $message = new \stdClass();
         $message->expo_token = $notifiable->expo_token;
-        $message->title = "title";
-        $message->body = "Hello World!";
+        $message->title = $this->title;
+        $message->body = $this->body;
         return $message;
     }
 }

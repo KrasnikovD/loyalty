@@ -8,6 +8,7 @@ use App\Models\BillPrograms;
 use App\Models\Cards;
 use App\Models\Categories;
 use App\Models\CommonActions;
+use App\Models\Coupons;
 use App\Models\DataHelper;
 use App\Models\Devices;
 use App\Models\Favorites;
@@ -331,13 +332,23 @@ class ClientController extends Controller
         Validator::extend('check_product', function($attribute, $value, $parameters, $validator) {
             if (!isset($value['count']) || !is_integer($value['count']) || $value['count'] === 0)
                 return false;
-            return Product::where('id', '=', $value['product_id'])->exists();
+            if (empty($value['coupon_id']) && empty($value['product_id']))
+                return false;
+            if (!empty($value['coupon_id'])) {
+                $userId = $parameters[0];
+                if ($coupon = Coupons::where([['id', '=', $value['coupon_id']], ['user_id', '=', $userId]])->first())
+                    return $value['count'] <= $coupon->count;
+                return false;
+            } else
+                return Product::where('id', '=', $value['product_id'])->exists();
+            return true;
         });
 
+        $userId = Auth::user()->id;
         $validatorRules = [];
         $validatorRules['outlet_id'] = 'required|exists:outlets,id';
         $validatorRules['products'] = 'required|array';
-        $validatorRules['products.*'] = 'check_product';
+        $validatorRules['products.*'] = "check_product:{$userId}";
 
         $validator = Validator::make($request->all(), $validatorRules);
         if ($validator->fails()) {
@@ -347,7 +358,7 @@ class ClientController extends Controller
         if (empty($errors)) {
             $sale = new Sales;
             $sale->outlet_id = $request->outlet_id;
-            $sale->user_id = Auth::user()->id;
+            $sale->user_id = $userId;
             $sale->dt = date("Y-m-d H:i:s");
             $productsIds = array_column($request->products, 'product_id');
             $productsMap = [];
@@ -356,15 +367,25 @@ class ClientController extends Controller
             }
             $amount = 0;
             foreach ($request->products as $product) {
-                $amount += $productsMap[$product['product_id']] * $product['count'];
+                if (!empty($product['product_id']))
+                    $amount += $productsMap[$product['product_id']] * $product['count'];
             }
             $sale->amount = $sale->amount_now = $amount;
             $sale->save();
             foreach ($request->products as $product) {
                 $basket = new Baskets;
                 $basket->sale_id = $sale->id;
-                $basket->product_id = $product['product_id'];
-                $basket->amount = $productsMap[$product['product_id']];
+                if (!empty($product['product_id'])) {
+                    $basket->product_id = $product['product_id'];
+                    $basket->amount = $productsMap[$product['product_id']];
+                } else {
+                    $coupon = Coupons::where('id', '=', $product['coupon_id'])->first();
+                    $coupon->count = $coupon->count - $product['count'];
+                    $coupon->save();
+                    $basket->product_id = $coupon->product_id;
+                    $basket->amount = 0;
+                    $basket->coupon_id = $coupon->id;
+                }
                 $basket->count = $product['count'];
                 $basket->save();
             }
@@ -1057,6 +1078,58 @@ class ClientController extends Controller
                 if ($offset) $query->offset($offset);
             }
             $data = ['count' => $count, 'list' => $query->get()];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/coupons/list Get Coupons
+     * @apiName GetCoupons
+     * @apiGroup ClientCoupons
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    public function list_coupons(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        if($id) {
+            $validator = Validator::make(['id' => $id], ['id' => 'exists:coupons,id']);
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                $httpStatus = 400;
+            }
+        }
+        if (empty($errors)) {
+            $count = 0;
+            $query = Coupons::select('coupons.*', 'products.name as product_name', 'users.first_name', 'users.second_name', 'users.phone')
+                ->join('products', 'products.id', '=', 'coupons.product_id')
+                ->join('users', 'users.id', '=', 'coupons.user_id');
+            if ($id) {
+                $query->where('coupons.id', '=', $id);
+            } else {
+                $count = $query->count();
+                $order = $request->order ?: 'coupons.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+                $query->orderBy($order, $dir);
+                if ($limit) {
+                    $query->limit($limit);
+                    if ($offset) $query->offset($offset);
+                }
+            }
+            $query->where('coupons.count', '>', 0);
+            $list = $query->get()->toArray();
+            if ($id) $data = $list[0];
+            else $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

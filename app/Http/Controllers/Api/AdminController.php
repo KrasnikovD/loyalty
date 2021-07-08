@@ -2230,11 +2230,13 @@ class AdminController extends Controller
             $coupon->count = $coupon->init_count = $request->count;
             $coupon->save();
 
-            $productName = Product::where('id', '=', $request->product_id)->first()->name;
-            $phone = Users::where('id', '=', $request->user_id)->first()->phone;
-            CommonActions::sendSms($phone, "Добавлен новый купон: {$productName}, {$request->count} штук");
-            $device = Devices::where('user_id', '=', $request->user_id)->first();
-            if ($device) $device->notify(new WelcomeNotification("Новый купон", "Добавлен новый купон: {$productName}, {$request->count} штук"));
+            if (!$id) {
+                $productName = Product::where('id', '=', $request->product_id)->first()->name;
+                $phone = Users::where('id', '=', $request->user_id)->first()->phone;
+                CommonActions::sendSms($phone, "Добавлен новый купон: {$productName}, {$request->count} штук");
+                $device = Devices::where('user_id', '=', $request->user_id)->first();
+                if ($device) $device->notify(new WelcomeNotification("Новый купон", "Добавлен новый купон: {$productName}, {$request->count} штук"));
+            }
         }
         return response()->json(['errors' => $errors, 'data' => $coupon], $httpStatus);
     }
@@ -2252,6 +2254,14 @@ class AdminController extends Controller
      * @apiParam {integer} [limit] row count
      */
 
+    /**
+     * @api {get} /api/coupons/get/:id Get Coupon
+     * @apiName GetCoupon
+     * @apiGroup AdminCoupons
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
     public function list_coupons(Request $request, $id = null)
     {
         $errors = [];
@@ -2264,12 +2274,13 @@ class AdminController extends Controller
                 $httpStatus = 400;
             }
         }
-        if (!empty($errors)) {
+        if (empty($errors)) {
+            $count = 0;
             $query = Coupons::select('coupons.*', 'products.name as product_name', 'users.first_name', 'users.second_name', 'users.phone')
                 ->join('products', 'products.id', '=', 'coupons.product_id')
                 ->join('users', 'users.id', '=', 'coupons.user_id');
             if ($id) {
-                $query->where('id', '=', $id);
+                $query->where('coupons.id', '=', $id);
             } else {
                 $count = $query->count();
                 $order = $request->order ?: 'coupons.id';
@@ -2287,5 +2298,28 @@ class AdminController extends Controller
             else $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/coupons/delete/:id Delete Coupon
+     * @apiName DeleteCoupon
+     * @apiGroup AdminCoupons
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function delete_coupon($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:coupons,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            Sales::where('id', '=', $id)->delete();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 }

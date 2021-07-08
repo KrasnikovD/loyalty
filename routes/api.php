@@ -146,6 +146,9 @@ Route::post('/clients/device_init', 'App\Http\Controllers\Api\ClientController@d
 
 Route::post('/clients/bill_programs/list', 'App\Http\Controllers\Api\ClientController@list_bill_programs');
 
+Route::post('/clients/coupons/list', 'App\Http\Controllers\Api\ClientController@list_coupons');
+Route::get('/clients/coupons/get/{id}', 'App\Http\Controllers\Api\ClientController@list_coupons');
+
 /****** OUTLETS ******/
 
 Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');

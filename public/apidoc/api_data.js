@@ -865,6 +865,29 @@ define({ "api": [
     "groupTitle": "AdminCoupons"
   },
   {
+    "type": "get",
+    "url": "/api/coupons/delete/:id",
+    "title": "Delete Coupon",
+    "name": "DeleteCoupon",
+    "group": "AdminCoupons",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminCoupons"
+  },
+  {
     "type": "post",
     "url": "/api/coupons/edit/:id",
     "title": "Edit Coupon",
@@ -892,6 +915,29 @@ define({ "api": [
             "optional": false,
             "field": "count",
             "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminCoupons"
+  },
+  {
+    "type": "get",
+    "url": "/api/coupons/get/:id",
+    "title": "Get Coupon",
+    "name": "GetCoupon",
+    "group": "AdminCoupons",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
           }
         ]
       }
@@ -2954,6 +3000,63 @@ define({ "api": [
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/ClientController.php",
     "groupTitle": "ClientCategories"
+  },
+  {
+    "type": "post",
+    "url": "/api/clients/coupons/list",
+    "title": "Get Coupons",
+    "name": "GetCoupons",
+    "group": "ClientCoupons",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "order",
+            "description": "<p>order field name</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "dir",
+            "description": "<p>order direction</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "offset",
+            "description": "<p>start row number, used only when limit is set</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>row count</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientCoupons"
   },
   {
     "type": "post",

@@ -11,8 +11,8 @@ class ExpoChannel
     {
         $message = $notification->toExpoPush($notifiable);
         $expo = Expo::normalSetup();
-        $expo->subscribe('user_528491', $message->expo_token);
+        $expo->subscribe($message->expo_token, $message->expo_token);
         $notification = ['title' => $message->title, 'body' => $message->body, 'sound' => 'default'];
-        $expo->notify(['user_528491'], $notification);
+        $expo->notify([$message->expo_token], $notification);
     }
 }

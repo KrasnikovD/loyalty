@@ -2160,7 +2160,8 @@ class AdminController extends Controller
      *
      * @apiHeader {string} Authorization Basic current user token
      *
-     * @apiParam {integer[]} devices_ids
+     * @apiParam {integer[]} [devices_ids]
+     * @apiParam {string=all,birthday} scope
      * @apiParam {string} title
      * @apiParam {string} body
      */
@@ -2171,20 +2172,22 @@ class AdminController extends Controller
         $httpStatus = 200;
 
         $validator = Validator::make($request->all(), [
-            'devices_ids' => 'required|array',
+            'devices_ids' => 'array',
             'devices_ids.*' => 'exists:devices,id',
             'title' => 'required',
             'body' => 'required',
+            'scope' => 'required|in:all,birthday',
         ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            foreach ($request->devices_ids as $devices_id) {
-                $device = Devices::where('id', '=', $devices_id)->first();
+            $devices = Devices::where('disabled', '=', 0);
+            if (!empty($request->devices_ids)) $devices->whereIn('id', $request->devices_ids);
+            elseif ($request->scope == 'birthday') $devices->whereNotNull('user_id');
+            foreach ($devices->get() as $device)
                 $device->notify(new WelcomeNotification($request->title, $request->body));
-            }
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }

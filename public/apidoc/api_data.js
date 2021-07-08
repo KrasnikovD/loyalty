@@ -953,8 +953,19 @@ define({ "api": [
           {
             "group": "Parameter",
             "type": "integer[]",
-            "optional": false,
+            "optional": true,
             "field": "devices_ids",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "allowedValues": [
+              "all",
+              "birthday"
+            ],
+            "optional": false,
+            "field": "scope",
             "description": ""
           },
           {

@@ -838,9 +838,23 @@
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "string",
+            "type": "integer",
             "optional": false,
-            "field": "name",
+            "field": "user_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "product_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "count",
             "description": ""
           }
         ]
@@ -874,10 +888,67 @@
         "Parameter": [
           {
             "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "count",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminCoupons"
+  },
+  {
+    "type": "post",
+    "url": "/api/coupons/list",
+    "title": "Get Coupons",
+    "name": "GetCoupons",
+    "group": "AdminCoupons",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
             "type": "string",
             "optional": false,
-            "field": "name",
-            "description": ""
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "order",
+            "description": "<p>order field name</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "dir",
+            "description": "<p>order direction</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "offset",
+            "description": "<p>start row number, used only when limit is set</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>row count</p>"
           }
         ]
       }

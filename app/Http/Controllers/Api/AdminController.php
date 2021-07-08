@@ -10,6 +10,7 @@ use App\Models\BillTypes;
 use App\Models\Cards;
 use App\Models\Categories;
 use App\Models\CommonActions;
+use App\Models\Coupons;
 use App\Models\DataHelper;
 use App\Models\Devices;
 use App\Models\News;
@@ -2200,43 +2201,91 @@ class AdminController extends Controller
      *
      * @apiHeader {string} Authorization Basic current user token
      *
-     * @apiParam {integer} [user_id]
-     * @apiParam {integer} [product_id]
-     * @apiParam {integer} [count]
+     * @apiParam {integer} count
      */
 
     public function edit_coupon(Request $request, $id = null)
     {
-       /* $errors = [];
+        $errors = [];
         $httpStatus = 200;
-        $billType = null;
+        $coupon = null;
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
-        $validator = Validator::make($validatorData,
-            [
-                'name' => 'required|unique:bill_types,name',
-                'id' => 'exists:bill_types,id'
-            ]
-        );
+        $validatorRules = ['id' => 'exists:coupons,id', 'count' => 'required|integer|min:1'];
+        if (!$id) {
+            $validatorRules['user_id'] = 'required|exists:users,id';
+            $validatorRules['product_id'] = 'required|exists:products,id';
+        }
+        $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $billType = $id ? BillTypes::where('id', '=', $id)->first() : new BillTypes;
-            $billType->name = $request->name;
-            $billType->save();
+            $coupon = $id ? Coupons::where('id', '=', $id)->first() : new Coupons;
+            if (!$id) {
+                $coupon->user_id = $request->user_id;
+                $coupon->product_id = $request->product_id;
+            }
+            $coupon->count = $coupon->init_count = $request->count;
+            $coupon->save();
 
-            if(!$id) {
-                $billTypeId = $billType->id;
-                foreach (Cards::all() as $card) {
-                    $bill = new Bills;
-                    $bill->card_id = $card->id;
-                    $bill->bill_type_id = $billTypeId;
-                    $bill->save();
-                }
+            $productName = Product::where('id', '=', $request->product_id)->first()->name;
+            $phone = Users::where('id', '=', $request->user_id)->first()->phone;
+            CommonActions::sendSms($phone, "Добавлен новый купон: {$productName}, {$request->count} штук");
+            $device = Devices::where('user_id', '=', $request->user_id)->first();
+            if ($device) $device->notify(new WelcomeNotification("Новый купон", "Добавлен новый купон: {$productName}, {$request->count} штук"));
+        }
+        return response()->json(['errors' => $errors, 'data' => $coupon], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/coupons/list Get Coupons
+     * @apiName GetCoupons
+     * @apiGroup AdminCoupons
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    public function list_coupons(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        if($id) {
+            $validator = Validator::make(['id' => $id], ['id' => 'exists:coupons,id']);
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                $httpStatus = 400;
             }
         }
-        return response()->json(['errors' => $errors, 'data' => $billType], $httpStatus);*/
+        if (!empty($errors)) {
+            $query = Coupons::select('coupons.*', 'products.name as product_name', 'users.first_name', 'users.second_name', 'users.phone')
+                ->join('products', 'products.id', '=', 'coupons.product_id')
+                ->join('users', 'users.id', '=', 'coupons.user_id');
+            if ($id) {
+                $query->where('id', '=', $id);
+            } else {
+                $count = $query->count();
+                $order = $request->order ?: 'coupons.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+                $query->orderBy($order, $dir);
+                if ($limit) {
+                    $query->limit($limit);
+                    if ($offset) $query->offset($offset);
+                }
+            }
+            $list = $query->get()->toArray();
+            if ($id) $data = $list[0];
+            else $data = ['count' => $count, 'list' => $list];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 }

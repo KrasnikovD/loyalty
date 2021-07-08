@@ -100,6 +100,12 @@ Route::get('/stocks/delete/{id}', 'App\Http\Controllers\Api\AdminController@dele
 Route::post('/devices/list', 'App\Http\Controllers\Api\AdminController@devices_list');
 Route::post('/devices/send_pushes', 'App\Http\Controllers\Api\AdminController@send_pushes');
 
+Route::post('/coupons/create', 'App\Http\Controllers\Api\AdminController@edit_coupon');
+Route::post('/coupons/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_coupon');
+Route::post('/coupons/list', 'App\Http\Controllers\Api\AdminController@list_coupons');
+Route::get('/coupons/get/{id}', 'App\Http\Controllers\Api\AdminController@list_coupons');
+Route::get('/coupons/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_coupon');
+
 /****** CLIENTS ******/
 
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');

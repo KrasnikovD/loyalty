@@ -816,6 +816,78 @@
   },
   {
     "type": "post",
+    "url": "/api/coupons/create",
+    "title": "Create Coupon",
+    "name": "CreateCoupon",
+    "group": "AdminCoupons",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "name",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminCoupons"
+  },
+  {
+    "type": "post",
+    "url": "/api/coupons/edit/:id",
+    "title": "Edit Coupon",
+    "name": "EditCoupon",
+    "group": "AdminCoupons",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "name",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminCoupons"
+  },
+  {
+    "type": "post",
     "url": "/api/devices/list",
     "title": "Get Devices",
     "name": "GetDevices",

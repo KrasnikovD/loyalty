@@ -2180,4 +2180,63 @@ class AdminController extends Controller
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
+
+    /**
+     * @api {post} /api/coupons/create Create Coupon
+     * @apiName CreateCoupon
+     * @apiGroup AdminCoupons
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} user_id
+     * @apiParam {integer} product_id
+     * @apiParam {integer} count
+     */
+
+    /**
+     * @api {post} /api/coupons/edit/:id Edit Coupon
+     * @apiName EditCoupon
+     * @apiGroup AdminCoupons
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} [user_id]
+     * @apiParam {integer} [product_id]
+     * @apiParam {integer} [count]
+     */
+
+    public function edit_coupon(Request $request, $id = null)
+    {
+       /* $errors = [];
+        $httpStatus = 200;
+        $billType = null;
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validator = Validator::make($validatorData,
+            [
+                'name' => 'required|unique:bill_types,name',
+                'id' => 'exists:bill_types,id'
+            ]
+        );
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $billType = $id ? BillTypes::where('id', '=', $id)->first() : new BillTypes;
+            $billType->name = $request->name;
+            $billType->save();
+
+            if(!$id) {
+                $billTypeId = $billType->id;
+                foreach (Cards::all() as $card) {
+                    $bill = new Bills;
+                    $bill->card_id = $card->id;
+                    $bill->bill_type_id = $billTypeId;
+                    $bill->save();
+                }
+            }
+        }
+        return response()->json(['errors' => $errors, 'data' => $billType], $httpStatus);*/
+    }
 }

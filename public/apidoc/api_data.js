@@ -234,63 +234,6 @@ define({ "api": [
   },
   {
     "type": "post",
-    "url": "/api/bill_programs/list/:bill_id",
-    "title": "Get Bill Programs List for Bill",
-    "name": "GetBillProgramsListForBill",
-    "group": "AdminBillPrograms",
-    "header": {
-      "fields": {
-        "Header": [
-          {
-            "group": "Header",
-            "type": "string",
-            "optional": false,
-            "field": "Authorization",
-            "description": "<p>Basic current user token</p>"
-          }
-        ]
-      }
-    },
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "string",
-            "optional": true,
-            "field": "order",
-            "description": "<p>order field name</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "string",
-            "optional": true,
-            "field": "dir",
-            "description": "<p>order direction</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "integer",
-            "optional": true,
-            "field": "offset",
-            "description": "<p>start row number, used only when limit is set</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "integer",
-            "optional": true,
-            "field": "limit",
-            "description": "<p>row count</p>"
-          }
-        ]
-      }
-    },
-    "version": "0.0.0",
-    "filename": "../app/Http/Controllers/Api/AdminController.php",
-    "groupTitle": "AdminBillPrograms"
-  },
-  {
-    "type": "post",
     "url": "/api/bill_types/create",
     "title": "Create Bill Type",
     "name": "CreateBillType",
@@ -1369,7 +1312,7 @@ define({ "api": [
   },
   {
     "type": "post",
-    "url": "/api/orders/add_basket/:order_id",
+    "url": "/api/orders/add_basket/:sale_id",
     "title": "Add Basket",
     "name": "AddBasket",
     "group": "AdminOrders",
@@ -1441,9 +1384,9 @@ define({ "api": [
           },
           {
             "group": "Parameter",
-            "type": "string",
+            "type": "integer",
             "optional": false,
-            "field": "address",
+            "field": "outlet_id",
             "description": ""
           },
           {
@@ -1544,7 +1487,7 @@ define({ "api": [
   },
   {
     "type": "post",
-    "url": "/api/orders/create/:id",
+    "url": "/api/orders/edit/:id",
     "title": "Edit Order",
     "name": "EditOrder",
     "group": "AdminOrders",
@@ -1568,7 +1511,14 @@ define({ "api": [
             "group": "Parameter",
             "type": "integer",
             "optional": true,
-            "field": "address",
+            "field": "outlet_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "object[]",
+            "optional": true,
+            "field": "products",
             "description": ""
           }
         ]
@@ -2727,6 +2677,63 @@ define({ "api": [
   },
   {
     "type": "post",
+    "url": "/api/clients/bill_programs/list",
+    "title": "Get Bill Programs List",
+    "name": "GetBillProgramsList",
+    "group": "ClientBillPrograms",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "order",
+            "description": "<p>order field name</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "dir",
+            "description": "<p>order direction</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "offset",
+            "description": "<p>start row number, used only when limit is set</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>row count</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientBillPrograms"
+  },
+  {
+    "type": "post",
     "url": "/api/clients/cards/list",
     "title": "Get Cards List",
     "name": "GetCardsList",
@@ -3048,9 +3055,9 @@ define({ "api": [
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "string",
+            "type": "integer",
             "optional": false,
-            "field": "address",
+            "field": "outlet_id",
             "description": ""
           },
           {
@@ -3139,6 +3146,13 @@ define({ "api": [
             "optional": true,
             "field": "limit",
             "description": "<p>row count</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "status",
+            "description": ""
           }
         ]
       }
@@ -3679,9 +3693,46 @@ define({ "api": [
           },
           {
             "group": "Parameter",
+            "type": "object[]",
+            "optional": false,
+            "field": "products",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/OutletController.php",
+    "groupTitle": "OutletSales"
+  },
+  {
+    "type": "post",
+    "url": "/api/outlets/sales/edit/:sale_id",
+    "title": "Edit Sale",
+    "name": "EditSale",
+    "group": "OutletSales",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "outlet_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
             "type": "integer",
             "optional": false,
-            "field": "amount",
+            "field": "bill_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "object[]",
+            "optional": true,
+            "field": "products",
             "description": ""
           }
         ]

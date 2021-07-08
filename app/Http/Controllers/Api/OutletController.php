@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Baskets;
 use App\Models\BillPrograms;
 use App\Models\Bills;
 use App\Models\DataHelper;
+use App\Models\Product;
 use App\Models\Sales;
 use App\Models\Users;
 use Illuminate\Http\Request;
@@ -21,7 +23,17 @@ class OutletController extends Controller
      * @apiParam {integer} outlet_id
      * @apiParam {integer} user_id
      * @apiParam {integer} bill_id
-     * @apiParam {integer} amount
+     * @apiParam {object[]} products
+     */
+
+    /**
+     * @api {post} /api/outlets/sales/edit/:sale_id Edit Sale
+     * @apiName EditSale
+     * @apiGroup OutletSales
+     *
+     * @apiParam {integer} [outlet_id]
+     * @apiParam {integer} bill_id
+     * @apiParam {object[]} [products]
      */
 
     public function edit_sale(Request $request, $id = null)
@@ -29,15 +41,21 @@ class OutletController extends Controller
         $errors = [];
         $httpStatus = 200;
         $sale = null;
+        Validator::extend('check_product', function($attribute, $value, $parameters, $validator) {
+            if (!isset($value['count']) || !is_integer($value['count']) || $value['count'] === 0)
+                return false;
+            return Product::where('id', '=', $value['product_id'])->exists();
+        });
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validator = Validator::make($validatorData,
             [
-                'amount' => (!$id ? 'required|' : '') . 'integer',
                 'outlet_id' => (!$id ? 'required|' : '') . 'exists:outlets,id',
                 'bill_id' => (!$id ? 'required|' : '') . 'exists:bills,id',
                 'user_id' => (!$id ? 'required|' : '') . 'exists:users,id',
                 'id' => 'exists:sales,id',
+                'products' => (!$id ? 'required|' : '') . 'array',
+                'products.*' => 'check_product'
             ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
@@ -52,8 +70,31 @@ class OutletController extends Controller
             if(isset($request->bill_id)) $sale->card_id = Bills::where('id', '=', $request->bill_id)->first()->card_id;
             if(isset($request->bill_id)) $sale->bill_id = $request->bill_id;
             if(isset($request->amount)) $sale->amount = $request->amount;
-            $sale->dt = date('Y-m-d H:i:s');
-            //$sale->outlet_name = Outlet::where('id', '=', $request->outlet_id)->first()->name;
+            if (!$id) $sale->dt = date('Y-m-d H:i:s');
+            $sale->status = Sales::STATUS_COMPLETED;
+
+            if (!empty($request->products)) {
+                $productsIds = array_column($request->products, 'product_id');
+                $productsMap = [];
+                foreach (Product::whereIn('id', $productsIds)->get() as $item) {
+                    $productsMap[$item->id] = $item->price;
+                }
+                $amount = 0;
+                foreach ($request->products as $product) {
+                    $amount += $productsMap[$product['product_id']] * $product['count'];
+                }
+                $sale->amount = $sale->amount_now = $amount;
+                $sale->save();
+                if ($id) Baskets::where('sale_id', '=', $id)->delete();
+                foreach ($request->products as $product) {
+                    $basket = new Baskets;
+                    $basket->sale_id = $sale->id;
+                    $basket->product_id = $product['product_id'];
+                    $basket->amount = $productsMap[$product['product_id']];
+                    $basket->count = $product['count'];
+                    $basket->save();
+                }
+            }
 
             $program = null;
             foreach (BillPrograms::all() as $row) {
@@ -62,13 +103,13 @@ class OutletController extends Controller
                     break;
                 }
             }
-            $bill = Bills::where('id', '=', $request->bill_id)->first();
+            $bill = Bills::where('id', '=', $id ? $sale->bill_id : $request->bill_id)->first();
             $currentFrom = 0;
             if ($program) {
                 $currentFrom = $program->from;
                 $sale->bill_program_id = $program->id;
                 $bill->bill_program_id = $program->id;
-                $bill->value = floatval($bill->value) + $program->percent * 0.01 * $request->amount;
+                $bill->value = floatval($bill->value) + $program->percent * 0.01 * $sale->amount;
             }
             $nextFrom = BillPrograms::where('from', '>', $currentFrom)->min('from');
             $bill->remaining_amount = $nextFrom - $currentAmount;

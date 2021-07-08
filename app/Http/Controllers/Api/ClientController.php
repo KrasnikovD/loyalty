@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Baskets;
+use App\Models\BillPrograms;
 use App\Models\Cards;
 use App\Models\Categories;
 use App\Models\CommonActions;
@@ -11,10 +12,10 @@ use App\Models\DataHelper;
 use App\Models\Devices;
 use App\Models\Favorites;
 use App\Models\News;
-use App\Models\Orders;
 use App\Models\Outlet;
 use App\Models\Product;
 use App\Models\Reviews;
+use App\Models\Sales;
 use App\Models\Stocks;
 use App\Models\Users;
 use Illuminate\Http\Request;
@@ -318,7 +319,7 @@ class ClientController extends Controller
      *
      * @apiHeader {string} Authorization Basic current user token
      *
-     * @apiParam {string} address
+     * @apiParam {integer} outlet_id
      * @apiParam {object[]} products
      */
 
@@ -326,7 +327,7 @@ class ClientController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
-        $order = null;
+        $sale = null;
         Validator::extend('check_product', function($attribute, $value, $parameters, $validator) {
             if (!isset($value['count']) || !is_integer($value['count']) || $value['count'] === 0)
                 return false;
@@ -334,7 +335,7 @@ class ClientController extends Controller
         });
 
         $validatorRules = [];
-        $validatorRules['address'] = 'required';
+        $validatorRules['outlet_id'] = 'required|exists:outlets,id';
         $validatorRules['products'] = 'required|array';
         $validatorRules['products.*'] = 'check_product';
 
@@ -344,9 +345,10 @@ class ClientController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $order = new Orders;
-            $order->address = $request->address;
-            $order->user_id = Auth::user()->id;
+            $sale = new Sales;
+            $sale->outlet_id = $request->outlet_id;
+            $sale->user_id = Auth::user()->id;
+            $sale->dt = date("Y-m-d H:i:s");
             $productsIds = array_column($request->products, 'product_id');
             $productsMap = [];
             foreach (Product::whereIn('id', $productsIds)->get() as $item) {
@@ -356,19 +358,18 @@ class ClientController extends Controller
             foreach ($request->products as $product) {
                 $amount += $productsMap[$product['product_id']] * $product['count'];
             }
-            $order->amount = $order->amount_now = $amount;
-            $order->status = 0;
-            $order->save();
+            $sale->amount = $sale->amount_now = $amount;
+            $sale->save();
             foreach ($request->products as $product) {
                 $basket = new Baskets;
-                $basket->order_id = $order->id;
+                $basket->sale_id = $sale->id;
                 $basket->product_id = $product['product_id'];
                 $basket->amount = $productsMap[$product['product_id']];
                 $basket->count = $product['count'];
                 $basket->save();
             }
         }
-        return response()->json(['errors' => $errors, 'data' => $order], $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);
     }
 
     /**
@@ -382,6 +383,7 @@ class ClientController extends Controller
      * @apiParam {string} [dir] order direction
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
+     * @apiParam {integer} [status]
      */
 
     /**
@@ -400,15 +402,16 @@ class ClientController extends Controller
         $count = 0;
 
         Validator::extend('check_user', function($attribute, $value, $parameters, $validator) {
-            return Orders::where([['id', '=', $value], ['user_id', '=', $parameters[0]]])->exists();
+            return Sales::where([['id', '=', $value], ['user_id', '=', $parameters[0]]])->exists();
         });
 
         if (!$id) {
             $validatorRules = [
                 'dir' => 'in:asc,desc',
-                'order' => 'in:id,address,status,amount,amount_now,created_at,updated_at',
+                'order' => 'in:id,status,amount,amount_now,created_at,updated_at',
                 'offset' => 'integer',
                 'limit' => 'integer',
+                'status' => 'in:0,1',
             ];
         } else {
             $validatorRules = ['id' => "check_user:" . Auth::user()->id];
@@ -422,32 +425,36 @@ class ClientController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $orders = Orders::select('orders.*', 'users.first_name as user_first_name', 'users.second_name as user_second_name')
-                ->leftJoin('users', 'users.id', '=', 'orders.user_id');
+            $sales = Sales::select('sales.*', 'users.first_name as user_first_name',
+                'users.second_name as user_second_name')
+                ->leftJoin('users', 'users.id', '=', 'sales.user_id');
             if (!$id) {
-                $count = $orders->count();
+                $status = $request->status;
+                if (isset($status)) $sales->where('status', '=', $status);
 
-                $order = $request->order ?: 'orders.id';
+                $count = $sales->count();
+
+                $order = $request->order ?: 'sales.id';
                 $dir = $request->dir ?: 'asc';
                 $offset = $request->offset;
                 $limit = $request->limit;
 
-                $orders->orderBy($order, $dir);
+                $sales->orderBy($order, $dir);
                 if ($limit) {
-                    $orders->limit($limit);
-                    if ($offset) $orders->offset($offset);
+                    $sales->limit($limit);
+                    if ($offset) $sales->offset($offset);
                 }
-            } else $orders->where('orders.id', '=', $id);
+            } else $sales->where('sales.id', '=', $id);
 
-            $orders->where('user_id', '=', Auth::user()->id);
+            $sales->where('user_id', '=', Auth::user()->id);
 
-            $list = $orders->get()->toArray();
+            $list = $sales->get()->toArray();
 
-            $ordersIds = array_column($list, 'id');
+            $salesIds = array_column($list, 'id');
             $basketsMap = [];
-            foreach (Baskets::whereIn('order_id', $ordersIds)->get() as $basket) {
-                if(!isset($basketsMap[$basket->order_id])) $basketsMap[$basket->order_id] = [];
-                $basketsMap[$basket->order_id][] = $basket->toArray();
+            foreach (Baskets::whereIn('sale_id', $salesIds)->get() as $basket) {
+                if(!isset($basketsMap[$basket->sale_id])) $basketsMap[$basket->sale_id] = [];
+                $basketsMap[$basket->sale_id][] = $basket->toArray();
             }
             foreach ($list as &$item) {
                 $item['basket'] = @$basketsMap[$item['id']];
@@ -1002,5 +1009,55 @@ class ClientController extends Controller
         $user->save();
 
         return response()->json(['errors' => $errors, 'data' => $user], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/bill_programs/list Get Bill Programs List
+     * @apiName GetBillProgramsList
+     * @apiGroup ClientBillPrograms
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    public function list_bill_programs(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+
+        $validatorData = $request->all();
+        $validatorRules = [
+            'dir' => 'in:asc,desc',
+            'order' => 'in:id,from,to,percent,created_at,updated_at',
+            'offset' => 'integer',
+            'limit' => 'integer',
+        ];
+
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+
+        if (empty($errors)) {
+            $query = BillPrograms::select('*');
+            $count = $query->count();
+            $order = $request->order ?: 'bill_programs.id';
+            $dir = $request->dir ?: 'asc';
+            $offset = $request->offset;
+            $limit = $request->limit;
+            $query->orderBy($order, $dir);
+            if ($limit) {
+                $query->limit($limit);
+                if ($offset) $query->offset($offset);
+            }
+            $data = ['count' => $count, 'list' => $query->get()];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 }

@@ -40,7 +40,7 @@ Route::get('/cards/delete/{id}', 'App\Http\Controllers\Api\AdminController@delet
 
 Route::post('/bill_programs/create', 'App\Http\Controllers\Api\AdminController@edit_bill_program');
 Route::post('/bill_programs/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_bill_program');
-Route::post('/bill_programs/list/{bill_id?}', 'App\Http\Controllers\Api\AdminController@list_bill_programs');
+Route::post('/bill_programs/list', 'App\Http\Controllers\Api\AdminController@list_bill_programs');
 Route::get('/bill_programs/get/{id}', 'App\Http\Controllers\Api\AdminController@get_bill_program');
 Route::get('/bill_programs/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_bill_program');
 
@@ -83,7 +83,7 @@ Route::get('/orders/delete/{id}', 'App\Http\Controllers\Api\AdminController@dele
 
 Route::get('/orders/delete_basket/{id}', 'App\Http\Controllers\Api\AdminController@delete_basket');
 Route::post('/orders/edit_basket/{id}', 'App\Http\Controllers\Api\AdminController@edit_basket');
-Route::post('/orders/add_basket/{order_id}', 'App\Http\Controllers\Api\AdminController@add_basket');
+Route::post('/orders/add_basket/{sale_id}', 'App\Http\Controllers\Api\AdminController@add_basket');
 
 Route::post('/news/create', 'App\Http\Controllers\Api\AdminController@edit_news');
 Route::post('/news/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_news');
@@ -138,9 +138,12 @@ Route::post('/clients/profile/edit', 'App\Http\Controllers\Api\ClientController@
 
 Route::post('/clients/device_init', 'App\Http\Controllers\Api\ClientController@device_init');
 
+Route::post('/clients/bill_programs/list', 'App\Http\Controllers\Api\ClientController@list_bill_programs');
+
 /****** OUTLETS ******/
 
 Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');
+Route::post('/outlets/sales/edit/{sale_id}', 'App\Http\Controllers\Api\OutletController@edit_sale');
 Route::post('/outlets/users/list', 'App\Http\Controllers\Api\OutletController@list_users');
 Route::post('/outlets/users/find_by_phone', 'App\Http\Controllers\Api\OutletController@find_user_by_phone');
 

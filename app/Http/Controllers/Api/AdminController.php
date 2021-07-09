@@ -937,6 +937,53 @@ class AdminController extends Controller
     }
 
     /**
+     * @api {post} /api/outlets/send_to_nearest/:id Send To Nearest
+     * @apiName SendToNearest
+     * @apiGroup AdminOutlets
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} radius
+     */
+
+    public function send_to_nearest(Request $request, $id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $validatorData = $request->all();
+        $validatorData['id'] = $id;
+        $validator = Validator::make($validatorData, ['id' => 'exists:outlets,id', 'radius' => 'required|integer']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $outlet = Outlet::where('id', '=', $id)->first();
+            $users = Users::where([['active', '=', 1], ['archived', '=', 0]])
+                ->join('devices', 'devices.user_id', '=', 'users.id')
+                ->whereNotNull('lat')
+                ->whereNotNull('lon')
+                ->where('devices.disabled', '=', 0)
+                ->get();
+            $tokens = [];
+            foreach ($users as $user) {
+                $distance = ceil(CommonActions::calculateTheDistance($outlet->lat, $outlet->lon, $user->lat, $user->lon));
+                if ($distance <= $request->radius) {
+                    $tokens[] = $user->expo_token;
+                }
+            }
+            if (!empty($tokens)) {
+                $expo = Expo::normalSetup();
+                $channelName = 'channel_' . time();
+                foreach ($tokens as $token)
+                    $expo->subscribe($channelName, $token);
+                $expo->notify([$channelName], ['title' => 'title', 'body' => 'body', 'sound' => 'default']);
+            }
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
      * @api {post} /api/fields/create Create Field
      * @apiName CreateField
      * @apiGroup AdminFields

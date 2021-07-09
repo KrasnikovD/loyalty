@@ -49,6 +49,7 @@ Route::post('/outlets/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit
 Route::post('/outlets/list', 'App\Http\Controllers\Api\AdminController@list_outlets');
 Route::get('/outlets/get/{id}', 'App\Http\Controllers\Api\AdminController@list_outlets');
 Route::get('/outlets/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_outlet');
+Route::post('/outlets/send_to_nearest/{id}', 'App\Http\Controllers\Api\AdminController@send_to_nearest');
 
 Route::post('/fields/create', 'App\Http\Controllers\Api\AdminController@edit_field');
 Route::post('/fields/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_field');
@@ -152,6 +153,8 @@ Route::post('/clients/coupons/list', 'App\Http\Controllers\Api\ClientController@
 Route::get('/clients/coupons/get/{id}', 'App\Http\Controllers\Api\ClientController@list_coupons');
 
 Route::post('/clients/bonus_history/get/{bill_id}', 'App\Http\Controllers\Api\ClientController@bonus_history');
+
+Route::post('/clients/set_location', 'App\Http\Controllers\Api\ClientController@set_location');
 
 /****** OUTLETS ******/
 

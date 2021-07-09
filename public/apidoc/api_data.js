@@ -2048,6 +2048,42 @@ define({ "api": [
   },
   {
     "type": "post",
+    "url": "/api/outlets/send_to_nearest/:id",
+    "title": "Send To Nearest",
+    "name": "SendToNearest",
+    "group": "AdminOutlets",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "radius",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminOutlets"
+  },
+  {
+    "type": "post",
     "url": "/api/products/create",
     "title": "Create Product",
     "name": "CreateProduct",
@@ -3293,6 +3329,49 @@ define({ "api": [
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/ClientController.php",
     "groupTitle": "ClientInit"
+  },
+  {
+    "type": "post",
+    "url": "/api/clients/set_location",
+    "title": "Set Location",
+    "name": "SetLocation",
+    "group": "ClientLocation",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "lon",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "lat",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientLocation"
   },
   {
     "type": "get",

@@ -140,6 +140,7 @@ class ClientController extends Controller
                 if (!$localeKey) {
                     $user->token = md5($user->token);
                     if (!empty($request->expo_token)) {
+                        Devices::where([['expo_token', '<>', $request->expo_token], ['user_id', '=', $user->id]])->update(['disabled' => 1]);
                         Devices::where('expo_token', '=', $request->expo_token)->update(['user_id' => $user->id]);
                     }
                     $data = $user;
@@ -1237,5 +1238,39 @@ class ClientController extends Controller
             $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/set_location Set Location
+     * @apiName SetLocation
+     * @apiGroup ClientLocation
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} lon
+     * @apiParam {string} lat
+     */
+
+    public function set_location(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $validatorData = $request->all();
+        $validatorRules = [
+            'lon' => 'regex:/^\d+(\.\d+)?$/',
+            'lat' => 'regex:/^\d+(\.\d+)?$/',
+        ];
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $user = Users::where('id', '=', Auth::user()->id)->first();
+            $user->lat = $request->lat;
+            $user->lon = $request->lon;
+            $user->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 }

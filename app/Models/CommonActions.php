@@ -10,6 +10,8 @@ class CommonActions extends Model
 {
     use HasFactory;
 
+    const EARTH_RADIUS = 6372795;
+
     public static function intersection($sections, $from, $to)
     {
         $sets = [];
@@ -77,7 +79,13 @@ class CommonActions extends Model
 
     public static function geocode($lon, $lat)
     {
-        $result = @json_decode(file_get_contents("https://geocode-maps.yandex.ru/1.x/?format=json&apikey=a664588b-adda-4fc4-adac-e497efe25be4&geocode=$lon,$lat"));
+        $context = [
+            "ssl" => [
+                "verify_peer" => false,
+                "verify_peer_name" => false,
+            ],
+        ];
+        $result = @json_decode(file_get_contents("https://geocode-maps.yandex.ru/1.x/?format=json&apikey=a664588b-adda-4fc4-adac-e497efe25be4&geocode=$lon,$lat", false, stream_context_create($context)));
         $rootObject = @$result->response->GeoObjectCollection->featureMember[0]->GeoObject->metaDataProperty->GeocoderMetaData;
         if ($rootObject) {
             $cityName = $streetName = $houseName = null;
@@ -97,4 +105,25 @@ class CommonActions extends Model
         return null;
     }
 
+    public static function calculateTheDistance ($fA, $lA, $fB, $lB)
+    {
+        $lat1 = $fA * M_PI / 180;
+        $lat2 = $fB * M_PI / 180;
+        $long1 = $lA * M_PI / 180;
+        $long2 = $lB * M_PI / 180;
+
+        $cl1 = cos($lat1);
+        $cl2 = cos($lat2);
+        $sl1 = sin($lat1);
+        $sl2 = sin($lat2);
+        $delta = $long2 - $long1;
+        $cDelta = cos($delta);
+        $sDelta = sin($delta);
+
+        $y = sqrt(pow($cl2 * $sDelta, 2) + pow($cl1 * $sl2 - $sl1 * $cl2 * $cDelta, 2));
+        $x = $sl1 * $sl2 + $cl1 * $cl2 * $cDelta;
+
+        $ad = atan2($y, $x);
+        return $ad * self::EARTH_RADIUS;
+    }
 }

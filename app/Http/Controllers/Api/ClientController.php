@@ -915,30 +915,10 @@ class ClientController extends Controller
         }
         if (empty($errors)) {
             $outlets = Outlet::all()->toArray();
-            $origins = '';
-            $outletMap = [];
-            foreach ($outlets as $outlet) {
-                if($outlet['lat'] && $outlet['lon']) {
-                    $origins .= "{$outlet['lat']},{$outlet['lon']}|";
-                    $outletMap[$outlet['id']] = 0;
-                }
-            }
-            $origins = trim($origins, "|");
-            if ($origins && $request->lat && $request->lon) {
-                $destinations = "{$request->lat},{$request->lon}";
-                $url = "https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins={$origins}&destinations={$destinations}&key=AIzaSyAeTE_kYwFmy1MeEwQDfup0kWVwUUv2gyE";
-                $result = @json_decode(file_get_contents($url));
-                $rows = @$result->rows;
-                if (is_array($rows)) {
-                   $i = 0;
-                   foreach ($outletMap as &$item) {
-                       $item = $rows[$i++]->elements[0]->distance->value;
-                   }
-                }
-            }
             foreach ($outlets as &$outlet) {
-                $outlet['distance'] = 0;
-                if (@$outletMap[$outlet['id']]) $outlet['distance'] = $outletMap[$outlet['id']];
+                if($outlet['lat'] && $outlet['lon']) {
+                    $outlet['distance'] = ceil(CommonActions::calculateTheDistance($outlet['lat'], $outlet['lon'], $request->lat, $request->lon));
+                }
             }
             usort($outlets, function ($first, $second) {
                 return $first['distance'] > $second['distance'];

@@ -71,6 +71,13 @@ define({ "api": [
             "optional": false,
             "field": "percent",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "file_content",
+            "description": ""
           }
         ]
       }
@@ -143,6 +150,13 @@ define({ "api": [
             "type": "integer",
             "optional": true,
             "field": "percent",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "file_content",
             "description": ""
           }
         ]
@@ -3072,6 +3086,29 @@ define({ "api": [
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/ClientController.php",
     "groupTitle": "ClientCategories"
+  },
+  {
+    "type": "get",
+    "url": "/api/clients/coupons/get/:id",
+    "title": "Get Coupon",
+    "name": "GetCoupon",
+    "group": "ClientCoupons",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientCoupons"
   },
   {
     "type": "post",

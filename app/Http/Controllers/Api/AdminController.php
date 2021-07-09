@@ -590,6 +590,7 @@ class AdminController extends Controller
      * @apiParam {integer} from
      * @apiParam {integer} to
      * @apiParam {integer} percent
+     * @apiParam {integer} file_content
      */
 
     /**
@@ -602,6 +603,7 @@ class AdminController extends Controller
      * @apiParam {integer} [from]
      * @apiParam {integer} [to]
      * @apiParam {integer} [percent]
+     * @apiParam {integer} [file_content]
      */
 
     public function edit_bill_program(Request $request, $id = null)
@@ -654,6 +656,18 @@ class AdminController extends Controller
             if(isset($request->from)) $billProgram->from = $request->from;
             if(isset($request->to)) $billProgram->to = $request->to;
             if(isset($request->percent)) $billProgram->percent = $request->percent;
+
+            if (isset($request->file_content)) {
+                if ($id) @unlink(Storage::path("images/{$billProgram->file}"));
+                $fileName = uniqid() . ".jpeg";
+                Storage::disk('local')->put("images/$fileName", '');
+                $path = Storage::path("images/$fileName");
+                $imageTmp = imagecreatefromstring(base64_decode($request->file_content));
+                imagejpeg($imageTmp, $path);
+                imagedestroy($imageTmp);
+                $billProgram->file = $fileName;
+            }
+
             $billProgram->save();
         }
         return response()->json(['errors' => $errors, 'data' => $billProgram], $httpStatus);

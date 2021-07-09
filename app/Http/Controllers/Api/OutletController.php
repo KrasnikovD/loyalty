@@ -141,7 +141,7 @@ class OutletController extends Controller
         $limit = $request->limit;
         $like = $request->like;
 
-        $query = Users::select('*');
+        $query = Users::where([['archived', '=', 0], ['active', '=', 1], ['type', '=', Users::TYPE_USER]]);
         $query->orderBy($order, $dir);
         if ($limit) {
             $query->limit($limit);
@@ -186,7 +186,7 @@ class OutletController extends Controller
         }
 
         if (empty($errors)) {
-            $query = Users::select('*');
+            $query = Users::where([['archived', '=', 0], ['active', '=', 1], ['type', '=', Users::TYPE_USER]]);
             $query->where('phone', '=', $phone);
             $data = $query->get()->toArray();
             DataHelper::collectUsersInfo($data);

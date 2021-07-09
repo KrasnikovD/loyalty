@@ -19,7 +19,7 @@ class InsertDefaultUser extends Migration
         $user->second_name = 'admin';
         $user->password = '56c88ccbd5ed243738b643b5ca8446a9';
         $user->phone = '+111111111111';
-        $user->type = 0;
+        $user->type = Users::TYPE_ADMIN;
         $user->token = sha1(microtime() . 'salt' . time());
         $user->save();
     }

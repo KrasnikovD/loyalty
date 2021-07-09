@@ -90,7 +90,7 @@ class ClientController extends Controller
             if (empty($user)) {
                 $user = new Users;
                 $user->phone = $phone;
-                $user->type = 1;
+                $user->type = Users::TYPE_USER;
                 $user->token = sha1(microtime() . 'salt' . time());
             }
             $user->code = mt_rand(10000,90000);
@@ -122,7 +122,7 @@ class ClientController extends Controller
         }
         if (empty($errors)) {
             $localeKey = null;
-            $user = Users::where([['type', '=', 1], ['code', '=', $request->code]])->first();
+            $user = Users::where([['type', '=', Users::TYPE_USER], ['code', '=', $request->code]])->first();
             if (empty($user)) {
                 $localeKey = 'auth.failed';
                 $data['auth_status'] = 1;
@@ -173,8 +173,9 @@ class ClientController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
+            $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
             $localeKey = null;
-            $user = Users::where([['type', '=', 1], ['code', '=', $request->code], ['phone', '=', $request->phone]])->first();
+            $user = Users::where([['type', '=', Users::TYPE_USER], ['code', '=', $request->code], ['phone', '=', $phone]])->first();
             if (empty($user)) {
                 $localeKey = 'auth.failed';
                 $data['auth_status'] = 1;
@@ -1156,6 +1157,14 @@ class ClientController extends Controller
      * @apiParam {string} [dir] order direction
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
+     */
+
+    /**
+     * @api {get} /api/clients/coupons/get/:id Get Coupon
+     * @apiName GetCoupon
+     * @apiGroup ClientCoupons
+     *
+     * @apiHeader {string} Authorization Basic current user token
      */
 
     public function list_coupons(Request $request, $id = null)

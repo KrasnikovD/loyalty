@@ -10,6 +10,9 @@ class Users extends Model implements Authenticatable
 {
     use HasFactory;
 
+    const TYPE_ADMIN = 0;
+    const TYPE_USER = 1;
+
     protected $table = 'users';
 
     public function getAuthIdentifier()

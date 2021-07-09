@@ -2622,6 +2622,27 @@ define({ "api": [
           },
           {
             "group": "Parameter",
+            "type": "datetime",
+            "optional": true,
+            "field": "birthday",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "boolean",
+            "optional": true,
+            "field": "archived",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "boolean",
+            "optional": true,
+            "field": "active",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
             "type": "integer",
             "allowedValues": [
               "0",
@@ -2710,6 +2731,27 @@ define({ "api": [
             "type": "string",
             "optional": true,
             "field": "phone",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "datetime",
+            "optional": true,
+            "field": "birthday",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "boolean",
+            "optional": true,
+            "field": "archived",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "boolean",
+            "optional": true,
+            "field": "active",
             "description": ""
           },
           {
@@ -2810,6 +2852,36 @@ define({ "api": [
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminUsers"
+  },
+  {
+    "type": "post",
+    "url": "/api/clients/check_auth",
+    "title": "Check Auth",
+    "name": "CheckAuth",
+    "group": "ClientAuth",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "code",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "phone",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientAuth"
   },
   {
     "type": "post",

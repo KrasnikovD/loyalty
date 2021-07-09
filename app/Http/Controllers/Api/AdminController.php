@@ -66,7 +66,7 @@ class AdminController extends Controller
             $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
             $user = Users::where([['type', '=', 0], ['phone', '=', $phone], ['password', '=', md5($request->password)]])->first();
             if (empty($user)) {
-                $errors['user'] = 'User not found';
+                $errors['user'] = __('auth.failed');
                 $httpStatus = 400;
             } else $user->token = md5($user->token);
         }
@@ -239,6 +239,9 @@ class AdminController extends Controller
      * @apiParam {string} second_name
      * @apiParam {string} password
      * @apiParam {string} phone
+     * @apiParam {datetime} [birthday]
+     * @apiParam {boolean} [archived]
+     * @apiParam {boolean} [active]
      * @apiParam {integer=0,1,2} type
      */
 
@@ -253,6 +256,9 @@ class AdminController extends Controller
      * @apiParam {string} [second_name]
      * @apiParam {string} [password]
      * @apiParam {string} [phone]
+     * @apiParam {datetime} [birthday]
+     * @apiParam {boolean} [archived]
+     * @apiParam {boolean} [active]
      * @apiParam {integer=0,1,2} [type]
      */
 
@@ -261,18 +267,32 @@ class AdminController extends Controller
         $errors = [];
         $httpStatus = 200;
         $user = null;
+
+        Validator::extend('phone_validate', function($attribute, $value, $parameters, $validator) {
+            $validateData = [['phone', '=', $value]];
+            $userId = $parameters[0];
+            if (isset($userId))
+                $validateData[] = ['id', '<>', $userId];
+            return !Users::where($validateData)->exists();
+        });
+        if ($request->phone) $request->phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
         $validatorData = $request->all();
+        $validatorData['phone'] = $request->phone;
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [];
         if(!$id) {
             $validatorRules['first_name'] = 'required';
             $validatorRules['second_name'] = 'required';
             $validatorRules['password'] = 'required';
-            $validatorRules['phone'] = 'required';
         } else {
             $validatorRules['id'] = 'exists:users,id';
         }
         $validatorRules['type'] = (!$id ? 'required|' : '') . 'in:0,1';
+        $validatorRules['phone'] = (!$id ? 'required|' : '') . "phone_validate:{$id}";
+
+        $validatorRules['birthday'] = 'date';
+        $validatorRules['archived'] = 'in:0,1';
+        $validatorRules['active'] = 'in:0,1';
 
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
@@ -280,13 +300,18 @@ class AdminController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            if ($request->phone) $request->phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
             $user = $id ? Users::where('id', '=', $id)->first() : new Users;
             foreach (['first_name', 'second_name', 'phone', 'type'] as $field) {
                 if (isset($request->{$field})) $user->{$field} = $request->{$field};
             }
             if ($request->password) $user->password = md5($request->password);
             if (!$id) $user->token = sha1(microtime() . 'salt' . time());
+
+            if ($request->birthday) $user->birthday = date("Y-m-d H:i:s", strtotime($request->birthday));
+            $archived = $request->archived;
+            $active = $request->active;
+            if (isset($archived)) $user->archived = $request->archived;
+            if (isset($active)) $user->active = $request->active;
             $user->save();
 
             if(!$id && ($request->type == 1)) {

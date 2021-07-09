@@ -30,6 +30,7 @@ class ClientController extends Controller
         $this->middleware('client.token',
             ['except' => [
                 'login',
+                'check_auth',
                 'send_auth_sms',
                 'device_init'
             ]]);
@@ -112,7 +113,7 @@ class ClientController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
-        $user = null;
+        $data = null;
         $validatorData = $request->all();
         $validator = Validator::make($validatorData, ['code' => 'required']);
         if ($validator->fails()) {
@@ -120,18 +121,80 @@ class ClientController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
+            $localeKey = null;
             $user = Users::where([['type', '=', 1], ['code', '=', $request->code]])->first();
             if (empty($user)) {
-                $errors['user'] = 'User not found';
-                $httpStatus = 400;
+                $localeKey = 'auth.failed';
+                $data['auth_status'] = 1;
             } else {
-                $user->token = md5($user->token);
-                if (!empty($request->expo_token)) {
-                    Devices::where('expo_token', '=', $request->expo_token)->update(['user_id' => $user->id]);
+                if (!$user->active) {
+                    $localeKey = __('auth.blocked');
+                    $data['auth_status'] = 2;
+                }
+                if ($user->archived) {
+                    $localeKey = __('auth.deleted');
+                    $data['auth_status'] = 3;
+                }
+                if (!$localeKey) {
+                    $user->token = md5($user->token);
+                    if (!empty($request->expo_token)) {
+                        Devices::where('expo_token', '=', $request->expo_token)->update(['user_id' => $user->id]);
+                    }
+                    $data = $user;
+                    $data['auth_status'] = 0;
                 }
             }
+            if ($localeKey) {
+                $httpStatus = 400;
+                $errors['user'] = __($localeKey);
+            }
         }
-        return response()->json(['errors' => $errors, 'data' => $user], $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/check_auth Check Auth
+     * @apiName CheckAuth
+     * @apiGroup ClientAuth
+     *
+     * @apiParam {string} code
+     * @apiParam {string} phone
+     */
+
+    public function check_auth(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validatorData = $request->all();
+        $validator = Validator::make($validatorData, ['code' => 'required', 'phone' => 'required']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $localeKey = null;
+            $user = Users::where([['type', '=', 1], ['code', '=', $request->code], ['phone', '=', $request->phone]])->first();
+            if (empty($user)) {
+                $localeKey = 'auth.failed';
+                $data['auth_status'] = 1;
+            } else {
+                if (!$user->active) {
+                    $localeKey = __('auth.blocked');
+                    $data['auth_status'] = 2;
+                }
+                if ($user->archived) {
+                    $localeKey = __('auth.deleted');
+                    $data['auth_status'] = 3;
+                }
+                if (!$localeKey) $data['auth_status'] = 0;
+            }
+            if ($localeKey) {
+                $httpStatus = 400;
+                $errors['user'] = __($localeKey);
+            }
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 
     /**
@@ -1109,7 +1172,9 @@ class ClientController extends Controller
         }
         if (empty($errors)) {
             $count = 0;
-            $query = Coupons::select('coupons.*', 'products.name as product_name', 'users.first_name', 'users.second_name', 'users.phone')
+            $query = Coupons::select('coupons.*',
+                'products.name as product_name', 'products.file as product_file',
+                'users.first_name', 'users.second_name', 'users.phone')
                 ->join('products', 'products.id', '=', 'coupons.product_id')
                 ->join('users', 'users.id', '=', 'coupons.user_id');
             if ($id) {
@@ -1126,7 +1191,7 @@ class ClientController extends Controller
                     if ($offset) $query->offset($offset);
                 }
             }
-            $query->where('coupons.count', '>', 0);
+            $query->where([['coupons.count', '>', 0], ['coupons.user_id', '=', Auth::user()->id]]);
             $list = $query->get()->toArray();
             if ($id) $data = $list[0];
             else $data = ['count' => $count, 'list' => $list];

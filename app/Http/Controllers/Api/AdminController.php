@@ -22,13 +22,18 @@ use App\Models\Users;
 use App\Models\Fields;
 use App\Models\FieldsUsers;
 use App\Notifications\WelcomeNotification;
+use ExponentPhpSDK\Expo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
+    const REPLACED_FIRST_NAME = '{first_name}';
+    const REPLACED_SECOND_NAME = '{second_name}';
+
     public function __construct()
     {
         $this->middleware('admin.token',
@@ -301,9 +306,9 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $user = $id ? Users::where('id', '=', $id)->first() : new Users;
-            foreach (['first_name', 'second_name', 'phone', 'type'] as $field) {
+            foreach (['first_name', 'second_name', 'phone', 'type'] as $field)
                 if (isset($request->{$field})) $user->{$field} = $request->{$field};
-            }
+
             if ($request->password) $user->password = md5($request->password);
             if (!$id) $user->token = sha1(microtime() . 'salt' . time());
 
@@ -766,7 +771,11 @@ class AdminController extends Controller
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
-        if (empty($errors)) BillPrograms::where('id', '=', $id)->delete();
+        if (empty($errors)) {
+            $billProgram = BillPrograms::where('id', '=', $id)->first();
+            if ($billProgram->file) @unlink(Storage::path("images/{$billProgram->file}"));
+            BillPrograms::where('id', '=', $id)->delete();
+        }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 
@@ -1073,82 +1082,6 @@ class AdminController extends Controller
             Fields::where('id', '=', $id)->delete();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
-    }
-
-    /**
-     * @api {post} /api/sales/list Get Sales List
-     * @apiName GetSalesList
-     * @apiGroup AdminSales
-     *
-     * @apiHeader {string} Authorization Basic current user token
-     *
-     * @apiParam {string} [order] order field name
-     * @apiParam {string} [dir] order direction
-     * @apiParam {integer} [offset] start row number, used only when limit is set
-     * @apiParam {integer} [limit] row count
-     */
-
-    /**
-     * @api {get} /api/sales/get/:id Get Sale
-     * @apiName GetSale
-     * @apiGroup AdminSales
-     *
-     * @apiHeader {string} Authorization Basic current user token
-     */
-
-    public function list_sales(Request $request, $id = null)
-    {
-        $errors = [];
-        $httpStatus = 200;
-        $data = null;
-
-        $validatorData = $request->all();
-        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
-        if (!$id) {
-            $validatorRules = [
-                'dir' => 'in:asc,desc',
-                'order' => 'in:id,user_id,outlet_id,bill_id,card_id,outlet_name,dt,amount,created_at,updated_at',
-                'offset' => 'integer',
-                'limit' => 'integer',
-            ];
-        } else {
-            $validatorRules = ['id' => 'exists:sales,id'];
-        }
-        $validator = Validator::make($validatorData, $validatorRules);
-        if ($validator->fails()) {
-            $errors = $validator->errors()->toArray();
-            $httpStatus = 400;
-        }
-
-        if (empty($errors)) {
-            $count = 0;
-            $query = Sales::select('sales.*',
-                'users.id as user_id', 'users.phone as users_phone',
-                'outlets.id as outlet_id', 'outlets.name as outlet_name',
-                'cards.id as card_id', 'cards.number as card_number')
-                ->join('users', 'users.id', '=', 'sales.user_id')
-                ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')
-                ->join('cards', 'cards.id', '=', 'sales.card_id');
-
-            if ($id) $query->where('sales.id', '=', $id);
-            else {
-                $count = $query->count();
-                $order = $request->order ?: 'sales.id';
-                $dir = $request->dir ?: 'asc';
-                $offset = $request->offset;
-                $limit = $request->limit;
-
-                $query->orderBy($order, $dir);
-                if ($limit) {
-                    $query->limit($limit);
-                    if ($offset) $query->offset($offset);
-                }
-            }
-            $list = $query->get();
-            if ($id) $data = $list[0];
-            else $data = ['count' => $count, 'list' => $list];
-        }
-        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 
     /**
@@ -1646,6 +1579,7 @@ class AdminController extends Controller
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
      * @apiParam {integer} [user_id] user id
+     * @apiParam {integer=0,1} [status]
      */
 
     /**
@@ -1669,6 +1603,7 @@ class AdminController extends Controller
                 'offset' => 'integer',
                 'limit' => 'integer',
                 'user_id' => 'integer|exists:users,id',
+				'status' => 'in:' . Sales::STATUS_COMPLETED . ',' . Sales::STATUS_PRE_ORDER
             ];
         } else {
             $validatorRules = ['id' => 'exists:sales,id'];
@@ -1682,9 +1617,16 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $count = 0;
-            $sales = Sales::select('sales.*',
+            $sales = Sales::select('sales.*', 'users.id as user_id', 'users.phone as users_phone',
+                'outlets.id as outlet_id', 'outlets.name as outlet_name',
+                'cards.id as card_id', 'cards.number as card_number',
                 'users.first_name as user_first_name', 'users.second_name as user_second_name')
-                ->leftJoin('users', 'users.id', '=', 'sales.user_id');
+                ->leftJoin('users', 'users.id', '=', 'sales.user_id')
+				->leftJoin('outlets', 'outlets.id', '=', 'sales.outlet_id')
+                ->leftJoin('cards', 'cards.id', '=', 'sales.card_id');
+            $status = $request->status;
+			if (isset($status))
+                $sales->where('status', '=', $request->status);
             if (!$id) {
                 if ($request->user_id) $sales->where('user_id', '=', $request->user_id);
 
@@ -2212,11 +2154,30 @@ class AdminController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $devices = Devices::where('disabled', '=', 0);
-            if (!empty($request->devices_ids)) $devices->whereIn('id', $request->devices_ids);
-            elseif ($request->scope == 'birthday') $devices->whereNotNull('user_id');
-            foreach ($devices->get() as $device)
-                $device->notify(new WelcomeNotification($request->title, $request->body));
+            $devices = Devices::select('devices.*')->where('devices.disabled', '=', 0);
+            if (!empty($request->devices_ids)) $devices->whereIn('devices.id', $request->devices_ids);
+            elseif ($request->scope == 'birthday') {
+                $devices->select('devices.*', 'users.first_name', 'users.second_name')
+                    ->join('users', 'users.id', '=', 'devices.user_id')
+                    ->where('users.birthday', '=', DB::raw("DATE_ADD('" . date('Y-m-d') . "', INTERVAL 1 DAY)"));
+            }
+            if ($request->scope == 'birthday') {
+                foreach ($devices->get() as $device) {
+                    $title = Str::replace(self::REPLACED_FIRST_NAME, $device->first_name, $request->title);
+                    $title = Str::replace(self::REPLACED_SECOND_NAME, $device->second_name, $title);
+
+                    $body = Str::replace(self::REPLACED_FIRST_NAME, $device->first_name, $request->body);
+                    $body = Str::replace(self::REPLACED_SECOND_NAME, $device->second_name, $body);
+
+                    $device->notify(new WelcomeNotification($title, $body));
+                }
+            } else {
+                $expo = Expo::normalSetup();
+                $channelName = 'channel_' . time();
+                foreach ($devices->get() as $device)
+                    $expo->subscribe($channelName, $device->expo_token);
+                $expo->notify([$channelName], ['title' => $request->title, 'body' => $request->body, 'sound' => 'default']);
+            }
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
@@ -2270,11 +2231,12 @@ class AdminController extends Controller
             $coupon->save();
 
             if (!$id) {
-                $productName = Product::where('id', '=', $request->product_id)->first()->name;
+               // $productName = Product::where('id', '=', $request->product_id)->first()->name;
                 $phone = Users::where('id', '=', $request->user_id)->first()->phone;
-                CommonActions::sendSms($phone, "Добавлен новый купон: {$productName}, {$request->count} штук");
+                CommonActions::sendSms($phone, trans('messages.new_coupon_body'));
                 $device = Devices::where('user_id', '=', $request->user_id)->first();
-                if ($device) $device->notify(new WelcomeNotification("Новый купон", "Добавлен новый купон: {$productName}, {$request->count} штук"));
+                if ($device)
+                    $device->notify(new WelcomeNotification(trans('messages.new_coupon_title'), trans('messages.new_coupon_body')));
             }
         }
         return response()->json(['errors' => $errors, 'data' => $coupon], $httpStatus);

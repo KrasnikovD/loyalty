@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Baskets;
 use App\Models\BillPrograms;
 use App\Models\Bills;
+use App\Models\BillTypes;
+use App\Models\Cards;
 use App\Models\DataHelper;
 use App\Models\Product;
 use App\Models\Sales;
@@ -21,8 +23,7 @@ class OutletController extends Controller
      * @apiGroup OutletSales
      *
      * @apiParam {integer} outlet_id
-     * @apiParam {integer} user_id
-     * @apiParam {integer} bill_id
+     * @apiParam {string} card_number
      * @apiParam {object[]} products
      */
 
@@ -31,8 +32,7 @@ class OutletController extends Controller
      * @apiName EditSale
      * @apiGroup OutletSales
      *
-     * @apiParam {integer} [outlet_id]
-     * @apiParam {integer} bill_id
+     * @apiParam {string} card_number
      * @apiParam {object[]} [products]
      */
 
@@ -46,14 +46,16 @@ class OutletController extends Controller
                 return false;
             return Product::where('id', '=', $value['product_id'])->exists();
         });
+        Validator::extend('check_sale', function($attribute, $value, $parameters, $validator) {
+            return @Sales::where('id', '=', $value)->first()->status == Sales::STATUS_PRE_ORDER;
+        });
         $validatorData = $request->all();
-        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        if ($id) $validatorData = array_merge($validatorData, ['sale_id' => $id]);
         $validator = Validator::make($validatorData,
             [
                 'outlet_id' => (!$id ? 'required|' : '') . 'exists:outlets,id',
-                'bill_id' => (!$id ? 'required|' : '') . 'exists:bills,id',
-                'user_id' => (!$id ? 'required|' : '') . 'exists:users,id',
-                'id' => 'exists:sales,id',
+                'card_number' => 'exists:cards,number',
+                'sale_id' => 'exists:sales,id|check_sale',
                 'products' => (!$id ? 'required|' : '') . 'array',
                 'products.*' => 'check_product'
             ]);
@@ -62,30 +64,32 @@ class OutletController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
+            $cardInfo = Cards::select('cards.id', 'user_id', 'bills.id as bill_id')
+                ->join('bills', 'bills.card_id', '=', 'cards.id')
+                ->join('bill_types', 'bill_types.id', '=', 'bills.bill_type_id')
+                ->where([['number', '=', $request->card_number], ['name', '=', BillTypes::TYPE_DEFAULT]])->first();
+
             $currentAmount = Sales::where('bill_id', '=', $request->bill_id)->sum('amount');
 
             $sale = $id ? Sales::where('id', '=', $id)->first() : new Sales;
-            if(isset($request->user_id)) $sale->user_id = $request->user_id;
             if(isset($request->outlet_id)) $sale->outlet_id = $request->outlet_id;
-            if(isset($request->bill_id)) $sale->card_id = Bills::where('id', '=', $request->bill_id)->first()->card_id;
-            if(isset($request->bill_id)) $sale->bill_id = $request->bill_id;
-            if(isset($request->amount)) $sale->amount = $request->amount;
+            $sale->user_id = $cardInfo->user_id;
+            $sale->card_id = $cardInfo->id;
+            $sale->bill_id = $cardInfo->bill_id;
             if (!$id) $sale->dt = date('Y-m-d H:i:s');
             $sale->status = Sales::STATUS_COMPLETED;
 
             if (!empty($request->products)) {
                 $productsIds = array_column($request->products, 'product_id');
                 $productsMap = [];
-                foreach (Product::whereIn('id', $productsIds)->get() as $item) {
+                foreach (Product::whereIn('id', $productsIds)->get() as $item)
                     $productsMap[$item->id] = $item->price;
-                }
                 $amount = 0;
-                foreach ($request->products as $product) {
+                foreach ($request->products as $product)
                     $amount += $productsMap[$product['product_id']] * $product['count'];
-                }
                 $sale->amount = $sale->amount_now = $amount;
                 $sale->save();
-                if ($id) Baskets::where('sale_id', '=', $id)->delete();
+                if ($id) Baskets::where('sale_id', '=', $id)->whereNull('coupon_id')->delete();
                 foreach ($request->products as $product) {
                     $basket = new Baskets;
                     $basket->sale_id = $sale->id;
@@ -103,7 +107,7 @@ class OutletController extends Controller
                     break;
                 }
             }
-            $bill = Bills::where('id', '=', $id ? $sale->bill_id : $request->bill_id)->first();
+            $bill = Bills::where('id', '=', $id ? $sale->bill_id : $cardInfo->bill_id)->first();
             $currentFrom = 0;
             if ($program) {
                 $currentFrom = $program->from;
@@ -141,7 +145,8 @@ class OutletController extends Controller
         $limit = $request->limit;
         $like = $request->like;
 
-        $query = Users::where([['archived', '=', 0], ['active', '=', 1], ['type', '=', Users::TYPE_USER]]);
+        $query = Users::select('id', 'first_name', 'second_name', 'phone', 'birthday')
+            ->where([['archived', '=', 0], ['active', '=', 1], ['type', '=', Users::TYPE_USER]]);
         $query->orderBy($order, $dir);
         if ($limit) {
             $query->limit($limit);
@@ -186,7 +191,8 @@ class OutletController extends Controller
         }
 
         if (empty($errors)) {
-            $query = Users::where([['archived', '=', 0], ['active', '=', 1], ['type', '=', Users::TYPE_USER]]);
+            $query = Users::select('id', 'first_name', 'second_name', 'phone', 'birthday')
+                ->where([['archived', '=', 0], ['active', '=', 1], ['type', '=', Users::TYPE_USER]]);
             $query->where('phone', '=', $phone);
             $data = $query->get()->toArray();
             DataHelper::collectUsersInfo($data);

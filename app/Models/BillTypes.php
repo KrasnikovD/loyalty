@@ -10,4 +10,6 @@ class BillTypes extends Model
     use HasFactory;
 
     protected $table = 'bill_types';
+
+    const TYPE_DEFAULT = 'default';
 }

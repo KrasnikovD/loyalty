@@ -1810,6 +1810,17 @@
             "optional": true,
             "field": "user_id",
             "description": "<p>user id</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "status",
+            "description": ""
           }
         ]
       }
@@ -2300,86 +2311,6 @@
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminProducts"
-  },
-  {
-    "type": "get",
-    "url": "/api/sales/get/:id",
-    "title": "Get Sale",
-    "name": "GetSale",
-    "group": "AdminSales",
-    "header": {
-      "fields": {
-        "Header": [
-          {
-            "group": "Header",
-            "type": "string",
-            "optional": false,
-            "field": "Authorization",
-            "description": "<p>Basic current user token</p>"
-          }
-        ]
-      }
-    },
-    "version": "0.0.0",
-    "filename": "../app/Http/Controllers/Api/AdminController.php",
-    "groupTitle": "AdminSales"
-  },
-  {
-    "type": "post",
-    "url": "/api/sales/list",
-    "title": "Get Sales List",
-    "name": "GetSalesList",
-    "group": "AdminSales",
-    "header": {
-      "fields": {
-        "Header": [
-          {
-            "group": "Header",
-            "type": "string",
-            "optional": false,
-            "field": "Authorization",
-            "description": "<p>Basic current user token</p>"
-          }
-        ]
-      }
-    },
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "string",
-            "optional": true,
-            "field": "order",
-            "description": "<p>order field name</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "string",
-            "optional": true,
-            "field": "dir",
-            "description": "<p>order direction</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "integer",
-            "optional": true,
-            "field": "offset",
-            "description": "<p>start row number, used only when limit is set</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "integer",
-            "optional": true,
-            "field": "limit",
-            "description": "<p>row count</p>"
-          }
-        ]
-      }
-    },
-    "version": "0.0.0",
-    "filename": "../app/Http/Controllers/Api/AdminController.php",
-    "groupTitle": "AdminSales"
   },
   {
     "type": "post",
@@ -4069,13 +4000,6 @@
     "parameter": {
       "fields": {
         "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "integer",
-            "optional": true,
-            "field": "outlet_id",
-            "description": ""
-          },
           {
             "group": "Parameter",
             "type": "integer",

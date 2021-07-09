@@ -468,7 +468,7 @@ class ClientController extends Controller
      * @apiParam {string} [dir] order direction
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
-     * @apiParam {integer} [status]
+     * @apiParam {integer=0,1} [status]
      */
 
     /**
@@ -496,7 +496,7 @@ class ClientController extends Controller
                 'order' => 'in:id,status,amount,amount_now,created_at,updated_at',
                 'offset' => 'integer',
                 'limit' => 'integer',
-                'status' => 'in:0,1',
+                'status' => 'in:' . Sales::STATUS_COMPLETED . ',' . Sales::STATUS_PRE_ORDER
             ];
         } else {
             $validatorRules = ['id' => "check_user:" . Auth::user()->id];
@@ -510,13 +510,17 @@ class ClientController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $sales = Sales::select('sales.*', 'users.first_name as user_first_name',
-                'users.second_name as user_second_name')
-                ->leftJoin('users', 'users.id', '=', 'sales.user_id');
+            $sales = Sales::select('sales.*', 'users.id as user_id', 'users.phone as users_phone',
+                'outlets.id as outlet_id', 'outlets.name as outlet_name',
+                'cards.id as card_id', 'cards.number as card_number',
+                'users.first_name as user_first_name', 'users.second_name as user_second_name')
+                ->leftJoin('users', 'users.id', '=', 'sales.user_id')
+                ->leftJoin('outlets', 'outlets.id', '=', 'sales.outlet_id')
+                ->leftJoin('cards', 'cards.id', '=', 'sales.card_id');
+            $status = $request->status;
+            if (isset($status))
+                $sales->where('status', '=', $request->status);
             if (!$id) {
-                $status = $request->status;
-                if (isset($status)) $sales->where('status', '=', $status);
-
                 $count = $sales->count();
 
                 $order = $request->order ?: 'sales.id';
@@ -531,7 +535,7 @@ class ClientController extends Controller
                 }
             } else $sales->where('sales.id', '=', $id);
 
-            $sales->where('user_id', '=', Auth::user()->id);
+            $sales->where('sales.user_id', '=', Auth::user()->id);
 
             $list = $sales->get()->toArray();
 
@@ -1182,10 +1186,10 @@ class ClientController extends Controller
         if (empty($errors)) {
             $count = 0;
             $query = Coupons::select('coupons.*',
-                'products.name as product_name', 'products.file as product_file',
+                'products.name as product_name', 'products.file as product_file', 'products.price as product_price',
                 'users.first_name', 'users.second_name', 'users.phone')
                 ->join('products', 'products.id', '=', 'coupons.product_id')
-                ->join('users', 'users.id', '=', 'coupons.user_id');
+                /*->join('users', 'users.id', '=', 'coupons.user_id')*/;
             if ($id) {
                 $query->where('coupons.id', '=', $id);
             } else {

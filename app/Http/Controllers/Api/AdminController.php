@@ -419,9 +419,8 @@ class AdminController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $cards = DB::table('cards')->select('cards.id', 'bills.id as bills_id', 'bill_programs.id as bill_programs_id')
-                ->leftJoin('bills', 'bills.card_id', '=', 'cards.id')
-                ->leftJoin('bill_programs', 'bill_programs.bill_id', '=', 'bills.id')->get()->toArray();
+            $cards = DB::table('cards')->select('cards.id', 'bills.id as bills_id')
+                ->leftJoin('bills', 'bills.card_id', '=', 'cards.id')->get()->toArray();
             $cardsIds = array_unique(array_column($cards, 'id'));
             $billsIds = array_unique(array_column($cards, 'bills_id'));
             $billsIds = array_filter($billsIds, function($value) {return !is_null($value) && $value !== '';});

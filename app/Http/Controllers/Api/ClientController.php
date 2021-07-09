@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Baskets;
 use App\Models\BillPrograms;
+use App\Models\Bills;
+use App\Models\BonusHistory;
 use App\Models\Cards;
 use App\Models\Categories;
 use App\Models\CommonActions;
@@ -1208,6 +1210,51 @@ class ClientController extends Controller
             $list = $query->get()->toArray();
             if ($id) $data = $list[0];
             else $data = ['count' => $count, 'list' => $list];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/bonus_history/get/:bill_id Get Bonus History
+     * @apiName GetBonusHistory
+     * @apiGroup ClientBonusHistory
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    public function bonus_history(Request $request, $billId)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        Validator::extend('is_owner', function($attribute, $value, $parameters, $validator) {
+            return Bills::join('cards', 'bills.card_id', '=', 'cards.id')
+                ->where([['bills.id', '=', $value], ['cards.user_id', '=', $parameters[0]]])->exists();
+        });
+        $validator = Validator::make(['bill_id' => $billId], ['bill_id' => 'exists:bills,id|is_owner:' . Auth::user()->id]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $query = BonusHistory::where('bill_id', '=', $billId);
+            $count = $query->count();
+            $order = $request->order ?: 'bonus_history.id';
+            $dir = $request->dir ?: 'asc';
+            $offset = $request->offset;
+            $limit = $request->limit;
+            $query->orderBy($order, $dir);
+            if ($limit) {
+                $query->limit($limit);
+                if ($offset) $query->offset($offset);
+            }
+            $list = $query->get()->toArray();
+            $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

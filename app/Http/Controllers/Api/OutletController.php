@@ -7,6 +7,7 @@ use App\Models\Baskets;
 use App\Models\BillPrograms;
 use App\Models\Bills;
 use App\Models\BillTypes;
+use App\Models\BonusHistory;
 use App\Models\Cards;
 use App\Models\DataHelper;
 use App\Models\Product;
@@ -69,7 +70,7 @@ class OutletController extends Controller
                 ->join('bill_types', 'bill_types.id', '=', 'bills.bill_type_id')
                 ->where([['number', '=', $request->card_number], ['name', '=', BillTypes::TYPE_DEFAULT]])->first();
 
-            $currentAmount = Sales::where('bill_id', '=', $request->bill_id)->sum('amount');
+            $currentAmount = Sales::where('bill_id', '=', $cardInfo->bill_id)->sum('amount');
 
             $sale = $id ? Sales::where('id', '=', $id)->first() : new Sales;
             if(isset($request->outlet_id)) $sale->outlet_id = $request->outlet_id;
@@ -109,16 +110,30 @@ class OutletController extends Controller
             }
             $bill = Bills::where('id', '=', $id ? $sale->bill_id : $cardInfo->bill_id)->first();
             $currentFrom = 0;
+            $currentTo = 0;
             if ($program) {
                 $currentFrom = $program->from;
+                $currentTo = $program->to;
                 $sale->bill_program_id = $program->id;
                 $bill->bill_program_id = $program->id;
                 $bill->value = floatval($bill->value) + $program->percent * 0.01 * $sale->amount;
             }
             $nextFrom = BillPrograms::where('from', '>', $currentFrom)->min('from');
+            if (!$nextFrom) $nextFrom = $currentTo;
             $bill->remaining_amount = $nextFrom - $currentAmount;
             $bill->save();
             $sale->save();
+
+            if ($program) {
+                $historyEntry = new BonusHistory;
+                $historyEntry->bill_program_id = $program->id;
+                $historyEntry->bill_id = $bill->id;
+                $historyEntry->sale_id = $sale->id;
+                $historyEntry->accumulated = floatval($bill->value);
+                $historyEntry->added = $program->percent * 0.01 * $sale->amount;
+                $historyEntry->dt = date('Y-m-d H:i:s');
+                $historyEntry->save();
+            }
         }
         return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);
     }

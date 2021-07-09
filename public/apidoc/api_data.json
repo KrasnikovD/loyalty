@@ -2940,6 +2940,63 @@
   },
   {
     "type": "post",
+    "url": "/api/clients/bonus_history/get/:bill_id",
+    "title": "Get Bonus History",
+    "name": "GetBonusHistory",
+    "group": "ClientBonusHistory",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "order",
+            "description": "<p>order field name</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "dir",
+            "description": "<p>order direction</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "offset",
+            "description": "<p>start row number, used only when limit is set</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>row count</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientBonusHistory"
+  },
+  {
+    "type": "post",
     "url": "/api/clients/cards/list",
     "title": "Get Cards List",
     "name": "GetCardsList",
@@ -3436,6 +3493,10 @@
           {
             "group": "Parameter",
             "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
             "optional": true,
             "field": "status",
             "description": ""
@@ -3965,16 +4026,9 @@
           },
           {
             "group": "Parameter",
-            "type": "integer",
+            "type": "string",
             "optional": false,
-            "field": "user_id",
-            "description": ""
-          },
-          {
-            "group": "Parameter",
-            "type": "integer",
-            "optional": false,
-            "field": "bill_id",
+            "field": "card_number",
             "description": ""
           },
           {
@@ -4002,9 +4056,9 @@
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "integer",
+            "type": "string",
             "optional": false,
-            "field": "bill_id",
+            "field": "card_number",
             "description": ""
           },
           {

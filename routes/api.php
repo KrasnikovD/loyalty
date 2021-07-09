@@ -151,6 +151,8 @@ Route::post('/clients/bill_programs/list', 'App\Http\Controllers\Api\ClientContr
 Route::post('/clients/coupons/list', 'App\Http\Controllers\Api\ClientController@list_coupons');
 Route::get('/clients/coupons/get/{id}', 'App\Http\Controllers\Api\ClientController@list_coupons');
 
+Route::post('/clients/bonus_history/get/{bill_id}', 'App\Http\Controllers\Api\ClientController@bonus_history');
+
 /****** OUTLETS ******/
 
 Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');

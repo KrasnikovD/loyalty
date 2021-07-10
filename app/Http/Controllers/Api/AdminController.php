@@ -973,11 +973,13 @@ class AdminController extends Controller
                 }
             }
             if (!empty($tokens)) {
+                $title = __('messages.send_in_radius_title', ['outlet_name' => $outlet->name]);
+                $body = __('messages.send_in_radius_body', ['outlet_name' => $outlet->name]);
                 $expo = Expo::normalSetup();
                 $channelName = 'channel_' . time();
                 foreach ($tokens as $token)
                     $expo->subscribe($channelName, $token);
-                $expo->notify([$channelName], ['title' => 'title', 'body' => 'body', 'sound' => 'default']);
+                $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default']);
             }
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);

@@ -1861,6 +1861,8 @@ class AdminController extends Controller
      * @apiParam {string} name
      * @apiParam {string} description
      * @apiParam {integer} file_content
+     * @apiParam {boolean} [sms]
+     * @apiParam {boolean} [push]
      */
 
     /**
@@ -1911,6 +1913,41 @@ class AdminController extends Controller
                 $news->file = $fileName;
             }
             $news->save();
+
+            if (!$id) {
+                $sms = $request->sms;
+                $push = $request->push;
+                if (!empty($sms) || !empty($push)) {
+                    $title = __('messages.im_new_news_title', ['news_name' => $news->name]);
+                    $body = __('messages.im_new_news_body', ['news_name' => $news->name]);
+                    if (!empty($sms)) {
+                        $phones = [];
+                        $users = Users::select('phone')
+                            ->where([['active', '=', 1], ['archived', '=', 0], ['type', '=', Users::TYPE_USER]])
+                            ->get();
+                        foreach ($users as $user) {
+                            $phone = str_replace(array(' ', '(', ')', '-', '+'), "", $user->phone);
+                            if (strpos($phone, '38071') === 0 || strpos($phone, '071') === 0 || strpos($phone, '71') === 0) {
+                                foreach(['/^38071[0-9]{7}$/', '/^071[0-9]{7}$/', '/^71[0-9]{7}$/'] as $pattern) {
+                                    if (preg_match($pattern, $phone)) $phones[] = $phone;
+                                }
+                            } else $phones[] = $phone;
+                        }
+                        if (!empty($phones)) CommonActions::sendSms($phones, $body);
+                    }
+                    if (!empty($push)) {
+                        $devices = Devices::select('expo_token')->where('disabled', '=', 0)->get()->toArray();
+                        $tokens = array_column($devices, 'expo_token');
+                        if (!empty($tokens)) {
+                            $expo = Expo::normalSetup();
+                            $channelName = 'channel_' . time();
+                            foreach ($tokens as $token)
+                                $expo->subscribe($channelName, $token);
+                            $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default']);
+                        }
+                    }
+                }
+            }
         }
         return response()->json(['errors' => $errors, 'data' => $news], $httpStatus);
     }
@@ -2055,35 +2092,41 @@ class AdminController extends Controller
                 imagejpeg($imageTmp, $path);
                 imagedestroy($imageTmp);
                 $stock->file = $fileName;
+            }
+            $stock->save();
 
-                if (!$id) {
-                    $sms = $request->sms;
-                    $push = $request->push;
-                    if (!empty($sms) || !empty($push)) {
-                        $title = __('messages.im_new_stock_title', ['stock_name' => $stock->name]);
-                        $body = __('messages.im_new_stock_body', ['stock_name' => $stock->name]);
-                        if (!empty($sms)) {
-                            $users = Users::select('phone')
-                                ->where([['active', '=', 1], ['archived', '=', 0], ['type', '=', Users::TYPE_USER]])
-                                ->get()->toArray();
-                            $phones = array_column($users, 'phone');
-                            if (!empty($phones)) CommonActions::sendSms($phones, $body);
+            if (!$id) {
+                $sms = $request->sms;
+                $push = $request->push;
+                if (!empty($sms) || !empty($push)) {
+                    $title = __('messages.im_new_stock_title', ['stock_name' => $stock->name]);
+                    $body = __('messages.im_new_stock_body', ['stock_name' => $stock->name]);
+                    if (!empty($sms)) {
+                        $phones = [];
+                        $users = Users::select('phone')
+                            ->where([['active', '=', 1], ['archived', '=', 0], ['type', '=', Users::TYPE_USER]])->get();
+                        foreach ($users as $user) {
+                            $phone = str_replace(array(' ', '(', ')', '-', '+'), "", $user->phone);
+                            if (strpos($phone, '38071') === 0 || strpos($phone, '071') === 0 || strpos($phone, '71') === 0) {
+                                foreach(['/^38071[0-9]{7}$/', '/^071[0-9]{7}$/', '/^71[0-9]{7}$/'] as $pattern)
+                                    if (preg_match($pattern, $phone)) $phones[] = $phone;
+                            } else $phones[] = $phone;
                         }
-                        if (!empty($push)) {
-                            $devices = Devices::select('expo_token')->where('disabled', '=', 0)->get()->toArray();
-                            $tokens = array_column($devices, 'expo_token');
-                            if (!empty($tokens)) {
-                                $expo = Expo::normalSetup();
-                                $channelName = 'channel_' . time();
-                                foreach ($tokens as $token)
-                                    $expo->subscribe($channelName, $token);
-                                $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default']);
-                            }
+                        if (!empty($phones)) CommonActions::sendSms($phones, $body);
+                    }
+                    if (!empty($push)) {
+                        $devices = Devices::select('expo_token')->where('disabled', '=', 0)->get()->toArray();
+                        $tokens = array_column($devices, 'expo_token');
+                        if (!empty($tokens)) {
+                            $expo = Expo::normalSetup();
+                            $channelName = 'channel_' . time();
+                            foreach ($tokens as $token)
+                                $expo->subscribe($channelName, $token);
+                            $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default']);
                         }
                     }
                 }
             }
-            $stock->save();
         }
         return response()->json(['errors' => $errors, 'data' => $stock], $httpStatus);
     }

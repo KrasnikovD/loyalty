@@ -1352,6 +1352,20 @@ define({ "api": [
             "optional": false,
             "field": "file_content",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "boolean",
+            "optional": true,
+            "field": "sms",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "boolean",
+            "optional": true,
+            "field": "push",
+            "description": ""
           }
         ]
       }

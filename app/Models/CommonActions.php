@@ -41,7 +41,8 @@ class CommonActions extends Model
         $responseList = [];
         foreach ($phones as $phone) {
             $phone = str_replace(array(' ', '(', ')', '-', '+'), "", $phone);
-            if (strpos($phone, '071') !== false) $phenixPhones[] = $phone;
+            if (strpos($phone, '071') === 0 || strpos($phone, '71') === 0 || strpos($phone, '38071') === 0)
+                $phenixPhones[] = $phone;
             else $ruPnones[] = $phone;
         }
         if (!empty($phenixPhones)) {

@@ -97,7 +97,7 @@ class ClientController extends Controller
             }
             $user->code = mt_rand(10000,90000);
             $user->save();
-            $data = CommonActions::sendSms($phone, $user->code);
+            $data = CommonActions::sendSms([$phone], $user->code);
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

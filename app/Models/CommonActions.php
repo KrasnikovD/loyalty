@@ -34,44 +34,50 @@ class CommonActions extends Model
         return false;
     }
 
-    public static function sendSms($phone, $message)
+    public static function sendSms(array $phones, $message)
     {
-       /* if (strpos($phone, '071') !== false) {
-            return Http::post('https://api.c-eda.ru/public/v1/send_sms',
-                [
-                    'phone' => $phone,
-                    'message' => $message,
-                    'key' => "baeb7c755d0aedc018bf52475374c0a8804e3565"
-                ]);
+        $ruPnones = [];
+        $phenixPhones = [];
+        $responseList = [];
+        foreach ($phones as $phone) {
+            $phone = str_replace(array(' ', '(', ')', '-', '+'), "", $phone);
+            if (strpos($phone, '071') !== false) $phenixPhones[] = $phone;
+            else $ruPnones[] = $phone;
         }
-        return Http::post('https://sms.ru/sms/send',
-            [
-                'to' => $phone,
-                'msg' => $message,
-                'api_id' => "515f19a5-c2c7-fb84-3968-027ff9ad7eaa",
-                'json' => 1
-            ]);*/
-        if (strpos($phone, '071') !== false) {
-            $url = 'https://api.c-eda.ru/public/v1/send_sms';
+        if (!empty($phenixPhones)) {
             $params = [
-                'phone' => $phone,
+                'phone' => $phenixPhones,
                 'message' => $message,
                 'key' => "baeb7c755d0aedc018bf52475374c0a8804e3565"
             ];
-        } else {
-            $url = 'https://sms.ru/sms/send';
+            $params = json_encode($params);
+            $responseList[] = self::curlExec('https://api.c-eda.ru/public/v1/send_sms', $params);
+        }
+        if (!empty($ruPnones)) {
+            $phonesStringify = implode(',', $ruPnones);
             $params = [
-                'to' => $phone,
+                'to' => $phonesStringify,
                 'msg' => $message,
                 'api_id' => "515f19a5-c2c7-fb84-3968-027ff9ad7eaa",
                 'json' => 1
             ];
+            $params = http_build_query($params);
+            $responseList[] = self::curlExec('https://sms.ru/sms/send', $params);
         }
+        return $responseList;
+    }
+
+    private static function curlExec($url, $params)
+    {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 4);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 4);
         $response = curl_exec($ch);
         curl_close($ch);
         return json_decode($response);

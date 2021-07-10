@@ -2005,6 +2005,8 @@ class AdminController extends Controller
      * @apiParam {string} name
      * @apiParam {string} description
      * @apiParam {integer} file_content
+     * @apiParam {boolean} [sms]
+     * @apiParam {boolean} [push]
      */
 
     /**
@@ -2053,6 +2055,33 @@ class AdminController extends Controller
                 imagejpeg($imageTmp, $path);
                 imagedestroy($imageTmp);
                 $stock->file = $fileName;
+
+                if (!$id) {
+                    $sms = $request->sms;
+                    $push = $request->push;
+                    if (!empty($sms) || !empty($push)) {
+                        $title = __('messages.im_new_stock_title', ['stock_name' => $stock->name]);
+                        $body = __('messages.im_new_stock_body', ['stock_name' => $stock->name]);
+                        if (!empty($sms)) {
+                            $users = Users::select('phone')
+                                ->where([['active', '=', 1], ['archived', '=', 0], ['type', '=', Users::TYPE_USER]])
+                                ->get()->toArray();
+                            $phones = array_column($users, 'phone');
+                            if (!empty($phones)) CommonActions::sendSms($phones, $body);
+                        }
+                        if (!empty($push)) {
+                            $devices = Devices::select('expo_token')->where('disabled', '=', 0)->get()->toArray();
+                            $tokens = array_column($devices, 'expo_token');
+                            if (!empty($tokens)) {
+                                $expo = Expo::normalSetup();
+                                $channelName = 'channel_' . time();
+                                foreach ($tokens as $token)
+                                    $expo->subscribe($channelName, $token);
+                                $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default']);
+                            }
+                        }
+                    }
+                }
             }
             $stock->save();
         }
@@ -2281,7 +2310,7 @@ class AdminController extends Controller
             if (!$id) {
                // $productName = Product::where('id', '=', $request->product_id)->first()->name;
                 $phone = Users::where('id', '=', $request->user_id)->first()->phone;
-                CommonActions::sendSms($phone, trans('messages.new_coupon_body'));
+                CommonActions::sendSms([$phone], trans('messages.new_coupon_body'));
                 $device = Devices::where('user_id', '=', $request->user_id)->first();
                 if ($device)
                     $device->notify(new WelcomeNotification(trans('messages.new_coupon_title'), trans('messages.new_coupon_body')));

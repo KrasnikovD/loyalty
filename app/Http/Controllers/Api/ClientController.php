@@ -427,11 +427,9 @@ class ClientController extends Controller
             $sale->outlet_id = $request->outlet_id;
             $sale->user_id = $userId;
             $sale->dt = date("Y-m-d H:i:s");
-            $productsIds = array_column($request->products, 'product_id');
             $productsMap = [];
-            foreach (Product::whereIn('id', $productsIds)->get() as $item) {
+            foreach (Product::whereIn('id', array_column($request->products, 'product_id'))->get() as $item)
                 $productsMap[$item->id] = $item->price;
-            }
             $amount = 0;
             foreach ($request->products as $product) {
                 if (!empty($product['product_id']))
@@ -1169,8 +1167,8 @@ class ClientController extends Controller
         if (empty($errors)) {
             $count = 0;
             $query = Coupons::select('coupons.*',
-                'products.name as product_name', 'products.file as product_file', 'products.price as product_price',
-                'users.first_name', 'users.second_name', 'users.phone')
+                'products.name as product_name', 'products.file as product_file', 'products.price as product_price'/*,
+                'users.first_name', 'users.second_name', 'users.phone'*/)
                 ->join('products', 'products.id', '=', 'coupons.product_id')
                 /*->join('users', 'users.id', '=', 'coupons.user_id')*/;
             if ($id) {

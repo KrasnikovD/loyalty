@@ -9,6 +9,7 @@ use App\Models\Bills;
 use App\Models\BillTypes;
 use App\Models\BonusHistory;
 use App\Models\Cards;
+use App\Models\Coupons;
 use App\Models\DataHelper;
 use App\Models\Product;
 use App\Models\Sales;
@@ -37,28 +38,38 @@ class OutletController extends Controller
      * @apiParam {object[]} [products]
      */
 
-    public function edit_sale(Request $request, $id = null)
+    public function edit_sale(Request $request, $saleId = null)
     {
         $errors = [];
         $httpStatus = 200;
         $sale = null;
         Validator::extend('check_product', function($attribute, $value, $parameters, $validator) {
-            if (!isset($value['count']) || !is_integer($value['count']) || $value['count'] === 0)
+            if (isset($value['count']) && (!is_integer($value['count']) || $value['count'] === 0))
                 return false;
-            return Product::where('id', '=', $value['product_id'])->exists();
+            if (empty($value['coupon_id']) && empty($value['product_id']))
+                return false;
+            if (isset($value['coupon_id']) && isset($value['product_id']))
+                return false;
+            if (!empty($value['coupon_id'])) {
+                $userId = Cards::where('number', '=', $parameters[0])->value('user_id');
+                if ($coupon = Coupons::where([['id', '=', $value['coupon_id']], ['user_id', '=', $userId]])->first())
+                    return $value['count'] <= $coupon->count;
+                return false;
+            } else
+                return Product::where('id', '=', $value['product_id'])->exists();
         });
         Validator::extend('check_sale', function($attribute, $value, $parameters, $validator) {
             return @Sales::where('id', '=', $value)->first()->status == Sales::STATUS_PRE_ORDER;
         });
         $validatorData = $request->all();
-        if ($id) $validatorData = array_merge($validatorData, ['sale_id' => $id]);
+        if ($saleId) $validatorData = array_merge($validatorData, ['sale_id' => $saleId]);
         $validator = Validator::make($validatorData,
             [
-                'outlet_id' => (!$id ? 'required|' : '') . 'exists:outlets,id',
-                'card_number' => 'exists:cards,number',
+                'card_number' => 'required|exists:cards,number',
+                'outlet_id' => (!$saleId ? 'required|' : '') . 'exists:outlets,id',
                 'sale_id' => 'exists:sales,id|check_sale',
-                'products' => (!$id ? 'required|' : '') . 'array',
-                'products.*' => 'check_product'
+                'products' => (!$saleId ? 'required|' : '') . 'array',
+                'products.*' => 'check_product:' . $request->card_number,
             ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
@@ -68,37 +79,107 @@ class OutletController extends Controller
             $cardInfo = Cards::select('cards.id', 'user_id', 'bills.id as bill_id')
                 ->join('bills', 'bills.card_id', '=', 'cards.id')
                 ->join('bill_types', 'bill_types.id', '=', 'bills.bill_type_id')
-                ->where([['number', '=', $request->card_number], ['name', '=', BillTypes::TYPE_DEFAULT]])->first();
+                ->where([['number', '=', $request->card_number], ['bill_types.name', '=', BillTypes::TYPE_DEFAULT]])->first();
 
-            $currentAmount = Sales::where('bill_id', '=', $cardInfo->bill_id)->sum('amount');
+            $currentAmount = Sales::where([['bill_id', '=', $cardInfo->bill_id], ['status', '=', Sales::STATUS_COMPLETED]])->sum('amount');
 
-            $sale = $id ? Sales::where('id', '=', $id)->first() : new Sales;
+            $sale = $saleId ? Sales::where('id', '=', $saleId)->first() : new Sales;
             if(isset($request->outlet_id)) $sale->outlet_id = $request->outlet_id;
             $sale->user_id = $cardInfo->user_id;
             $sale->card_id = $cardInfo->id;
             $sale->bill_id = $cardInfo->bill_id;
-            if (!$id) $sale->dt = date('Y-m-d H:i:s');
+            if (!$saleId) $sale->dt = date('Y-m-d H:i:s');
             $sale->status = Sales::STATUS_COMPLETED;
 
             if (!empty($request->products)) {
-                $productsIds = array_column($request->products, 'product_id');
-                $productsMap = [];
-                foreach (Product::whereIn('id', $productsIds)->get() as $item)
-                    $productsMap[$item->id] = $item->price;
                 $amount = 0;
-                foreach ($request->products as $product)
-                    $amount += $productsMap[$product['product_id']] * $product['count'];
-                $sale->amount = $sale->amount_now = $amount;
-                $sale->save();
-                if ($id) Baskets::where('sale_id', '=', $id)->whereNull('coupon_id')->delete();
-                foreach ($request->products as $product) {
-                    $basket = new Baskets;
-                    $basket->sale_id = $sale->id;
-                    $basket->product_id = $product['product_id'];
-                    $basket->amount = $productsMap[$product['product_id']];
-                    $basket->count = $product['count'];
-                    $basket->save();
+                $existedCouponsIds = [];
+                $existedBasketProductMap = [];
+                if (!empty($saleId)) {
+                    $amount = $sale->amount;
+                    $savedBasket = Baskets::where('sale_id', '=', $saleId)->get();
+                    $inputCouponsIds = array_column($request->products, 'coupon_id');
+                    $inputProductsIds = array_column($request->products, 'product_id');
+                    $couponsBasketsToDelete = [];
+                    $productsBasketsToDelete = [];
+                    foreach ($savedBasket as $item) {
+                        if ($item->coupon_id) {
+                            if (in_array($item->coupon_id, $inputCouponsIds))
+                                $existedCouponsIds[] = $item->coupon_id;
+                            else {
+                                $couponsBasketsToDelete[] = $item->id;
+                                $coupon = Coupons::where('id', '=', $item->coupon_id)->first();
+                                $coupon->count += $item->count;
+                                $coupon->save();
+                            }
+                        } else {
+                            if (in_array($item->product_id, $inputProductsIds))
+                                $existedBasketProductMap[$item->product_id] = $item;
+                            else {
+                                $productsBasketsToDelete[] = $item->id;
+                                $amount -= $item->amount * $item->count;
+                            }
+                        }
+                    }
+                    $idsToDelete = array_merge($couponsBasketsToDelete, $productsBasketsToDelete);
+                    if (!empty($idsToDelete)) Baskets::whereIn('id', $idsToDelete)->delete();
                 }
+                $sale->save();
+                $priceMap = [];
+                if ($saleId) {
+                    foreach (Product::whereIn('id', array_column($existedBasketProductMap, 'product_id'))->get() as $item)
+                        $priceMap[$item->id] = $item->price;
+                } else {
+                    foreach (Product::whereIn('id', array_column($request->products, 'product_id'))->get() as $item)
+                        $priceMap[$item->id] = $item->price;
+                }
+
+                foreach ($request->products as $product) {
+                    if (isset($product['coupon_id']) && in_array($product['coupon_id'], $existedCouponsIds))
+                        continue;
+                    if (isset($product['product_id']) && $product['count'] == @$existedBasketProductMap[$product['product_id']]->count)
+                        continue;
+                    $basket = null;
+                    if (isset($product['product_id'])) {
+                        $basket = @$existedBasketProductMap[$product['product_id']];
+                        if (isset($basket)) {
+                            if ($product['count'] < $basket->count) {
+                                $amount -= ($basket->count - $product['count']) * $basket->amount;
+                                $basket->count = $product['count'];
+                            } else {
+                                $amount += ($product['count'] - $basket->count) * $priceMap[$product['product_id']];
+                                if ($priceMap[$product['product_id']] !== $basket->amount) {
+                                    $oldCount = $basket->count;
+                                    $basket = new Baskets;
+                                    $basket->count = $product['count'] - $oldCount;
+                                    print ($product['count'] - $oldCount)."\n";
+                                    $basket->amount = $priceMap[$product['product_id']];
+                                } else
+                                    $basket->count = $product['count'];
+                            }
+                        } else {
+                            $basket = new Baskets;
+                            $basket->count = $product['count'];
+                            $basket->amount = $priceMap[$product['product_id']];
+                            $amount += $product['count'] * $priceMap[$product['product_id']];
+                        }
+                        $basket->product_id = $product['product_id'];
+                    } else {
+                        $basket = new Baskets;
+                        $coupon = Coupons::where('id', '=', $product['coupon_id'])->first();
+                        $coupon->count = $coupon->count - $product['count'];
+                        $coupon->save();
+                        $basket->product_id = $coupon->product_id;
+                        $basket->amount = 0;
+                        $basket->coupon_id = $coupon->id;
+                        $basket->count = $product['count'];
+                    }
+                    if (!is_null($basket)) {
+                        $basket->sale_id = $sale->id;
+                        $basket->save();
+                    }
+                }
+                $sale->amount = $sale->amount_now = $amount;
             }
 
             $program = null;
@@ -108,7 +189,7 @@ class OutletController extends Controller
                     break;
                 }
             }
-            $bill = Bills::where('id', '=', $id ? $sale->bill_id : $cardInfo->bill_id)->first();
+            $bill = Bills::where('id', '=', $saleId ? $sale->bill_id : $cardInfo->bill_id)->first();
             $currentFrom = 0;
             $currentTo = 0;
             if ($program) {

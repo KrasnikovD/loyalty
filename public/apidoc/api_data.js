@@ -4176,6 +4176,33 @@ define({ "api": [
   },
   {
     "type": "get",
+    "url": "/api/outlets/card/get/:card_number",
+    "title": "Get Card",
+    "name": "GetCard",
+    "group": "OutletCards",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "allowedValues": [
+              "xml",
+              "json"
+            ],
+            "optional": true,
+            "field": "out_format",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/OutletController.php",
+    "groupTitle": "OutletCards"
+  },
+  {
+    "type": "get",
     "url": "/api/outlets/sales/cancel/:sale_id",
     "title": "Cancel Sale",
     "name": "CancelSale",

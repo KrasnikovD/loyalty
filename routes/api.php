@@ -167,6 +167,7 @@ Route::post('/outlets/users/list', 'App\Http\Controllers\Api\OutletController@li
 Route::post('/outlets/users/find_by_phone', 'App\Http\Controllers\Api\OutletController@find_user_by_phone');
 
 Route::get('/outlets/sales/get/{sale_id}', 'App\Http\Controllers\Api\OutletController@get_sale');
+Route::get('/outlets/card/get/{card_number}', 'App\Http\Controllers\Api\OutletController@get_card');
 
 /****** TEST ******/
 

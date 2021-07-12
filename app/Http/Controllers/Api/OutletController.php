@@ -426,4 +426,38 @@ class OutletController extends Controller
             return response(ArrayToXml::convert(['errors' => $errors, 'data' => $sale], [], true, 'UTF-8'), $httpStatus)
                 ->header('Content-Type', 'text/xml');
     }
+
+    /**
+     * @api {get} /api/outlets/card/get/:card_number Get Card
+     * @apiName GetCard
+     * @apiGroup OutletCards
+     *
+     * @apiParam {string=xml,json} [out_format]
+     */
+
+    public function get_card(Request $request, $cardNumber)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $card = null;
+        $validatorRules = [
+            'card_number' => 'exists:cards,number',
+            'out_format' => 'in:xml,json'
+        ];
+        $validator = Validator::make(array_merge($request->all(), ['card_number' => $cardNumber]),
+            $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $card = Cards::select('*')->where('number', '=', $cardNumber)->get()->toArray();
+            DataHelper::collectCardsInfo($card);
+        }
+        if ($request->out_format == 'json')
+            return response()->json(['errors' => $errors, 'data' => $card], $httpStatus);
+        else
+            return response(ArrayToXml::convert(['errors' => $errors, 'data' => $card], [], true, 'UTF-8'), $httpStatus)
+                ->header('Content-Type', 'text/xml');
+    }
 }

@@ -113,6 +113,7 @@
       <path value="$PROJECT_DIR$/vendor/doctrine/cache" />
       <path value="$PROJECT_DIR$/vendor/alymosul/exponent-server-sdk-php" />
       <path value="$PROJECT_DIR$/vendor/psr/http-factory" />
+      <path value="$PROJECT_DIR$/vendor/spatie/array-to-xml" />
     </include_path>
   </component>
   <component name="PhpUnit">

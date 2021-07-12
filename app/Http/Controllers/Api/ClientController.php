@@ -505,9 +505,8 @@ class ClientController extends Controller
                     Sales::STATUS_CANCELED_BY_CLIENT . ',' .
                     Sales::STATUS_CANCELED_BY_ADMIN
             ];
-        } else {
-            $validatorRules = ['id' => "check_user:" . Auth::user()->id];
-        }
+        } else $validatorRules = ['id' => "check_user:" . Auth::user()->id];
+
         $validatorData = $request->all();
         $validatorData = array_merge($validatorData, ['user_id' => Auth::user()->id]);
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);

@@ -166,6 +166,8 @@ Route::get('/outlets/sales/cancel/{sale_id}', 'App\Http\Controllers\Api\OutletCo
 Route::post('/outlets/users/list', 'App\Http\Controllers\Api\OutletController@list_users');
 Route::post('/outlets/users/find_by_phone', 'App\Http\Controllers\Api\OutletController@find_user_by_phone');
 
+Route::get('/outlets/sales/get/{sale_id}', 'App\Http\Controllers\Api\OutletController@get_sale');
+
 /****** TEST ******/
 
 Route::post('/test', 'App\Http\Controllers\Api\TestController@test');

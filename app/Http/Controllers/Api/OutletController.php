@@ -16,6 +16,7 @@ use App\Models\Sales;
 use App\Models\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Spatie\ArrayToXml\ArrayToXml;
 
 class OutletController extends Controller
 {
@@ -27,6 +28,7 @@ class OutletController extends Controller
      * @apiParam {integer} outlet_id
      * @apiParam {string} card_number
      * @apiParam {object[]} products
+     * @apiParam {string=xml,json} [out_format]
      */
 
     /**
@@ -36,6 +38,7 @@ class OutletController extends Controller
      *
      * @apiParam {string} card_number
      * @apiParam {object[]} [products]
+     * @apiParam {string=xml,json} [out_format]
      */
 
     public function edit_sale(Request $request, $saleId = null)
@@ -76,6 +79,7 @@ class OutletController extends Controller
                 'sale_id' => 'exists:sales,id|check_sale',
                 'products' => (!$saleId ? 'required|' : '') . 'array',
                 'products.*' => 'check_product:' . $request->card_number .',' . $saleId,
+                'out_format' => 'in:xml,json',
             ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
@@ -229,16 +233,22 @@ class OutletController extends Controller
             }
             $sale->save();
         }
-        return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);
+        if ($request->out_format == 'json')
+            return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);
+        else
+            return response(ArrayToXml::convert(['errors' => $errors, 'data' => $sale], [], true, 'UTF-8'), $httpStatus)
+                ->header('Content-Type', 'text/xml');
     }
 
     /**
      * @api {get} /api/outlets/sales/cancel/:sale_id Cancel Sale
      * @apiName CancelSale
      * @apiGroup OutletSales
+     *
+     * @apiParam {string=xml,json} [out_format]
      */
 
-    public function cancel_sale($saleId)
+    public function cancel_sale(Request $request, $saleId)
     {
         $errors = [];
         $httpStatus = 200;
@@ -247,8 +257,11 @@ class OutletController extends Controller
                 ->whereIn('status', [Sales::STATUS_PRE_ORDER, Sales::STATUS_COMPLETED])
                 ->exists();
         });
-        $validatorData = ['sale_id' => $saleId];
-        $validator = Validator::make($validatorData, ['sale_id' => 'exists:sales,id|check_sale']);
+
+        $validator = Validator::make(array_merge($request->all(), ['sale_id' => $saleId]), [
+                'sale_id' => 'exists:sales,id|check_sale',
+                'out_format' => 'in:xml,json',
+            ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
@@ -266,7 +279,11 @@ class OutletController extends Controller
             $sale->status = Sales::STATUS_CANCELED_BY_OUTLET;
             $sale->save();
         }
-        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+        if ($request->out_format == 'json')
+            return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+        else
+            return response(ArrayToXml::convert(['errors' => $errors, 'data' => null], [], true, 'UTF-8'), $httpStatus)
+                ->header('Content-Type', 'text/xml');
     }
 
     /**
@@ -279,36 +296,53 @@ class OutletController extends Controller
      * @apiParam {string} [dir] order direction
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
+     * @apiParam {string=xml,json} [out_format]
      */
 
     public function list_users(Request $request)
     {
         $errors = [];
         $httpStatus = 200;
-        $order = $request->order ?: 'users.id';
-        $dir = $request->dir ?: 'desc';
-        $offset = $request->offset;
-        $limit = $request->limit;
-        $like = $request->like;
+        $data = null;
+        $validatorRules = [
+            'dir' => 'in:asc,desc',
+            'order' => 'in:id,status,amount,amount_now,created_at,updated_at',
+            'offset' => 'integer',
+            'limit' => 'integer',
+            'out_format' => 'in:xml,json',
+        ];
+        $validator = Validator::make($request->all(), $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $order = $request->order ?: 'users.id';
+            $dir = $request->dir ?: 'desc';
+            $offset = $request->offset;
+            $limit = $request->limit;
+            $like = $request->like;
 
-        $query = Users::select('id', 'first_name', 'second_name', 'phone', 'birthday')
-            ->where([['archived', '=', 0], ['active', '=', 1], ['type', '=', Users::TYPE_USER]]);
-        $query->orderBy($order, $dir);
-        if ($limit) {
-            $query->limit($limit);
-            if ($offset) $query->offset($offset);
+            $query = Users::select('id', 'first_name', 'second_name', 'phone', 'birthday')
+                ->where([['archived', '=', 0], ['active', '=', 1], ['type', '=', Users::TYPE_USER]]);
+            if ($like)
+                $query->orWhere('phone', 'like', '%' . str_replace(array("(", ")", " ", "-"), "", $like) . '%');
+            $count = $query->count();
+            $query->orderBy($order, $dir);
+            if ($limit) {
+                $query->limit($limit);
+                if ($offset) $query->offset($offset);
+            }
+
+            $list = $query->get()->toArray();
+            DataHelper::collectUsersInfo($list);
+            $data = ['count' => $count, 'list' => $list];
         }
-        if ($like) {
-            $query->orWhere('phone', 'like', '%'.str_replace(array("(", ")", " ", "-"), "", $like).'%');
-        }
-        $data = $query->get()->toArray();
-        DataHelper::collectUsersInfo($data);
-        return response()->json([
-            'errors' => $errors,
-            'data' => [
-                'count' => Users::count(),
-                'list' => $data
-            ]], $httpStatus);
+        if ($request->out_format == 'json')
+            return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+        else
+            return response(ArrayToXml::convert(['errors' => $errors, 'data' => $data], [], true, 'UTF-8'), $httpStatus)
+                ->header('Content-Type', 'text/xml');
     }
 
     /**
@@ -317,6 +351,7 @@ class OutletController extends Controller
      * @apiGroup OutletSales
      *
      * @apiParam {string} phone
+     * @apiParam {string=xml,json} [out_format]
      */
 
     public function find_user_by_phone(Request $request)
@@ -330,7 +365,10 @@ class OutletController extends Controller
             return Users::where([['type', '=', 1],['phone', '=', $value]])->exists();
         });
 
-        $validator = Validator::make(['phone' => $phone], ['phone' => "required|phone_exists:$phone"]);
+        $validator = Validator::make(array_merge($request->all(), ['phone' => $phone]), [
+                'phone' => "required|phone_exists:$phone",
+                'out_format' => 'in:xml,json'
+            ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
@@ -343,6 +381,49 @@ class OutletController extends Controller
             $data = $query->get()->toArray();
             DataHelper::collectUsersInfo($data);
         }
-        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+        if ($request->out_format == 'json')
+            return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+        else
+            return response(ArrayToXml::convert(['errors' => $errors, 'data' => $data], [], true, 'UTF-8'), $httpStatus)
+                ->header('Content-Type', 'text/xml');
+    }
+
+    /**
+     * @api {get} /api/outlets/sales/get/:sale_id Get Sale
+     * @apiName GetSale
+     * @apiGroup OutletSales
+     *
+     * @apiParam {string=xml,json} [out_format]
+     */
+
+    public function get_sale(Request $request, $saleId)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $sale = null;
+        $validator = Validator::make(array_merge($request->all(), ['sale_id' => $saleId]),
+            [
+                'sale_id' => 'exists:sales,id',
+                'out_format' => 'in:xml,json'
+            ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $sale = Sales::select('sales.*', 'users.id as user_id', 'users.phone as users_phone',
+                'outlets.id as outlet_id', 'outlets.name as outlet_name',
+                'cards.id as card_id', 'cards.number as card_number',
+                'users.first_name as user_first_name', 'users.second_name as user_second_name')
+                ->leftJoin('users', 'users.id', '=', 'sales.user_id')
+                ->leftJoin('outlets', 'outlets.id', '=', 'sales.outlet_id')
+                ->leftJoin('cards', 'cards.id', '=', 'sales.card_id')
+                ->where('sales.id', '=', $saleId)->first()->toArray();
+        }
+        if ($request->out_format == 'json')
+            return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);
+        else
+            return response(ArrayToXml::convert(['errors' => $errors, 'data' => $sale], [], true, 'UTF-8'), $httpStatus)
+                ->header('Content-Type', 'text/xml');
     }
 }

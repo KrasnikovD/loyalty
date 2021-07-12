@@ -4180,6 +4180,23 @@ define({ "api": [
     "title": "Cancel Sale",
     "name": "CancelSale",
     "group": "OutletSales",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "allowedValues": [
+              "xml",
+              "json"
+            ],
+            "optional": true,
+            "field": "out_format",
+            "description": ""
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/OutletController.php",
     "groupTitle": "OutletSales"
@@ -4213,6 +4230,17 @@ define({ "api": [
             "optional": false,
             "field": "products",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "allowedValues": [
+              "xml",
+              "json"
+            ],
+            "optional": true,
+            "field": "out_format",
+            "description": ""
           }
         ]
       }
@@ -4243,6 +4271,17 @@ define({ "api": [
             "optional": true,
             "field": "products",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "allowedValues": [
+              "xml",
+              "json"
+            ],
+            "optional": true,
+            "field": "out_format",
+            "description": ""
           }
         ]
       }
@@ -4265,6 +4304,44 @@ define({ "api": [
             "type": "string",
             "optional": false,
             "field": "phone",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "allowedValues": [
+              "xml",
+              "json"
+            ],
+            "optional": true,
+            "field": "out_format",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/OutletController.php",
+    "groupTitle": "OutletSales"
+  },
+  {
+    "type": "get",
+    "url": "/api/outlets/sales/get/:sale_id",
+    "title": "Get Sale",
+    "name": "GetSale",
+    "group": "OutletSales",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "allowedValues": [
+              "xml",
+              "json"
+            ],
+            "optional": true,
+            "field": "out_format",
             "description": ""
           }
         ]
@@ -4317,6 +4394,17 @@ define({ "api": [
             "optional": true,
             "field": "limit",
             "description": "<p>row count</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "allowedValues": [
+              "xml",
+              "json"
+            ],
+            "optional": true,
+            "field": "out_format",
+            "description": ""
           }
         ]
       }

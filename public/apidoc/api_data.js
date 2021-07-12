@@ -3516,6 +3516,13 @@ define({ "api": [
             "optional": false,
             "field": "products",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "comment",
+            "description": ""
           }
         ]
       }

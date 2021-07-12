@@ -389,6 +389,7 @@ class ClientController extends Controller
      *
      * @apiParam {integer} outlet_id
      * @apiParam {object[]} products
+     * @apiParam {string} comment
      */
 
     public function edit_order(Request $request)
@@ -436,6 +437,7 @@ class ClientController extends Controller
                     $amount += $productsMap[$product['product_id']] * $product['count'];
             }
             $sale->amount = $sale->amount_now = $amount;
+            if (!empty($request->comment)) $sale->user_comment = $request->comment;
             $sale->save();
             foreach ($request->products as $product) {
                 $basket = new Baskets;

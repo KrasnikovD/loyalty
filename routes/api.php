@@ -59,8 +59,8 @@ Route::get('/fields/delete/{id}', 'App\Http\Controllers\Api\AdminController@dele
 
 //Route::post('/sales/create', 'App\Http\Controllers\Api\AdminController@edit_sale');
 //Route::post('/sales/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_sale');
-Route::post('/sales/list', 'App\Http\Controllers\Api\AdminController@list_sales');
-Route::get('/sales/get/{id}', 'App\Http\Controllers\Api\AdminController@list_sales');
+//Route::post('/sales/list', 'App\Http\Controllers\Api\AdminController@list_sales');
+//Route::get('/sales/get/{id}', 'App\Http\Controllers\Api\AdminController@list_sales');
 //Route::get('/sales/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_sale');
 
 Route::post('/categories/create', 'App\Http\Controllers\Api\AdminController@edit_category');
@@ -81,6 +81,7 @@ Route::post('/orders/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_
 Route::post('/orders/list', 'App\Http\Controllers\Api\AdminController@list_orders');
 Route::get('/orders/get/{id}', 'App\Http\Controllers\Api\AdminController@list_orders');
 Route::get('/orders/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_order');
+Route::get('/orders/cancel/{id}', 'App\Http\Controllers\Api\AdminController@cancel_order');
 
 Route::get('/orders/delete_basket/{id}', 'App\Http\Controllers\Api\AdminController@delete_basket');
 Route::post('/orders/edit_basket/{id}', 'App\Http\Controllers\Api\AdminController@edit_basket');
@@ -121,6 +122,7 @@ Route::get('/clients/products/get/{id}', 'App\Http\Controllers\Api\ClientControl
 Route::post('/clients/orders/create', 'App\Http\Controllers\Api\ClientController@edit_order');
 Route::post('/clients/orders/list', 'App\Http\Controllers\Api\ClientController@list_order');
 Route::get('/clients/orders/get/{id}', 'App\Http\Controllers\Api\ClientController@list_order');
+Route::post('/clients/orders/cancel/{id}', 'App\Http\Controllers\Api\ClientController@cancel_order');
 
 Route::post('/clients/news/list', 'App\Http\Controllers\Api\ClientController@list_news');
 Route::get('/clients/news/get/{id}', 'App\Http\Controllers\Api\ClientController@list_news');
@@ -160,6 +162,7 @@ Route::post('/clients/set_location', 'App\Http\Controllers\Api\ClientController@
 
 Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');
 Route::post('/outlets/sales/edit/{sale_id}', 'App\Http\Controllers\Api\OutletController@edit_sale');
+Route::get('/outlets/sales/cancel/{sale_id}', 'App\Http\Controllers\Api\OutletController@cancel_sale');
 Route::post('/outlets/users/list', 'App\Http\Controllers\Api\OutletController@list_users');
 Route::post('/outlets/users/find_by_phone', 'App\Http\Controllers\Api\OutletController@find_user_by_phone');
 

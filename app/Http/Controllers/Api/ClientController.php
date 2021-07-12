@@ -471,7 +471,7 @@ class ClientController extends Controller
      * @apiParam {string} [dir] order direction
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
-     * @apiParam {integer=0,1} [status]
+     * @apiParam {integer=0,4,5,6,7} [status]
      */
 
     /**
@@ -499,7 +499,11 @@ class ClientController extends Controller
                 'order' => 'in:id,status,amount,amount_now,created_at,updated_at',
                 'offset' => 'integer',
                 'limit' => 'integer',
-                'status' => 'in:' . Sales::STATUS_COMPLETED . ',' . Sales::STATUS_PRE_ORDER
+                'status' => 'in:' . Sales::STATUS_COMPLETED . ',' .
+                    Sales::STATUS_PRE_ORDER . ',' .
+                    Sales::STATUS_CANCELED_BY_OUTLET . ',' .
+                    Sales::STATUS_CANCELED_BY_CLIENT . ',' .
+                    Sales::STATUS_CANCELED_BY_ADMIN
             ];
         } else {
             $validatorRules = ['id' => "check_user:" . Auth::user()->id];
@@ -554,6 +558,44 @@ class ClientController extends Controller
             $data = $id ? $list[0] : ['count' => $count, 'data' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/clients/orders/cancel/:id Cancel Order
+     * @apiName CancelOrder
+     * @apiGroup ClientOrders
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function cancel_order($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        Validator::extend('check_sale', function($attribute, $value, $parameters, $validator) {
+            return @Sales::where('id', '=', $value)
+                ->whereIn('status', [Sales::STATUS_PRE_ORDER])
+                ->exists();
+        });
+        $validatorData = ['sale_id' => $id];
+        $validator = Validator::make($validatorData, ['sale_id' => 'exists:sales,id|check_sale']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            if ($baskets = Baskets::where('sale_id', '=', $id)->whereNotNull('coupon_id')->get()) {
+                foreach ($baskets as $basket) {
+                    $coupon = Coupons::where('id', '=', $basket->coupon_id)->first();
+                    $coupon->count += $basket->count;
+                    $coupon->save();
+                }
+            }
+            $sale = Sales::where('id', '=', $id)->first();
+            $sale->status = Sales::STATUS_CANCELED_BY_CLIENT;
+            $sale->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 
     /**

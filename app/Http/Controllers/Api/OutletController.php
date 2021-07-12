@@ -170,11 +170,12 @@ class OutletController extends Controller
                         }
                         $basket->product_id = $product['product_id'];
                     } else {
-                        $basket = new Baskets;
                         $coupon = Coupons::where('id', '=', $product['coupon_id'])->first();
                         $couponCount = $coupon->count;
                         $coupon->count = 0;
                         $coupon->save();
+
+                        $basket = new Baskets;
                         $basket->product_id = $coupon->product_id;
                         $basket->amount = 0;
                         $basket->coupon_id = $coupon->id;
@@ -229,6 +230,43 @@ class OutletController extends Controller
             $sale->save();
         }
         return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/outlets/sales/cancel/:sale_id Cancel Sale
+     * @apiName CancelSale
+     * @apiGroup OutletSales
+     */
+
+    public function cancel_sale($saleId)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        Validator::extend('check_sale', function($attribute, $value, $parameters, $validator) {
+            return @Sales::where('id', '=', $value)
+                ->whereIn('status', [Sales::STATUS_PRE_ORDER, Sales::STATUS_COMPLETED])
+                ->exists();
+        });
+        $validatorData = ['sale_id' => $saleId];
+        $validator = Validator::make($validatorData, ['sale_id' => 'exists:sales,id|check_sale']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            if ($baskets = Baskets::where('sale_id', '=', $saleId)->whereNotNull('coupon_id')->get()) {
+                foreach ($baskets as $basket) {
+                    $coupon = Coupons::where('id', '=', $basket->coupon_id)->first();
+                    $coupon->count += $basket->count;
+                    $coupon->save();
+                }
+            }
+
+            $sale = Sales::where('id', '=', $saleId)->first();
+            $sale->status = Sales::STATUS_CANCELED_BY_OUTLET;
+            $sale->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 
     /**

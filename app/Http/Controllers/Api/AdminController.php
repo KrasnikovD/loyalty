@@ -1627,7 +1627,7 @@ class AdminController extends Controller
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
      * @apiParam {integer} [user_id] user id
-     * @apiParam {integer=0,1} [status]
+     * @apiParam {integer=0,4,5,6,7} [status]
      */
 
     /**
@@ -1651,7 +1651,11 @@ class AdminController extends Controller
                 'offset' => 'integer',
                 'limit' => 'integer',
                 'user_id' => 'integer|exists:users,id',
-				'status' => 'in:' . Sales::STATUS_COMPLETED . ',' . Sales::STATUS_PRE_ORDER
+				'status' => 'in:' . Sales::STATUS_COMPLETED . ',' .
+                    Sales::STATUS_PRE_ORDER . ',' .
+                    Sales::STATUS_CANCELED_BY_OUTLET . ',' .
+                    Sales::STATUS_CANCELED_BY_CLIENT . ',' .
+                    Sales::STATUS_CANCELED_BY_ADMIN
             ];
         } else {
             $validatorRules = ['id' => 'exists:sales,id'];
@@ -1730,6 +1734,44 @@ class AdminController extends Controller
         if (empty($errors)) {
             Baskets::where('sale_id', '=', $id)->delete();
             Sales::where('id', '=', $id)->delete();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/orders/cancel/:id Cancel Order
+     * @apiName CancelOrder
+     * @apiGroup AdminOrders
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function cancel_order($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        Validator::extend('check_sale', function($attribute, $value, $parameters, $validator) {
+            return @Sales::where('id', '=', $value)
+                ->whereIn('status', [Sales::STATUS_PRE_ORDER, Sales::STATUS_COMPLETED])
+                ->exists();
+        });
+        $validatorData = ['sale_id' => $id];
+        $validator = Validator::make($validatorData, ['sale_id' => 'exists:sales,id|check_sale']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            if ($baskets = Baskets::where('sale_id', '=', $id)->whereNotNull('coupon_id')->get()) {
+                foreach ($baskets as $basket) {
+                    $coupon = Coupons::where('id', '=', $basket->coupon_id)->first();
+                    $coupon->count += $basket->count;
+                    $coupon->save();
+                }
+            }
+            $sale = Sales::where('id', '=', $id)->first();
+            $sale->status = Sales::STATUS_CANCELED_BY_ADMIN;
+            $sale->save();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }

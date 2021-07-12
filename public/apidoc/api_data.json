@@ -1571,6 +1571,29 @@
     "groupTitle": "AdminOrders"
   },
   {
+    "type": "get",
+    "url": "/api/orders/cancel/:id",
+    "title": "Cancel Order",
+    "name": "CancelOrder",
+    "group": "AdminOrders",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminOrders"
+  },
+  {
     "type": "post",
     "url": "/api/orders/create",
     "title": "Create Order",
@@ -1830,7 +1853,10 @@
             "type": "integer",
             "allowedValues": [
               "0",
-              "1"
+              "4",
+              "5",
+              "6",
+              "7"
             ],
             "optional": true,
             "field": "status",
@@ -3482,6 +3508,29 @@
     "groupTitle": "ClientNews"
   },
   {
+    "type": "get",
+    "url": "/api/clients/orders/cancel/:id",
+    "title": "Cancel Order",
+    "name": "CancelOrder",
+    "group": "ClientOrders",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientOrders"
+  },
+  {
     "type": "post",
     "url": "/api/clients/orders/create",
     "title": "Create Order",
@@ -3609,7 +3658,10 @@
             "type": "integer",
             "allowedValues": [
               "0",
-              "1"
+              "4",
+              "5",
+              "6",
+              "7"
             ],
             "optional": true,
             "field": "status",
@@ -4121,6 +4173,16 @@
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/ClientController.php",
     "groupTitle": "ClientStocks"
+  },
+  {
+    "type": "get",
+    "url": "/api/outlets/sales/cancel/:sale_id",
+    "title": "Cancel Sale",
+    "name": "CancelSale",
+    "group": "OutletSales",
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/OutletController.php",
+    "groupTitle": "OutletSales"
   },
   {
     "type": "post",

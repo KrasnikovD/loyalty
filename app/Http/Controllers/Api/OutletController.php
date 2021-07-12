@@ -152,7 +152,6 @@ class OutletController extends Controller
                                     $oldCount = $basket->count;
                                     $basket = new Baskets;
                                     $basket->count = $product['count'] - $oldCount;
-                                    print ($product['count'] - $oldCount)."\n";
                                     $basket->amount = $priceMap[$product['product_id']];
                                 } else
                                     $basket->count = $product['count'];
@@ -182,39 +181,45 @@ class OutletController extends Controller
                 $sale->amount = $sale->amount_now = $amount;
             }
 
-            $program = null;
-            foreach (BillPrograms::all() as $row) {
-                if ($currentAmount >= $row->from && $currentAmount <= $row->to) {
-                    $program = $row;
-                    break;
+            $billPrograms = BillPrograms::orderBy('to', 'desc')->get();
+            if ($billPrograms) {
+                $program = null;
+                $maxProgram = $billPrograms[0];
+                if ($currentAmount >= $maxProgram->to)
+                    $program = $maxProgram;
+                foreach ($billPrograms as $row) {
+                    if ($currentAmount >= $row->from && $currentAmount <= $row->to) {
+                        $program = $row;
+                        break;
+                    }
+                }
+                $bill = Bills::where('id', '=', $saleId ? $sale->bill_id : $cardInfo->bill_id)->first();
+                $currentFrom = 0;
+                $currentTo = 0;
+                if ($program) {
+                    $currentFrom = $program->from;
+                    $currentTo = $program->to;
+                    $sale->bill_program_id = $program->id;
+                    $bill->bill_program_id = $program->id;
+                    $bill->value = floatval($bill->value) + $program->percent * 0.01 * $sale->amount;
+                }
+                $nextFrom = BillPrograms::where('from', '>', $currentFrom)->min('from');
+                if (!$nextFrom) $nextFrom = $currentTo + 1;
+                $bill->remaining_amount = ($currentAmount > $maxProgram->to) ? 0 : $nextFrom - $currentAmount;
+                $bill->save();
+
+                if ($program) {
+                    $historyEntry = new BonusHistory;
+                    $historyEntry->bill_program_id = $program->id;
+                    $historyEntry->bill_id = $bill->id;
+                    $historyEntry->sale_id = $sale->id;
+                    $historyEntry->accumulated = floatval($bill->value);
+                    $historyEntry->added = $program->percent * 0.01 * $sale->amount;
+                    $historyEntry->dt = date('Y-m-d H:i:s');
+                    $historyEntry->save();
                 }
             }
-            $bill = Bills::where('id', '=', $saleId ? $sale->bill_id : $cardInfo->bill_id)->first();
-            $currentFrom = 0;
-            $currentTo = 0;
-            if ($program) {
-                $currentFrom = $program->from;
-                $currentTo = $program->to;
-                $sale->bill_program_id = $program->id;
-                $bill->bill_program_id = $program->id;
-                $bill->value = floatval($bill->value) + $program->percent * 0.01 * $sale->amount;
-            }
-            $nextFrom = BillPrograms::where('from', '>', $currentFrom)->min('from');
-            if (!$nextFrom) $nextFrom = $currentTo;
-            $bill->remaining_amount = $nextFrom - $currentAmount;
-            $bill->save();
             $sale->save();
-
-            if ($program) {
-                $historyEntry = new BonusHistory;
-                $historyEntry->bill_program_id = $program->id;
-                $historyEntry->bill_id = $bill->id;
-                $historyEntry->sale_id = $sale->id;
-                $historyEntry->accumulated = floatval($bill->value);
-                $historyEntry->added = $program->percent * 0.01 * $sale->amount;
-                $historyEntry->dt = date('Y-m-d H:i:s');
-                $historyEntry->save();
-            }
         }
         return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);
     }

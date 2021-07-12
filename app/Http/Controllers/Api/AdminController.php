@@ -2358,6 +2358,7 @@ class AdminController extends Controller
                 if ($device)
                     $device->notify(new WelcomeNotification(trans('messages.new_coupon_title'), trans('messages.new_coupon_body')));
             }
+
         }
         return response()->json(['errors' => $errors, 'data' => $coupon], $httpStatus);
     }

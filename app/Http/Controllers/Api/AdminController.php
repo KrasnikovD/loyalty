@@ -2358,9 +2358,13 @@ class AdminController extends Controller
                 if ($device)
                     $device->notify(new WelcomeNotification(trans('messages.new_coupon_title'), trans('messages.new_coupon_body')));
             }
-
+            $data = Coupons::select('coupons.id', 'coupons.count', 'users.id as user_id', 'users.first_name',
+                'users.second_name', 'users.phone', 'products.id as product_id', 'products.name')
+                ->join('users', 'users.id', '=', 'coupons.user_id')
+                ->join('products', 'products.id', '=', 'coupons.product_id')
+                ->where('coupons.id', '=', $coupon->id)->first();
         }
-        return response()->json(['errors' => $errors, 'data' => $coupon], $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 
     /**
@@ -2404,6 +2408,7 @@ class AdminController extends Controller
             if ($id) {
                 $query->where('coupons.id', '=', $id);
             } else {
+                $query->where('coupons.count', '>', 0);
                 $count = $query->count();
                 $order = $request->order ?: 'coupons.id';
                 $dir = $request->dir ?: 'asc';
@@ -2434,13 +2439,18 @@ class AdminController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
-        $validator = Validator::make(['id' => $id], ['id' => 'exists:coupons,id']);
+
+        Validator::extend('check_in_use', function($attribute, $value, $parameters, $validator) {
+            return !Baskets::where('coupon_id', '=', $value)->exists();
+        });
+
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:coupons,id|check_in_use']);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            Sales::where('id', '=', $id)->delete();
+            Coupons::where('id', '=', $id)->delete();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }

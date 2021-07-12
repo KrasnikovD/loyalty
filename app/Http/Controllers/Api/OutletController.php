@@ -52,9 +52,10 @@ class OutletController extends Controller
                 return false;
             if (!empty($value['coupon_id'])) {
                 $userId = Cards::where('number', '=', $parameters[0])->value('user_id');
-                if ($coupon = Coupons::where([['id', '=', $value['coupon_id']], ['user_id', '=', $userId]])->first())
-                    return $value['count'] <= $coupon->count;
-                return false;
+                return Coupons::where([
+                    ['id', '=', $value['coupon_id']],
+                    ['user_id', '=', $userId],
+                    ['count', '>', 0]])->exists();
             } else
                 return Product::where('id', '=', $value['product_id'])->exists();
         });
@@ -166,12 +167,13 @@ class OutletController extends Controller
                     } else {
                         $basket = new Baskets;
                         $coupon = Coupons::where('id', '=', $product['coupon_id'])->first();
-                        $coupon->count = $coupon->count - $product['count'];
+                        $couponCount = $coupon->count;
+                        $coupon->count = 0;
                         $coupon->save();
                         $basket->product_id = $coupon->product_id;
                         $basket->amount = 0;
                         $basket->coupon_id = $coupon->id;
-                        $basket->count = $product['count'];
+                        $basket->count = $couponCount;
                     }
                     if (!is_null($basket)) {
                         $basket->sale_id = $sale->id;

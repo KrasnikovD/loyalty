@@ -1174,6 +1174,7 @@ class ClientController extends Controller
             if ($id) {
                 $query->where('coupons.id', '=', $id);
             } else {
+                $query->where([['coupons.count', '>', 0], ['coupons.user_id', '=', Auth::user()->id]]);
                 $count = $query->count();
                 $order = $request->order ?: 'coupons.id';
                 $dir = $request->dir ?: 'asc';
@@ -1185,7 +1186,6 @@ class ClientController extends Controller
                     if ($offset) $query->offset($offset);
                 }
             }
-            $query->where([['coupons.count', '>', 0], ['coupons.user_id', '=', Auth::user()->id]]);
             $list = $query->get()->toArray();
             if ($id) $data = $list[0];
             else $data = ['count' => $count, 'list' => $list];

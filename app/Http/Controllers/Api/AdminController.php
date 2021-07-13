@@ -1670,7 +1670,7 @@ class AdminController extends Controller
         if (empty($errors)) {
             $count = 0;
             $sales = Sales::select('sales.*', 'users.id as user_id', 'users.phone as users_phone',
-                'outlets.id as outlet_id', 'outlets.name as outlet_name',
+                'outlets.id as outlet_id', 'outlets.name as outlet_name', 'outlets.address as outlets_address',
                 'cards.id as card_id', 'cards.number as card_number',
                 'users.first_name as user_first_name', 'users.second_name as user_second_name')
                 ->leftJoin('users', 'users.id', '=', 'sales.user_id')

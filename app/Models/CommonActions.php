@@ -133,4 +133,12 @@ class CommonActions extends Model
         $ad = atan2($y, $x);
         return $ad * self::EARTH_RADIUS;
     }
+
+    public static function randomString()
+    {
+        $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $str = '';
+        for ($i = 0; $i < 12; $i++) $str .= $characters[rand(0, strlen($characters)-1)];
+        return $str;
+    }
 }

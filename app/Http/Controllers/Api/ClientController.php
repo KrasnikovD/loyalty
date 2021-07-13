@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Baskets;
 use App\Models\BillPrograms;
 use App\Models\Bills;
+use App\Models\BillTypes;
 use App\Models\BonusHistory;
 use App\Models\Cards;
 use App\Models\Categories;
@@ -89,15 +90,29 @@ class ClientController extends Controller
         if (empty($errors)) {
             $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
             $user = Users::where([['type', '=', 1], ['phone', '=', $phone]])->first();
+            $newUser = false;
             if (empty($user)) {
                 $user = new Users;
                 $user->phone = $phone;
                 $user->type = Users::TYPE_USER;
                 $user->token = sha1(microtime() . 'salt' . time());
+                $newUser = true;
             }
             $user->code = mt_rand(10000,90000);
             $user->save();
             $data = CommonActions::sendSms([$phone], $user->code);
+            if ($newUser) {
+                $card = new Cards;
+                $card->user_id = $user->id;
+                $card->number = CommonActions::randomString();
+                $card->save();
+                foreach (BillTypes::all() as $billType) {
+                    $bill = new Bills;
+                    $bill->card_id = $card->id;
+                    $bill->bill_type_id = $billType->id;
+                    $bill->save();
+                }
+            }
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
@@ -1313,5 +1328,59 @@ class ClientController extends Controller
             $user->save();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/cards/create Create Card
+     * @apiName CreateCard
+     * @apiGroup ClientCards
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} number
+     */
+
+    /**
+     * @api {post} /api/clients/cards/edit/:id Edit Card
+     * @apiName EditCard
+     * @apiGroup ClientCards
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} number
+     */
+
+    public function edit_card(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $card = null;
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validatorRules = [
+            'number' => 'required',
+            'id' => 'exists:cards,id'
+        ];
+
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $card = $id ? Cards::where('id', '=', $id)->first() : new Cards;
+            if (!$id) $card->user_id = Auth::user()->id;
+            $card->number = $request->number;
+            $card->save();
+            if (!$id) {
+                foreach (BillTypes::all() as $billType) {
+                    $bill = new Bills;
+                    $bill->card_id = $card->id;
+                    $bill->bill_type_id = $billType->id;
+                    $bill->save();
+                }
+            }
+        }
+        return response()->json(['errors' => $errors, 'data' => $card], $httpStatus);
     }
 }

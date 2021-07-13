@@ -114,6 +114,9 @@ Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth
 Route::post('/clients/login', 'App\Http\Controllers\Api\ClientController@login');
 Route::post('/clients/check_auth', 'App\Http\Controllers\Api\ClientController@check_auth');
 
+Route::post('/clients/cards/create', 'App\Http\Controllers\Api\ClientController@edit_card');
+Route::post('/clients/cards/edit/{id}', 'App\Http\Controllers\Api\ClientController@edit_card');
+
 Route::get('/clients/categories/list', 'App\Http\Controllers\Api\ClientController@list_categories');
 
 Route::post('/clients/products/list', 'App\Http\Controllers\Api\ClientController@list_products');

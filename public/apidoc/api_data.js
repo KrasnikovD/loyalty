@@ -3087,6 +3087,78 @@ define({ "api": [
   },
   {
     "type": "post",
+    "url": "/api/clients/cards/create",
+    "title": "Create Card",
+    "name": "CreateCard",
+    "group": "ClientCards",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "number",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientCards"
+  },
+  {
+    "type": "post",
+    "url": "/api/clients/cards/edit/:id",
+    "title": "Edit Card",
+    "name": "EditCard",
+    "group": "ClientCards",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "number",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientCards"
+  },
+  {
+    "type": "post",
     "url": "/api/clients/cards/list",
     "title": "Get Cards List",
     "name": "GetCardsList",

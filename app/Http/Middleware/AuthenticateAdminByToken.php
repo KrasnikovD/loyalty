@@ -21,7 +21,7 @@ class AuthenticateAdminByToken
     public function handle(Request $request, Closure $next)
     {
         $tokenHash = Str::substr($request->header('Authorization'), Str::length('Basic '));
-        $user = Users::where([[DB::raw("md5(token)"), '=', $tokenHash], ['type', '=', 0]]);
+        $user = Users::where([[DB::raw("md5(token)"), '=', $tokenHash], ['type', '=', Users::TYPE_ADMIN]]);
         if (!$user->count()) {
             return response()->json('Unauthorized.', 401);
         }

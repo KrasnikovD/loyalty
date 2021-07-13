@@ -89,7 +89,7 @@ class ClientController extends Controller
         }
         if (empty($errors)) {
             $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
-            $user = Users::where([['type', '=', 1], ['phone', '=', $phone]])->first();
+            $user = Users::where([['type', '=', Users::TYPE_USER], ['phone', '=', $phone]])->first();
             $newUser = false;
             if (empty($user)) {
                 $user = new Users;

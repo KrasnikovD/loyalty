@@ -979,9 +979,8 @@ class ClientController extends Controller
         if (empty($errors)) {
             $outlets = Outlet::all()->toArray();
             foreach ($outlets as &$outlet) {
-                if($outlet['lat'] && $outlet['lon']) {
-                    $outlet['distance'] = ceil(CommonActions::calculateTheDistance($outlet['lat'], $outlet['lon'], $request->lat, $request->lon));
-                }
+                if($outlet['lat'] && $outlet['lon'])
+                    $outlet['distance'] = ceil(CommonActions::calculateDistance($outlet['lat'], $outlet['lon'], $request->lat, $request->lon));
             }
             usort($outlets, function ($first, $second) {
                 return $first['distance'] > $second['distance'];

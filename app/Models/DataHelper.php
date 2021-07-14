@@ -45,7 +45,10 @@ class DataHelper extends Model
     {
         $cardsIds = array_column($data, 'id');
         $billsList = Bills::join('bill_types', 'bills.bill_type_id', '=', 'bill_types.id')
-            ->select('bills.id', 'bills.value', 'bills.card_id', 'bills.remaining_amount', 'bills.bill_program_id', 'bill_types.name as type_name')
+            ->leftJoin('bill_programs', 'bill_programs.id', '=', 'bills.bill_program_id')
+            ->select('bills.id', 'bills.value', 'bills.card_id',
+                'bills.remaining_amount', 'bills.bill_program_id',
+                'bill_types.name as type_name', 'bill_programs.file', 'bill_programs.percent')
             ->whereIn('bills.card_id', $cardsIds)->get();
 
         $billsMap = [];

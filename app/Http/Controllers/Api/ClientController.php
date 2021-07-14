@@ -1108,7 +1108,11 @@ class ClientController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
-        $validator = Validator::make(['number' => $number], ['number' => 'required|exists:cards,number']);
+        Validator::extend('check_no_owner', function($attribute, $value, $parameters, $validator) {
+            return Cards::where('number', '=', $value)
+                ->whereNull('user_id')->exists();
+        });
+        $validator = Validator::make(['number' => $number], ['number' => 'required|exists:cards,number|check_no_owner']);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
@@ -1145,6 +1149,7 @@ class ClientController extends Controller
         }
         if (empty($errors)) {
             Cards::where('user_id', '=', Auth::user()->id)->update(['is_main' => 0]);
+            Cards::where('id', '=', $id)->update(['is_main' => 1]);
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }

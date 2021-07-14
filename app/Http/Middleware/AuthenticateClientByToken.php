@@ -21,7 +21,11 @@ class AuthenticateClientByToken
     public function handle(Request $request, Closure $next)
     {
         $tokenHash = Str::substr($request->header('Authorization'), Str::length('Basic '));
-        $user = Users::where([[DB::raw("md5(token)"), '=', $tokenHash], ['type', '=', Users::TYPE_USER]]);
+        $user = Users::where([
+            [DB::raw("md5(token)"), '=', $tokenHash],
+            ['type', '=', Users::TYPE_USER],
+            ['archived', '=', 0]
+        ]);
         if (!$user->count()) {
             return response()->json('Unauthorized.', 401);
         }

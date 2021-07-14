@@ -343,6 +343,7 @@ class AdminController extends Controller
      * @apiParam {string} [dir] order direction
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
+     * @apiParam {integer=0,1} [hide_deleted]
      */
 
     /**
@@ -367,6 +368,7 @@ class AdminController extends Controller
                 'order' => 'in:id,code,first_name,second_name,phone,password,token,type,device_token,created_at,updated_at',
                 'offset' => 'integer',
                 'limit' => 'integer',
+                'hide_deleted' => 'in:0,1',
             ];
         } else {
             $validatorRules = ['id' => 'exists:users,id'];
@@ -380,6 +382,7 @@ class AdminController extends Controller
         if (empty($errors)) {
             $count = 0;
             $query = Users::select('*');
+            if ($request->hide_deleted == 1) $query->where('archived', '=', 0);
             if ($id) $query->where('id', '=', $id);
             else {
                 $count = $query->count();
@@ -413,22 +416,15 @@ class AdminController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
-        $validator = Validator::make(['id' => $id], ['id' => 'exists:users,id']);
+        Validator::extend('archived_validate', function($attribute, $value, $parameters, $validator) {
+            return Users::where([['archived', '=', 0], ['id', '=', $value]])->exists();
+        });
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:users,id|archived_validate']);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
-        if (empty($errors)) {
-            $cards = DB::table('cards')->select('cards.id', 'bills.id as bills_id')
-                ->leftJoin('bills', 'bills.card_id', '=', 'cards.id')->get()->toArray();
-            $cardsIds = array_unique(array_column($cards, 'id'));
-            $billsIds = array_unique(array_column($cards, 'bills_id'));
-            $billsIds = array_filter($billsIds, function($value) {return !is_null($value) && $value !== '';});
-            Bills::whereIn('id', $billsIds)->delete();
-            Cards::whereIn('id', $cardsIds)->delete();
-            FieldsUsers::where('user_id', '=', $id)->delete();
-            Users::where('id', '=', $id)->delete();
-        }
+        if (empty($errors)) Users::where('id', '=', $id)->update(['archived' => 1]);
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 
@@ -944,6 +940,8 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {integer} radius
+     * @apiParam {string} title
+     * @apiParam {string} body
      */
 
     public function send_to_nearest(Request $request, $id)
@@ -952,7 +950,12 @@ class AdminController extends Controller
         $httpStatus = 200;
         $validatorData = $request->all();
         $validatorData['id'] = $id;
-        $validator = Validator::make($validatorData, ['id' => 'exists:outlets,id', 'radius' => 'required|integer']);
+        $validator = Validator::make($validatorData, [
+            'id' => 'exists:outlets,id',
+            'radius' => 'required|integer',
+            'title' => 'required',
+            'body' => 'required',
+        ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
@@ -967,14 +970,12 @@ class AdminController extends Controller
                 ->get();
             $tokens = [];
             foreach ($users as $user) {
-                $distance = ceil(CommonActions::calculateTheDistance($outlet->lat, $outlet->lon, $user->lat, $user->lon));
-                if ($distance <= $request->radius) {
-                    $tokens[] = $user->expo_token;
-                }
+                $distance = ceil(CommonActions::calculateDistance($outlet->lat, $outlet->lon, $user->lat, $user->lon));
+                if ($distance <= $request->radius) $tokens[] = $user->expo_token;
             }
             if (!empty($tokens)) {
-                $title = __('messages.send_in_radius_title', ['outlet_name' => $outlet->name]);
-                $body = __('messages.send_in_radius_body', ['outlet_name' => $outlet->name]);
+                $title = $request->title;
+                $body = $request->body;
                 $expo = Expo::normalSetup();
                 $channelName = 'channel_' . time();
                 foreach ($tokens as $token)
@@ -1421,6 +1422,7 @@ class AdminController extends Controller
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
      * @apiParam {integer} [category_id]
+     * @apiParam {integer=0,1} [hide_deleted]
      */
 
     public function list_products(Request $request)
@@ -1436,6 +1438,7 @@ class AdminController extends Controller
             'limit' => 'integer',
            // 'outlet_id' => 'exists:outlets,id',
             'category_id' => 'exists:categories,id',
+            'hide_deleted' => 'in:0,1',
         ];
         $validator = Validator::make($request->all(), $validatorRules);
         if ($validator->fails()) {
@@ -1446,10 +1449,12 @@ class AdminController extends Controller
             $products = Product::select('products.*', /*'outlets.name as outlet_name',*/ 'categories.name as category_name')
                // ->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')
                 ->leftJoin('categories', 'categories.id', '=', 'products.category_id');
+            if ($request->hide_deleted == 1) $products->where('archived', '=', 0);
             if (isset($request->category_id)) {
                 if(Categories::where('id', '=', $request->category_id)->value('parent_id') == 0) {
                     $categories = Categories::where('parent_id', '=', $request->category_id)->get()->toArray();
                     $categoriesIds = array_column($categories, 'id');
+                    $categoriesIds[] = $request->category_id;
                     if(!empty($categoriesIds)) {
                         $products->whereIn('category_id', $categoriesIds);
                     }
@@ -1518,15 +1523,19 @@ class AdminController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
-        $validator = Validator::make(['id' => $id], ['id' => 'exists:products,id']);
+        Validator::extend('archived_validate', function($attribute, $value, $parameters, $validator) {
+            return Product::where([['archived', '=', 0], ['id', '=', $value]])->exists();
+        });
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:products,id|archived_validate']);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $query = Product::where('id', '=', $id);
-            @unlink(Storage::path("images/{$query->first()->file}"));
-            $query->delete();
+         //   $query = Product::where('id', '=', $id);
+         //   @unlink(Storage::path("images/{$query->first()->file}"));
+         //   $query->delete();
+            Product::where('id', '=', $id)->update(['archived' => 1]);
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
@@ -2371,12 +2380,16 @@ class AdminController extends Controller
         $errors = [];
         $httpStatus = 200;
         $coupon = null;
+        $data = null;
+        Validator::extend('check_archived', function($attribute, $value, $parameters, $validator) {
+            return Product::where([['id', '=', $value], ['archived', '=', 0]])->exists();
+        });
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = ['id' => 'exists:coupons,id', 'count' => 'required|integer|min:1'];
         if (!$id) {
             $validatorRules['user_id'] = 'required|exists:users,id';
-            $validatorRules['product_id'] = 'required|exists:products,id';
+            $validatorRules['product_id'] = 'required|exists:products,id|check_archived';
         }
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {

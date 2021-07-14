@@ -52,7 +52,7 @@ class CommonActions extends Model
                 'key' => "baeb7c755d0aedc018bf52475374c0a8804e3565"
             ];
             $params = json_encode($params);
-            $responseList[] = self::curlExec('https://api.c-eda.ru/public/v1/send_sms', $params);
+            $responseList[] = self::curlExec('https://api.c-eda.ru/public/v1/send_sms', $params, true);
         }
         if (!empty($ruPnones)) {
             $phonesStringify = implode(',', $ruPnones);
@@ -68,13 +68,13 @@ class CommonActions extends Model
         return $responseList;
     }
 
-    private static function curlExec($url, $params)
+    private static function curlExec($url, $params, $json = false)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+        if ($json) curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 4);
@@ -112,7 +112,7 @@ class CommonActions extends Model
         return null;
     }
 
-    public static function calculateTheDistance ($fA, $lA, $fB, $lB)
+    public static function calculateDistance ($fA, $lA, $fB, $lB)
     {
         $lat1 = $fA * M_PI / 180;
         $lat2 = $fB * M_PI / 180;

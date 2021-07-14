@@ -2114,6 +2114,20 @@ define({ "api": [
             "optional": false,
             "field": "radius",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "title",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "body",
+            "description": ""
           }
         ]
       }
@@ -2379,6 +2393,17 @@ define({ "api": [
             "type": "integer",
             "optional": true,
             "field": "category_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "hide_deleted",
             "description": ""
           }
         ]
@@ -2880,6 +2905,17 @@ define({ "api": [
             "optional": true,
             "field": "limit",
             "description": "<p>row count</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "hide_deleted",
+            "description": ""
           }
         ]
       }

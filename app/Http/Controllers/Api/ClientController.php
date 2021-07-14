@@ -290,7 +290,7 @@ class ClientController extends Controller
             $products = Product::select('products.*', /*'outlets.name as outlet_name',*/ 'categories.name as category_name')
                 /*->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')*/
                 ->leftJoin('categories', 'categories.id', '=', 'products.category_id');
-
+            $products->where('archived', '=', 0);
             $categoryIds = $request->category_ids;
             if ($categoryIds && count($categoryIds) > 0) {
                 /*if(Categories::where('id', '=', $request->category_id)->value('parent_id') == 0) {
@@ -381,7 +381,10 @@ class ClientController extends Controller
         $errors = [];
         $httpStatus = 200;
         $product = null;
-        $validator = Validator::make(['id' => $id], ['id' => 'exists:products,id']);
+        Validator::extend('check_archived', function($attribute, $value, $parameters, $validator) {
+            return Product::where([['id', '=', $value], ['archived', '=', 0]])->exists();
+        });
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:products,id|check_archived']);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
@@ -419,11 +422,14 @@ class ClientController extends Controller
                 return false;
             if (!empty($value['coupon_id'])) {
                 $userId = $parameters[0];
-                if ($coupon = Coupons::where([['id', '=', $value['coupon_id']], ['user_id', '=', $userId]])->first())
+                if ($coupon = Coupons::where([['id', '=', $value['coupon_id']], ['user_id', '=', $userId]])->first()) {
+                    if (!Product::where([['id', '=', $coupon->product_id], ['archived', '=', 0]])->exists())
+                        return false;
                     return $value['count'] <= $coupon->count;
+                }
                 return false;
             } else
-                return Product::where('id', '=', $value['product_id'])->exists();
+                return Product::where([['id', '=', $value['product_id']], ['archived', '=', 0]])->exists();
             return true;
         });
 
@@ -1232,7 +1238,10 @@ class ClientController extends Controller
             if ($id) {
                 $query->where('coupons.id', '=', $id);
             } else {
-                $query->where([['coupons.count', '>', 0], ['coupons.user_id', '=', Auth::user()->id]]);
+                $query->where([
+                    ['products.archived', '=', 0],
+                    ['coupons.count', '>', 0],
+                    ['coupons.user_id', '=', Auth::user()->id]]);
                 $count = $query->count();
                 $order = $request->order ?: 'coupons.id';
                 $dir = $request->dir ?: 'asc';

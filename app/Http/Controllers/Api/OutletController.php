@@ -54,6 +54,9 @@ class OutletController extends Controller
             if (isset($value['coupon_id']) && isset($value['product_id']))
                 return false;
             if (!empty($value['coupon_id'])) {
+                $productId = Coupons::where('id', '=', $value['coupon_id'])->value('product_id');
+                if (!Product::where([['id', '=', $productId], ['archived', '=', 0]])->exists())
+                    return false;
                 $saleId = $parameters[1];
                 $userId = Cards::where('number', '=', $parameters[0])->value('user_id');
                 $validateData = [['id', '=', $value['coupon_id']], ['user_id', '=', $userId]];
@@ -65,7 +68,7 @@ class OutletController extends Controller
                 }
                 return Coupons::where($validateData)->exists();
             } else
-                return Product::where('id', '=', $value['product_id'])->exists();
+                return Product::where([['id', '=', $value['product_id']], ['archived', '=', 0]])->exists();
         });
         Validator::extend('check_sale', function($attribute, $value, $parameters, $validator) {
             return @Sales::where('id', '=', $value)->first()->status == Sales::STATUS_PRE_ORDER;

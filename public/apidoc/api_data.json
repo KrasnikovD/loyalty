@@ -453,8 +453,30 @@
           {
             "group": "Parameter",
             "type": "integer",
-            "optional": false,
+            "optional": true,
             "field": "user_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "is_physical",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "is_main",
             "description": ""
           }
         ]
@@ -521,6 +543,28 @@
             "type": "integer",
             "optional": true,
             "field": "user_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "is_physical",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "is_main",
             "description": ""
           }
         ]
@@ -3122,6 +3166,29 @@
     "groupTitle": "ClientBonusHistory"
   },
   {
+    "type": "get",
+    "url": "/api/clients/cards/bind_card/:number",
+    "title": "Bind Card",
+    "name": "BindCard",
+    "group": "ClientCards",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientCards"
+  },
+  {
     "type": "post",
     "url": "/api/clients/cards/create",
     "title": "Create Card",
@@ -3242,6 +3309,29 @@
             "optional": true,
             "field": "limit",
             "description": "<p>row count</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientCards"
+  },
+  {
+    "type": "get",
+    "url": "/api/clients/cards/set_main/:id",
+    "title": "Set Main",
+    "name": "SetMain",
+    "group": "ClientCards",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
           }
         ]
       }

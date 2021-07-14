@@ -436,7 +436,9 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {string} number
-     * @apiParam {integer} user_id
+     * @apiParam {integer} [user_id]
+     * @apiParam {integer=0,1} [is_physical]
+     * @apiParam {integer=0,1} [is_main]
      */
 
     /**
@@ -448,6 +450,8 @@ class AdminController extends Controller
      *
      * @apiParam {string} [number]
      * @apiParam {integer} [user_id]
+     * @apiParam {integer=0,1} [is_physical]
+     * @apiParam {integer=0,1} [is_main]
      */
 
     public function edit_card(Request $request, $id = null)
@@ -460,7 +464,9 @@ class AdminController extends Controller
         $validatorRules = [];
         if(!$id) $validatorRules['number'] = 'required';
         else $validatorRules['id'] = 'exists:cards,id';
-        $validatorRules['user_id'] = ($id ? 'required|' : '') . 'exists:users,id';
+        $validatorRules['user_id'] = 'exists:users,id';
+        $validatorRules['is_physical'] = 'in:0,1';
+        $validatorRules['is_main'] = 'in:0,1';
 
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
@@ -471,8 +477,16 @@ class AdminController extends Controller
             $card = $id ? Cards::where('id', '=', $id)->first() : new Cards;
             if ($request->user_id) $card->user_id = $request->user_id;
             if ($request->number) $card->number = $request->number;
+            $isPhysical = $request->is_physical;
+            $isMain = $request->is_main;
+            if (isset($isPhysical)) $card->is_physical = $isPhysical;
+            if (isset($isMain) && $card->user_id) {
+                Cards::where('user_id', '=', $card->user_id)->update(['is_main' => 0]);
+                $card->is_main = $isMain;
+            }
             $card->save();
-
+            if ($request->user_id)
+                Sales::where('card_id', '=', $card->id)->update(['user_id' => $card->user_id]);
             if (!$id) {
                 $cardId = $card->id;
                 foreach (BillTypes::all() as $billType) {

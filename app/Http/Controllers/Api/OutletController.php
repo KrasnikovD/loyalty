@@ -59,6 +59,7 @@ class OutletController extends Controller
                     return false;
                 $saleId = $parameters[1];
                 $userId = Cards::where('number', '=', $parameters[0])->value('user_id');
+                if (empty($userId)) return false;
                 $validateData = [['id', '=', $value['coupon_id']], ['user_id', '=', $userId]];
                 if (empty($saleId)) $validateData[] = ['count', '>', 0];
                 else {
@@ -67,8 +68,9 @@ class OutletController extends Controller
                         $validateData[] = ['count', '>', 0];
                 }
                 return Coupons::where($validateData)->exists();
-            } else
+            } else {
                 return Product::where([['id', '=', $value['product_id']], ['archived', '=', 0]])->exists();
+            }
         });
         Validator::extend('check_sale', function($attribute, $value, $parameters, $validator) {
             if ($parameters[0]) {

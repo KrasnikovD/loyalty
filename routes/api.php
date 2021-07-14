@@ -116,6 +116,8 @@ Route::post('/clients/check_auth', 'App\Http\Controllers\Api\ClientController@ch
 
 Route::post('/clients/cards/create', 'App\Http\Controllers\Api\ClientController@edit_card');
 Route::post('/clients/cards/edit/{id}', 'App\Http\Controllers\Api\ClientController@edit_card');
+Route::get('/clients/cards/bind_card/{number}', 'App\Http\Controllers\Api\ClientController@bind_card');
+Route::get('/clients/cards/set_main/{id}', 'App\Http\Controllers\Api\ClientController@set_main');
 
 Route::get('/clients/categories/list', 'App\Http\Controllers\Api\ClientController@list_categories');
 

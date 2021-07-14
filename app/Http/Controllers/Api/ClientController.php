@@ -198,6 +198,7 @@ class ClientController extends Controller
                 $localeKey = 'auth.failed';
                 $data['auth_status'] = 1;
             } else {
+                $data = $user->toArray();
                 if (!$user->active) {
                     $localeKey = __('auth.blocked');
                     $data['auth_status'] = 2;
@@ -430,7 +431,6 @@ class ClientController extends Controller
                 return false;
             } else
                 return Product::where([['id', '=', $value['product_id']], ['archived', '=', 0]])->exists();
-            return true;
         });
 
         $userId = Auth::user()->id;
@@ -547,6 +547,7 @@ class ClientController extends Controller
             $status = $request->status;
             if (isset($status))
                 $sales->where('status', '=', $request->status);
+            $sales->where('sales.user_id', '=', Auth::user()->id);
             if (!$id) {
                 $count = $sales->count();
 
@@ -561,8 +562,6 @@ class ClientController extends Controller
                     if ($offset) $sales->offset($offset);
                 }
             } else $sales->where('sales.id', '=', $id);
-
-            $sales->where('sales.user_id', '=', Auth::user()->id);
 
             $list = $sales->get()->toArray();
 
@@ -1095,6 +1094,59 @@ class ClientController extends Controller
             $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/clients/cards/bind_card/:number Bind Card
+     * @apiName BindCard
+     * @apiGroup ClientCards
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function bind_card($number)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $validator = Validator::make(['number' => $number], ['number' => 'required|exists:cards,number']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $card = Cards::where('number', '=', $number)->first();
+            $card->user_id = Auth::user()->id;
+            $card->save();
+            Sales::where('card_id', '=', $card->id)->update(['user_id' => $card->user_id]);
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/clients/cards/set_main/:id Set Main
+     * @apiName SetMain
+     * @apiGroup ClientCards
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function set_main($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        Validator::extend('check_owner', function($attribute, $value, $parameters, $validator) {
+            return Cards::where([['user_id', '=', $parameters[0]], ['id', '=', $value]])->exists();
+        });
+        $validator = Validator::make(['id' => $id],
+            ['id' => 'required|exists:cards,id|check_owner:' . Auth::user()->id]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            Cards::where('user_id', '=', Auth::user()->id)->update(['is_main' => 0]);
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 
     /**

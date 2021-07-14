@@ -71,6 +71,12 @@ class OutletController extends Controller
                 return Product::where([['id', '=', $value['product_id']], ['archived', '=', 0]])->exists();
         });
         Validator::extend('check_sale', function($attribute, $value, $parameters, $validator) {
+            if ($parameters[0]) {
+                if (Baskets::where('sale_id', '=', $value)
+                    ->join('products', 'products.id', '=', 'baskets.product_id')
+                    ->where('products.archived', '=', 1)->exists())
+                    return false;
+            }
             return @Sales::where('id', '=', $value)->first()->status == Sales::STATUS_PRE_ORDER;
         });
         $validatorData = $request->all();
@@ -79,7 +85,7 @@ class OutletController extends Controller
             [
                 'card_number' => 'required|exists:cards,number',
                 'outlet_id' => (!$saleId ? 'required|' : '') . 'exists:outlets,id',
-                'sale_id' => 'exists:sales,id|check_sale',
+                'sale_id' => 'exists:sales,id|check_sale:' . empty($request->products),
                 'products' => (!$saleId ? 'required|' : '') . 'array',
                 'products.*' => 'check_product:' . $request->card_number .',' . $saleId,
                 'out_format' => 'in:xml,json',

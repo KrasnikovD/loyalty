@@ -2458,6 +2458,116 @@ define({ "api": [
     "groupTitle": "AdminProducts"
   },
   {
+    "type": "get",
+    "url": "/api/reviews/get/:id",
+    "title": "Get Review",
+    "name": "GetReview",
+    "group": "AdminReviews",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminReviews"
+  },
+  {
+    "type": "get",
+    "url": "/api/reviews/list",
+    "title": "Get Reviews List",
+    "name": "GetReviewsList",
+    "group": "AdminReviews",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "product_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "order",
+            "description": "<p>order field name</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "dir",
+            "description": "<p>order direction</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "offset",
+            "description": "<p>start row number, used only when limit is set</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>row count</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminReviews"
+  },
+  {
+    "type": "get",
+    "url": "/api/reviews/moderate/:id",
+    "title": "Set/Unset Visibility Review",
+    "name": "VisibilityReview",
+    "group": "AdminReviews",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminReviews"
+  },
+  {
     "type": "post",
     "url": "/api/stocks/create",
     "title": "Create Stock",

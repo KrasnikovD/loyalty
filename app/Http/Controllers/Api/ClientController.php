@@ -764,10 +764,13 @@ class ClientController extends Controller
         $errors = [];
         $httpStatus = 200;
         $data = null;
+        Validator::extend('check_hidden', function($attribute, $value, $parameters, $validator) {
+            return Reviews::where([['id', '=', $value], ['is_hidden', '=', 0]])->exists();
+        });
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validator = Validator::make($validatorData, [
-            'id' => 'exists:reviews,id',
+            'id' => 'exists:reviews,id|check_hidden',
             'product_id' => 'exists:products,id',
         ]);
         if ($validator->fails()) {
@@ -777,6 +780,7 @@ class ClientController extends Controller
         if (empty($errors)) {
             $count = 0;
             $query = Reviews::select('id', 'message');
+            $query->where('is_hidden', '=', 0);
             if ($id) $query->where('id', '=', $id);
             else {
                 if ($request->product_id) $query->where('product_id', '=', $request->product_id);

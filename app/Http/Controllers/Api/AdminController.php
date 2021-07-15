@@ -16,6 +16,7 @@ use App\Models\Devices;
 use App\Models\News;
 use App\Models\Outlet;
 use App\Models\Product;
+use App\Models\Reviews;
 use App\Models\Sales;
 use App\Models\Stocks;
 use App\Models\Users;
@@ -2522,5 +2523,94 @@ class AdminController extends Controller
             Coupons::where('id', '=', $id)->delete();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/reviews/moderate/:id Set/Unset Visibility Review
+     * @apiName VisibilityReview
+     * @apiGroup AdminReviews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function moderate_review($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $review = null;
+        $validator = Validator::make(['id' => $id], ['id' => 'required|exists:reviews,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $review = Reviews::where('id', '=', $id)->first();
+            $review->is_hidden = !$review->is_hidden;
+            $review->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => $review], $httpStatus);
+    }
+
+
+    /**
+     * @api {get} /api/reviews/list Get Reviews List
+     * @apiName GetReviewsList
+     * @apiGroup AdminReviews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} [product_id]
+     * @apiParam {string} [order] order field name
+     * @apiParam {string} [dir] order direction
+     * @apiParam {integer} [offset] start row number, used only when limit is set
+     * @apiParam {integer} [limit] row count
+     */
+
+    /**
+     * @api {get} /api/reviews/get/:id Get Review
+     * @apiName GetReview
+     * @apiGroup AdminReviews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function list_reviews(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validatorData = $request->all();
+        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
+        $validator = Validator::make($validatorData, [
+            'id' => 'exists:reviews,id',
+            'product_id' => 'exists:products,id',
+        ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $count = 0;
+            $query = Reviews::select('id', 'message', 'is_hidden');
+            if ($id) $query->where('id', '=', $id);
+            else {
+                if ($request->product_id) $query->where('product_id', '=', $request->product_id);
+                $count = $query->count();
+                $order = $request->order ?: 'reviews.id';
+                $dir = $request->dir ?: 'asc';
+                $offset = $request->offset;
+                $limit = $request->limit;
+
+                $query->orderBy($order, $dir);
+                if ($limit) {
+                    $query->limit($limit);
+                    if ($offset) $query->offset($offset);
+                }
+            }
+            $list = $query->get()->toArray();
+            if ($id) $data = $list[0];
+            else $data = ['count' => $count, 'list' => $list];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 }

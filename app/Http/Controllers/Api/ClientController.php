@@ -779,7 +779,9 @@ class ClientController extends Controller
         }
         if (empty($errors)) {
             $count = 0;
-            $query = Reviews::select('id', 'message');
+            $query = Reviews::select('reviews.id', 'reviews.message', 'products.name as product_name', 'users.first_name as user_first_name', 'users.second_name as user_second_name')
+                ->join('products', 'products.id', '=', 'reviews.product_id')
+                ->join('users', 'users.id', '=', 'reviews.user_id');
             $query->where('is_hidden', '=', 0);
             if ($id) $query->where('id', '=', $id);
             else {

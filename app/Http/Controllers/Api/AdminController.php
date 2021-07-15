@@ -2596,7 +2596,9 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $count = 0;
-            $query = Reviews::select('id', 'message', 'is_hidden');
+            $query = Reviews::select('reviews.id', 'reviews.message', 'reviews.is_hidden', 'products.name as product_name', 'users.first_name as user_first_name', 'users.second_name as user_second_name')
+                ->join('products', 'products.id', '=', 'reviews.product_id')
+                ->join('users', 'users.id', '=', 'reviews.user_id');
             if ($id) $query->where('id', '=', $id);
             else {
                 if ($request->product_id) $query->where('product_id', '=', $request->product_id);

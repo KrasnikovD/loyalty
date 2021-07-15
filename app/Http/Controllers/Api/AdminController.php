@@ -460,11 +460,16 @@ class AdminController extends Controller
         $errors = [];
         $httpStatus = 200;
         $card = null;
+        Validator::extend('validate_card_number', function($attribute, $value, $parameters, $validator) {
+            $validateData = [['number', '=', $value]];
+            if (!empty($parameters[0])) $validateData[] = ['id', '<>', $parameters[0]];
+            return !Cards::where($validateData)->exists();
+        });
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [];
-        if(!$id) $validatorRules['number'] = 'required';
-        else $validatorRules['id'] = 'exists:cards,id';
+        $validatorRules['number'] = (!$id ? 'required|' : '') . "validate_card_number:$id";
+        if ($id) $validatorRules['id'] = 'exists:cards,id';
         $validatorRules['user_id'] = 'exists:users,id';
         $validatorRules['is_physical'] = 'in:0,1';
         $validatorRules['is_main'] = 'in:0,1';

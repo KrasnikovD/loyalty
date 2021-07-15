@@ -1427,7 +1427,7 @@ class ClientController extends Controller
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [
-            'number' => 'required',
+            'number' => 'required|unique:cards,number',
             'id' => 'exists:cards,id'
         ];
 

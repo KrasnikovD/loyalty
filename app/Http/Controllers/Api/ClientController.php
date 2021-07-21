@@ -1469,12 +1469,11 @@ class ClientController extends Controller
 
     public function send_support_email(Request $request)
     {
-        Mail::send(['text' => "Laravel HTML Testing Mail"],
-            ['name'=>"Virat Gandhi"],
-            function($message) {
-                $message->to('lhcboinc@yandex.ru', 'Tutorials Point')
-                    ->subject('Laravel Basic Testing Mail');
-                $message->from('xyz@gmail.com','Virat Gandhi');
+        $messageText = '';
+        foreach ($request->all() as $item) $messageText .= $item . "\n";
+        Mail::raw($messageText, function ($message) {
+            $message->to('lhcboinc@yandex.ru', 'Support')
+                ->subject('Support email');
         });
     }
 }

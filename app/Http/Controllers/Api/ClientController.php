@@ -1472,7 +1472,7 @@ class ClientController extends Controller
         $messageText = '';
         foreach ($request->all() as $item) $messageText .= $item . "\n";
         Mail::raw($messageText, function ($message) {
-            $message->to('lhcboinc@yandex.ru', 'Support')
+            $message->to('oleg@cit-llc.ru')
                 ->subject('Support email');
         });
     }

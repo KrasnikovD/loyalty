@@ -24,6 +24,7 @@ use App\Models\Stocks;
 use App\Models\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class ClientController extends Controller
@@ -1453,5 +1454,27 @@ class ClientController extends Controller
             }
         }
         return response()->json(['errors' => $errors, 'data' => $card], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/clients/send_support_email Email Send
+     * @apiName EmailSend
+     * @apiGroup ClientEmail
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} name
+     * @apiParam {string} text
+     */
+
+    public function send_support_email(Request $request)
+    {
+        Mail::send(['text' => "Laravel HTML Testing Mail"],
+            ['name'=>"Virat Gandhi"],
+            function($message) {
+                $message->to('lhcboinc@yandex.ru', 'Tutorials Point')
+                    ->subject('Laravel Basic Testing Mail');
+                $message->from('xyz@gmail.com','Virat Gandhi');
+        });
     }
 }

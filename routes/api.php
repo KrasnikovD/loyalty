@@ -166,6 +166,8 @@ Route::post('/clients/bonus_history/get/{bill_id}', 'App\Http\Controllers\Api\Cl
 
 Route::post('/clients/set_location', 'App\Http\Controllers\Api\ClientController@set_location');
 
+Route::post('/clients/send_support_email', 'App\Http\Controllers\Api\ClientController@send_support_email');
+
 /****** OUTLETS ******/
 
 Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');

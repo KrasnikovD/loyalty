@@ -3555,6 +3555,49 @@
   },
   {
     "type": "post",
+    "url": "/api/clients/send_support_email",
+    "title": "Email Send",
+    "name": "EmailSend",
+    "group": "ClientEmail",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "name",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "text",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientEmail"
+  },
+  {
+    "type": "post",
     "url": "/api/clients/favorites/add",
     "title": "Add Favorite",
     "name": "AddFavorite",

@@ -1205,12 +1205,35 @@ class AdminController extends Controller
             if (isset($request->name)) $category->name = $request->name;
             if (isset($request->file_content)) {
                 if ($id) @unlink(Storage::path("images/{$category->file}"));
-                $fileName = uniqid() . ".jpeg";
-                Storage::disk('local')->put("images/$fileName", '');
-                $path = Storage::path("images/$fileName");
-                $imageTmp = imagecreatefromstring(base64_decode($request->file_content));
-                imagejpeg($imageTmp, $path);
-                imagedestroy($imageTmp);
+                $fileName = null;
+                $finfo = finfo_open();
+                $decoded = base64_decode($request->file_content);
+                $mimeType = finfo_buffer($finfo, $decoded, FILEINFO_MIME_TYPE);
+                switch ($mimeType) {
+                    case "image/png":
+                        $fileName = uniqid() . ".png";
+                        break;
+                    case "image/jpeg":
+                        $fileName = uniqid() . ".jpeg";
+                        break;
+                    case "image/tiff":
+                        $fileName = uniqid() . ".tiff";
+                        break;
+                    case "image/gif":
+                        $fileName = uniqid() . ".gif";
+                        break;
+                }
+                finfo_close($finfo);
+                if ($fileName)
+                    Storage::disk('local')->put("images/$fileName", $decoded);
+                else {
+                    $fileName = uniqid() . ".jpeg";
+                    Storage::disk('local')->put("images/$fileName", '');
+                    $path = Storage::path("images/$fileName");
+                    $imageTmp = imagecreatefromstring(base64_decode($request->file_content));
+                    imagejpeg($imageTmp, $path);
+                    imagedestroy($imageTmp);
+                }
                 $category->file = $fileName;
             }
             $category->save();

@@ -2866,6 +2866,13 @@ define({ "api": [
             "optional": false,
             "field": "type",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "object[]",
+            "optional": true,
+            "field": "fields",
+            "description": ""
           }
         ]
       }
@@ -2978,6 +2985,13 @@ define({ "api": [
             ],
             "optional": true,
             "field": "type",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "object[]",
+            "optional": true,
+            "field": "fields",
             "description": ""
           }
         ]

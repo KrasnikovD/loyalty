@@ -249,6 +249,7 @@ class AdminController extends Controller
      * @apiParam {boolean} [archived]
      * @apiParam {boolean} [active]
      * @apiParam {integer=0,1,2} type
+     * @apiParam {object[]} [fields]
      */
 
     /**
@@ -266,6 +267,7 @@ class AdminController extends Controller
      * @apiParam {boolean} [archived]
      * @apiParam {boolean} [active]
      * @apiParam {integer=0,1,2} [type]
+     * @apiParam {object[]} [fields]
      */
 
     public function edit_user(Request $request, $id = null)
@@ -273,13 +275,17 @@ class AdminController extends Controller
         $errors = [];
         $httpStatus = 200;
         $user = null;
-
         Validator::extend('phone_validate', function($attribute, $value, $parameters, $validator) {
             $validateData = [['phone', '=', $value]];
             $userId = $parameters[0];
             if (isset($userId))
                 $validateData[] = ['id', '<>', $userId];
             return !Users::where($validateData)->exists();
+        });
+        Validator::extend('field_validation', function($attribute, $value, $parameters, $validator) {
+            if (empty($value['name']) || !array_key_exists('value', $value))
+                return false;
+            return Fields::where('name', $value['name'])->exists();
         });
         if ($request->phone) $request->phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
         $validatorData = $request->all();
@@ -299,6 +305,8 @@ class AdminController extends Controller
         $validatorRules['birthday'] = 'date';
         $validatorRules['archived'] = 'in:0,1';
         $validatorRules['active'] = 'in:0,1';
+        $validatorRules['fields'] = 'array';
+        $validatorRules['fields.*'] = 'field_validation';
 
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
@@ -320,13 +328,26 @@ class AdminController extends Controller
             if (isset($active)) $user->active = $request->active;
             $user->save();
 
-            if(!$id && ($request->type == 1)) {
-                $userId = $user->id;
+            if($user->type == 1) {
                 foreach (Fields::all() as $field) {
-                    $fieldsUser = new FieldsUsers;
-                    $fieldsUser->field_id = $field->id;
-                    $fieldsUser->user_id = $userId;
-                    $fieldsUser->save();
+                    $fieldValue = null;
+                    if (!empty($request->fields)) {
+                        foreach ($request->fields as $requestField) {
+                            if ($requestField['name'] == $field['name'])
+                                $fieldValue = $requestField['value'];
+                        }
+                    }
+                    $fieldsUser = $id ? FieldsUsers::where([
+                        ['field_id', $field->id],
+                        ['user_id', $user->id]])->first() : new FieldsUsers;
+                    if ($fieldsUser) {
+                        if (!$id) {
+                            $fieldsUser->field_id = $field->id;
+                            $fieldsUser->user_id = $user->id;
+                        }
+                        if ($fieldValue) $fieldsUser->value = $fieldValue;
+                        $fieldsUser->save();
+                    }
                 }
             }
         }

@@ -36,8 +36,18 @@ class DataHelper extends Model
             $cardMap[$card['user_id']][] = $card;
         }
 
+        $userFieldsMap = [];
+        $fieldUsers = FieldsUsers::join('fields', 'fields.id', '=', 'fields_users.field_id')
+            ->whereIn('user_id', $usersIds)
+            ->select('fields_users.user_id', 'fields.name', 'fields_users.value')->get();
+        foreach ($fieldUsers as $item) {
+            if (!isset($userFieldsMap[$item->user_id])) $userFieldsMap[$item->user_id] = [];
+            $userFieldsMap[$item->user_id][] = ['name' => $item->name, 'value' => $item->value];
+        }
+
         foreach ($data as &$item) {
             $item['card_list'] = @$cardMap[$item['id']];
+            $item['fields'] = @$userFieldsMap[$item['id']];
         }
     }
 

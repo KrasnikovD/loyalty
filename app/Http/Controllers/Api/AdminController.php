@@ -331,10 +331,14 @@ class AdminController extends Controller
             if($user->type == 1) {
                 foreach (Fields::all() as $field) {
                     $fieldValue = null;
+                    $keyExists = false;
                     if (!empty($request->fields)) {
                         foreach ($request->fields as $requestField) {
-                            if ($requestField['name'] == $field['name'])
+                            if ($requestField['name'] == $field['name']) {
                                 $fieldValue = $requestField['value'];
+                                $keyExists = true;
+                                break;
+                            }
                         }
                     }
                     $fieldsUser = $id ? FieldsUsers::where([
@@ -345,7 +349,7 @@ class AdminController extends Controller
                             $fieldsUser->field_id = $field->id;
                             $fieldsUser->user_id = $user->id;
                         }
-                        if ($fieldValue) $fieldsUser->value = $fieldValue;
+                        if ($keyExists) $fieldsUser->value = $fieldValue;
                         $fieldsUser->save();
                     }
                 }

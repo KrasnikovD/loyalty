@@ -15,6 +15,8 @@ use App\Models\Coupons;
 use App\Models\DataHelper;
 use App\Models\Devices;
 use App\Models\Favorites;
+use App\Models\Fields;
+use App\Models\FieldsUsers;
 use App\Models\News;
 use App\Models\Outlet;
 use App\Models\Product;
@@ -1171,14 +1173,9 @@ class ClientController extends Controller
 
     public function profile()
     {
-        $user = Auth::user();
-        $data = [
-            'id' => $user->id,
-            'first_name' => $user->first_name,
-            'second_name' => $user->second_name,
-            'phone' => $user->phone,
-        ];
-        return response()->json(['errors' => [], 'data' => $data], 200);
+        $user = [Auth::user()];
+        DataHelper::collectUsersInfo($user);
+        return response()->json(['errors' => [], 'data' => $user[0]], 200);
     }
 
     /**
@@ -1191,6 +1188,7 @@ class ClientController extends Controller
      * @apiParam {string} [first_name]
      * @apiParam {string} [second_name]
      * @apiParam {string} [password]
+     * @apiParam {object[]} [fields]
      */
 
     public function edit_profile(Request $request, $id = null)
@@ -1198,13 +1196,53 @@ class ClientController extends Controller
         $errors = [];
         $httpStatus = 200;
         $user = null;
+        Validator::extend('field_validation', function($attribute, $value, $parameters, $validator) {
+            if (empty($value['name']) || !array_key_exists('value', $value))
+                return false;
+            return Fields::where('name', $value['name'])->exists();
+        });
 
-        $user = Users::where('id', '=', Auth::user()->id)->first();
-        if ($request->first_name) $user->first_name = $request->first_name;
-        if ($request->second_name) $user->second_name = $request->second_name;
-        if ($request->password) $user->password = md5($request->password);
-        $user->save();
+        $validatorRules =  [
+            'fields' => 'array',
+            'fields.*' => 'field_validation'
+        ];
+        $validator = Validator::make($request->all(), $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $user = Users::where('id', '=', Auth::user()->id)->first();
+            if ($request->first_name) $user->first_name = $request->first_name;
+            if ($request->second_name) $user->second_name = $request->second_name;
+            if ($request->password) $user->password = md5($request->password);
+            $user->save();
 
+            if (!empty($request->fields)) {
+                foreach (Fields::all() as $field) {
+                    $fieldValue = null;
+                    $keyExists = false;
+                    if (!empty($request->fields)) {
+                        foreach ($request->fields as $requestField) {
+                            if ($requestField['name'] == $field['name']) {
+                                $fieldValue = $requestField['value'];
+                                $keyExists = true;
+                                break;
+                            }
+                        }
+                    }
+                    if ($keyExists) {
+                        $fieldsUser = FieldsUsers::where([
+                            ['field_id', $field->id],
+                            ['user_id', $user->id]])->first();
+                        if ($fieldsUser) {
+                            $fieldsUser->value = $fieldValue;
+                            $fieldsUser->save();
+                        }
+                    }
+                }
+            }
+        }
         return response()->json(['errors' => $errors, 'data' => $user], $httpStatus);
     }
 

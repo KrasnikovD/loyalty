@@ -4239,6 +4239,13 @@ define({ "api": [
             "optional": true,
             "field": "password",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "object[]",
+            "optional": true,
+            "field": "fields",
+            "description": ""
           }
         ]
       }

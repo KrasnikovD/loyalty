@@ -27,6 +27,7 @@ class OutletController extends Controller
      *
      * @apiParam {integer} outlet_id
      * @apiParam {string} card_number
+     * @apiParam {string} debited
      * @apiParam {object[]} products
      * @apiParam {string=xml,json} [out_format]
      */
@@ -37,6 +38,7 @@ class OutletController extends Controller
      * @apiGroup OutletSales
      *
      * @apiParam {string} card_number
+     * @apiParam {string} debited
      * @apiParam {object[]} [products]
      * @apiParam {string=xml,json} [out_format]
      */
@@ -81,6 +83,15 @@ class OutletController extends Controller
             }
             return @Sales::where('id', '=', $value)->first()->status == Sales::STATUS_PRE_ORDER;
         });
+        Validator::extend('check_debited', function($attribute, $value, $parameters, $validator) {
+            $cardInfo = Cards::select('bills.*')
+                ->join('bills', 'bills.card_id', '=', 'cards.id')
+                ->join('bill_types', 'bill_types.id', '=', 'bills.bill_type_id')
+                ->where([
+                    ['number', '=', $parameters[0]],
+                    ['bill_types.name', '=', BillTypes::TYPE_DEFAULT]])->first();
+            return $cardInfo->value >= $value;
+        });
         $validatorData = $request->all();
         if ($saleId) $validatorData = array_merge($validatorData, ['sale_id' => $saleId]);
         $validator = Validator::make($validatorData,
@@ -91,16 +102,20 @@ class OutletController extends Controller
                 'products' => (!$saleId ? 'required|' : '') . 'array',
                 'products.*' => 'check_product:' . $request->card_number .',' . $saleId,
                 'out_format' => 'in:xml,json',
+                'debited' => 'regex:/^\d+(\.\d{1,2})?$/|check_debited:' . $request->card_number,
             ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
         if (empty($errors)) {
+            $debited = $request->debited ?: 0;
             $cardInfo = Cards::select('cards.id', 'user_id', 'bills.id as bill_id')
                 ->join('bills', 'bills.card_id', '=', 'cards.id')
                 ->join('bill_types', 'bill_types.id', '=', 'bills.bill_type_id')
-                ->where([['number', '=', $request->card_number], ['bill_types.name', '=', BillTypes::TYPE_DEFAULT]])->first();
+                ->where([
+                    ['number', '=', $request->card_number],
+                    ['bill_types.name', '=', BillTypes::TYPE_DEFAULT]])->first();
 
             $currentAmount = Sales::where([['bill_id', '=', $cardInfo->bill_id], ['status', '=', Sales::STATUS_COMPLETED]])->sum('amount');
 
@@ -201,6 +216,7 @@ class OutletController extends Controller
                         $basket->save();
                     }
                 }
+                $amount -= $debited;
                 $sale->amount = $sale->amount_now = $amount;
             }
 
@@ -224,7 +240,11 @@ class OutletController extends Controller
                     $currentTo = $program->to;
                     $sale->bill_program_id = $program->id;
                     $bill->bill_program_id = $program->id;
-                    $bill->value = floatval($bill->value) + $program->percent * 0.01 * $sale->amount;
+                    print "bill->value = ".floatval($bill->value)."\n";
+                    print "amount = ".$sale->amount."\n";
+                    print "program->percent * 0.01 * sale->amount = ".$program->percent * 0.01 * $sale->amount."\n";
+                    print "whole = ".(floatval($bill->value) + $program->percent * 0.01 * $sale->amount)."\n";
+                    $bill->value = floatval($bill->value - $debited) + $program->percent * 0.01 * $sale->amount;
                 }
                 $nextFrom = BillPrograms::where('from', '>', $currentFrom)->min('from');
                 if (!$nextFrom) $nextFrom = $currentTo + 1;
@@ -239,9 +259,11 @@ class OutletController extends Controller
                     $historyEntry->accumulated = floatval($bill->value);
                     $historyEntry->added = $program->percent * 0.01 * $sale->amount;
                     $historyEntry->dt = date('Y-m-d H:i:s');
+                    if ($debited) $historyEntry->debited = $debited;
                     $historyEntry->save();
                 }
             }
+            if ($debited) $sale->debited = $debited;
             $sale->save();
         }
         if ($request->out_format == 'json')

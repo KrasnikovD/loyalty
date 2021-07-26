@@ -4625,6 +4625,13 @@
           },
           {
             "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "debited",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
             "type": "object[]",
             "optional": false,
             "field": "products",
@@ -4662,6 +4669,13 @@
             "type": "string",
             "optional": false,
             "field": "card_number",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "debited",
             "description": ""
           },
           {

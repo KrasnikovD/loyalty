@@ -240,10 +240,6 @@ class OutletController extends Controller
                     $currentTo = $program->to;
                     $sale->bill_program_id = $program->id;
                     $bill->bill_program_id = $program->id;
-                    print "bill->value = ".floatval($bill->value)."\n";
-                    print "amount = ".$sale->amount."\n";
-                    print "program->percent * 0.01 * sale->amount = ".$program->percent * 0.01 * $sale->amount."\n";
-                    print "whole = ".(floatval($bill->value) + $program->percent * 0.01 * $sale->amount)."\n";
                     $bill->value = floatval($bill->value - $debited) + $program->percent * 0.01 * $sale->amount;
                 }
                 $nextFrom = BillPrograms::where('from', '>', $currentFrom)->min('from');

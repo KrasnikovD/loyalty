@@ -1131,6 +1131,7 @@ class ClientController extends Controller
             $card->user_id = Auth::user()->id;
             $card->save();
             Sales::where('card_id', '=', $card->id)->update(['user_id' => $card->user_id]);
+            CommonActions::cardHistoryLogBind($card);
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
@@ -1148,7 +1149,7 @@ class ClientController extends Controller
         $errors = [];
         $httpStatus = 200;
         Validator::extend('check_owner', function($attribute, $value, $parameters, $validator) {
-            return Cards::where([['user_id', '=', $parameters[0]], ['id', '=', $value]])->exists();
+            return Cards::where([['is_main', '=', 0], ['user_id', '=', $parameters[0]], ['id', '=', $value]])->exists();
         });
         $validator = Validator::make(['id' => $id],
             ['id' => 'required|exists:cards,id|check_owner:' . Auth::user()->id]);
@@ -1157,8 +1158,13 @@ class ClientController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            Cards::where('user_id', '=', Auth::user()->id)->update(['is_main' => 0]);
+            $query = Cards::where([['user_id', '=', Auth::user()->id], ['is_main', '=', 1]]);
+            $prevId = @$query->first()->id;
+            $query->update(['is_main' => 0]);
             Cards::where('id', '=', $id)->update(['is_main' => 1]);
+            foreach (Cards::whereIn('id', [$prevId, $id])->get() as $card) {
+                CommonActions::cardHistoryLogEditOrCreate($card, false);
+            }
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
@@ -1468,8 +1474,8 @@ class ClientController extends Controller
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [
-            'number' => 'required|unique:cards,number',
-            'id' => 'exists:cards,id'
+            'number' => 'required|unique:cards,number,' . $id,
+            'id' => 'exists:cards,id,deleted_at,NULL'
         ];
 
         $validator = Validator::make($validatorData, $validatorRules);
@@ -1498,6 +1504,7 @@ class ClientController extends Controller
                     $bill->save();
                 }
             }
+            CommonActions::cardHistoryLogEditOrCreate($card, !$id);
         }
         return response()->json(['errors' => $errors, 'data' => $card], $httpStatus);
     }

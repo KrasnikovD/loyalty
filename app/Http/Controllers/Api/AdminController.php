@@ -7,6 +7,7 @@ use App\Models\Baskets;
 use App\Models\BillPrograms;
 use App\Models\Bills;
 use App\Models\BillTypes;
+use App\Models\CardHistory;
 use App\Models\Cards;
 use App\Models\Categories;
 use App\Models\CommonActions;
@@ -494,7 +495,7 @@ class AdminController extends Controller
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [];
         $validatorRules['number'] = (!$id ? 'required|' : '') . "validate_card_number:$id";
-        if ($id) $validatorRules['id'] = 'exists:cards,id';
+        if ($id) $validatorRules['id'] = 'exists:cards,id,deleted_at,NULL';
         $validatorRules['user_id'] = 'exists:users,id';
         $validatorRules['is_physical'] = 'in:0,1';
         $validatorRules['is_main'] = 'in:0,1';
@@ -534,6 +535,7 @@ class AdminController extends Controller
                     $bill->save();
                 }
             }
+            CommonActions::cardHistoryLogEditOrCreate($card, !$id);
         }
         return response()->json(['errors' => $errors, 'data' => $card], $httpStatus);
     }
@@ -619,15 +621,17 @@ class AdminController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
-        $validator = Validator::make(['id' => $id], ['id' => 'exists:cards,id']);
+
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:cards,id,deleted_at,NULL']);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $bills = Bills::where('card_id', '=', $id);
-            $bills->delete();
+      //      $bills = Bills::where('card_id', '=', $id);
+      //      $bills->delete();
             Cards::where('id', '=', $id)->delete();
+            CommonActions::cardHistoryLogDelete($id);
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
@@ -2674,5 +2678,32 @@ class AdminController extends Controller
             else $data = ['count' => $count, 'list' => $list];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/card_history/:card_id Get Card History
+     * @apiName GetCardHistory
+     * @apiGroup AdminCards
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function card_history(Request $request, $id = null)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:cards,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $data = CardHistory::where('card_id', $id)->orderBy('created_at')->get();
+            foreach ($data as &$item) {
+                $item->data = json_decode($item->data);
+            }
+        }
+        return response()->json(['errors' => [], 'data' => $data], $httpStatus);
     }
 }

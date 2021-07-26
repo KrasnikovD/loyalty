@@ -598,6 +598,29 @@
     "groupTitle": "AdminCards"
   },
   {
+    "type": "get",
+    "url": "/api/card_history/:card_id",
+    "title": "Get Card History",
+    "name": "GetCardHistory",
+    "group": "AdminCards",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminCards"
+  },
+  {
     "type": "post",
     "url": "/api/cards/list",
     "title": "Get Cards List",

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
 class CommonActions extends Model
@@ -140,5 +141,61 @@ class CommonActions extends Model
         $str = '';
         for ($i = 0; $i < 12; $i++) $str .= $characters[rand(0, strlen($characters)-1)];
         return $str;
+    }
+
+    public static function cardHistoryLogSale($sale, $historyEntry = null)
+    {
+        $logSale = new CardHistory;
+        $data = [
+            'sale_id' => $sale->id,
+            'amount' => $sale->amount,
+            'amount_now' => $sale->amount_now,
+            'outlet_id' => $sale->outlet_id,
+            'bill_id' => $sale->bill_id,
+            'debited' => $sale->debited,
+        ];
+        if ($historyEntry) {
+            $data['bill_program_id'] = $historyEntry->bill_program_id;
+            $data['accumulated'] = $historyEntry->accumulated;
+            $data['added'] = $historyEntry->added;
+            $data['debited'] = $historyEntry->debited;
+        }
+        $logSale->card_id = $sale->card_id;
+        $logSale->type = CardHistory::SALE;
+        $logSale->data = json_encode($data);
+        $logSale->save();
+    }
+
+    public static function cardHistoryLogDelete($cardId)
+    {
+        $logSale = new CardHistory;
+        $logSale->card_id = $cardId;
+        $logSale->type = CardHistory::DELETED;
+        $logSale->author_id = Auth::user()->id;
+        $logSale->save();
+    }
+
+    public static function cardHistoryLogEditOrCreate($card, $isCreate)
+    {
+        $logSale = new CardHistory;
+        $logSale->card_id = $card->id;
+        $logSale->type = $isCreate ? CardHistory::CREATED : CardHistory::EDITED;
+        $data = [
+            'number' => $card->number,
+            'is_physical' => $card->is_physical,
+            'is_main' => $card->is_main,
+        ];
+        $logSale->data = json_encode($data);
+        $logSale->author_id = Auth::user()->id;
+        $logSale->save();
+    }
+
+    public static function cardHistoryLogBind($card)
+    {
+        $logSale = new CardHistory;
+        $logSale->card_id = $card->id;
+        $logSale->type = CardHistory::BINDED;
+        $logSale->author_id = Auth::user()->id;
+        $logSale->save();
     }
 }

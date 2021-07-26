@@ -9,6 +9,7 @@ use App\Models\Bills;
 use App\Models\BillTypes;
 use App\Models\BonusHistory;
 use App\Models\Cards;
+use App\Models\CommonActions;
 use App\Models\Coupons;
 use App\Models\DataHelper;
 use App\Models\Product;
@@ -220,6 +221,7 @@ class OutletController extends Controller
                 $sale->amount = $sale->amount_now = $amount;
             }
 
+            $historyEntry = null;
             $billPrograms = BillPrograms::orderBy('to', 'desc')->get();
             if ($billPrograms) {
                 $program = null;
@@ -261,6 +263,7 @@ class OutletController extends Controller
             }
             if ($debited) $sale->debited = $debited;
             $sale->save();
+            CommonActions::cardHistoryLogSale($sale, $historyEntry);
         }
         if ($request->out_format == 'json')
             return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);

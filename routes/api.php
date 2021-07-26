@@ -111,6 +111,8 @@ Route::get('/coupons/delete/{id}', 'App\Http\Controllers\Api\AdminController@del
 Route::get('/reviews/moderate/{id}', 'App\Http\Controllers\Api\AdminController@moderate_review');
 Route::get('/reviews/list', 'App\Http\Controllers\Api\AdminController@list_reviews');
 
+Route::get('/card_history/{card_id}', 'App\Http\Controllers\Api\AdminController@card_history');
+
 /****** CLIENTS ******/
 
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');

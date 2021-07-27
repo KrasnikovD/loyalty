@@ -16,6 +16,7 @@ use App\Models\Product;
 use App\Models\Sales;
 use App\Models\Users;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Spatie\ArrayToXml\ArrayToXml;
 
@@ -63,7 +64,11 @@ class OutletController extends Controller
                 $saleId = $parameters[1];
                 $userId = Cards::where('number', '=', $parameters[0])->value('user_id');
                 if (empty($userId)) return false;
-                $validateData = [['id', '=', $value['coupon_id']], ['user_id', '=', $userId]];
+                $validateData = [
+                    ['id', '=', $value['coupon_id']],
+                    ['user_id', '=', $userId],
+                    ['date_end', '>=', DB::raw('cast(now() as date)')]
+                ];
                 if (empty($saleId)) $validateData[] = ['count', '>', 0];
                 else {
                     if (!Baskets::where([['coupon_id', '=', $value['coupon_id']],
@@ -217,6 +222,7 @@ class OutletController extends Controller
                         $basket->save();
                     }
                 }
+                //if (($amount - $debited) < 0) $debited = $amount;
                 $amount -= $debited;
                 $sale->amount = $sale->amount_now = $amount;
             }

@@ -2474,6 +2474,7 @@ class AdminController extends Controller
      * @apiParam {integer} user_id
      * @apiParam {integer} product_id
      * @apiParam {integer} count
+     * @apiParam {string} date_end
      */
 
     /**
@@ -2483,7 +2484,8 @@ class AdminController extends Controller
      *
      * @apiHeader {string} Authorization Basic current user token
      *
-     * @apiParam {integer} count
+     * @apiParam {integer} [count]
+     * @apiParam {string} [date_end]
      */
 
     public function edit_coupon(Request $request, $id = null)
@@ -2497,7 +2499,10 @@ class AdminController extends Controller
         });
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
-        $validatorRules = ['id' => 'exists:coupons,id', 'count' => 'required|integer|min:1'];
+        $validatorRules = [
+            'id' => 'exists:coupons,id',
+            'count' => (!$id ? 'required|' : '') . 'integer|min:1'
+        ];
         if (!$id) {
             $validatorRules['user_id'] = 'required|exists:users,id';
             $validatorRules['product_id'] = 'required|exists:products,id|check_archived';
@@ -2514,6 +2519,8 @@ class AdminController extends Controller
                 $coupon->product_id = $request->product_id;
             }
             $coupon->count = $coupon->init_count = $request->count;
+            if ($request->date_end)
+                $coupon->date_end = date('Y-m-d H:i:s', strtotime($request->date_end));
             $coupon->save();
 
             if (!$id) {

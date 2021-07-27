@@ -26,6 +26,7 @@ use App\Models\Stocks;
 use App\Models\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
@@ -439,7 +440,11 @@ class ClientController extends Controller
                 return false;
             if (!empty($value['coupon_id'])) {
                 $userId = $parameters[0];
-                if ($coupon = Coupons::where([['id', '=', $value['coupon_id']], ['user_id', '=', $userId]])->first()) {
+                if ($coupon = Coupons::where([
+                    ['id', '=', $value['coupon_id']],
+                    ['user_id', '=', $userId],
+                    ['date_end', '>=', DB::raw('cast(now() as date)')]
+                ])->first()) {
                     if (!Product::where([['id', '=', $coupon->product_id], ['archived', '=', 0]])->exists())
                         return false;
                     return $value['count'] <= $coupon->count;

@@ -974,6 +974,13 @@ define({ "api": [
             "optional": false,
             "field": "count",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "date_end",
+            "description": ""
           }
         ]
       }
@@ -1032,6 +1039,13 @@ define({ "api": [
             "type": "integer",
             "optional": false,
             "field": "count",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "date_end",
             "description": ""
           }
         ]

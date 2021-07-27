@@ -123,10 +123,12 @@ class OutletController extends Controller
                     ['number', '=', $request->card_number],
                     ['bill_types.name', '=', BillTypes::TYPE_DEFAULT]])->first();
 
+            $birthdayStockValue = CommonActions::getBirthdayStockInfo($cardInfo->user_id, $saleId, $request->products);
+
             $currentAmount = Sales::where([['bill_id', '=', $cardInfo->bill_id], ['status', '=', Sales::STATUS_COMPLETED]])->sum('amount');
 
             $sale = $saleId ? Sales::where('id', '=', $saleId)->first() : new Sales;
-            if(isset($request->outlet_id)) $sale->outlet_id = $request->outlet_id;
+            if (isset($request->outlet_id)) $sale->outlet_id = $request->outlet_id;
             $sale->user_id = $cardInfo->user_id;
             $sale->card_id = $cardInfo->id;
             $sale->bill_id = $cardInfo->bill_id;
@@ -243,12 +245,14 @@ class OutletController extends Controller
                 $bill = Bills::where('id', '=', $saleId ? $sale->bill_id : $cardInfo->bill_id)->first();
                 $currentFrom = 0;
                 $currentTo = 0;
+                $added = 0;
                 if ($program) {
+                    $added = $birthdayStockValue ?: $program->percent * 0.01 * $sale->amount;
                     $currentFrom = $program->from;
                     $currentTo = $program->to;
                     $sale->bill_program_id = $program->id;
                     $bill->bill_program_id = $program->id;
-                    $bill->value = floatval($bill->value - $debited) + $program->percent * 0.01 * $sale->amount;
+                    $bill->value = floatval($bill->value - $debited) + $added;
                 }
                 $nextFrom = BillPrograms::where('from', '>', $currentFrom)->min('from');
                 if (!$nextFrom) $nextFrom = $currentTo + 1;
@@ -261,7 +265,7 @@ class OutletController extends Controller
                     $historyEntry->bill_id = $bill->id;
                     $historyEntry->sale_id = $sale->id;
                     $historyEntry->accumulated = floatval($bill->value);
-                    $historyEntry->added = $program->percent * 0.01 * $sale->amount;
+                    $historyEntry->added = $added;
                     $historyEntry->dt = date('Y-m-d H:i:s');
                     if ($debited) $historyEntry->debited = $debited;
                     $historyEntry->save();

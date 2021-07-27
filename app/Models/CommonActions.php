@@ -198,4 +198,29 @@ class CommonActions extends Model
         $logSale->author_id = $userId ?: Auth::user()->id;
         $logSale->save();
     }
+
+    public static function getBirthdayStockInfo($userId, $saleId, $products)
+    {
+        if ($saleId) {
+            foreach (Baskets::where('sale_id', $saleId)->get() as $item) {
+                if ($item->coupon_id) return false;
+            }
+        }
+        if ($products) {
+            foreach ($products as $product) {
+                if (isset($product['coupon_id'])) return false;
+            }
+        }
+        $user = Users::where('id', $userId)->first();
+        if ($user->birthday) {
+            $count = config('settings.sale_birthday_stock_day_count');
+            $fromDate = date('Y-m-d', strtotime(date('Y-m-d') . " - $count days"));
+            $toDate = date('Y-m-d', strtotime(date('Y-m-d') . " + $count days"));
+            if ((strtotime($fromDate) <= strtotime($user->birthday)) &&
+                (strtotime($toDate) >= strtotime($user->birthday))) {
+                return config('settings.sale_birthday_stock_value');
+            }
+        }
+        return false;
+    }
 }

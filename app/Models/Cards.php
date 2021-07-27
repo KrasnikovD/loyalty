@@ -12,4 +12,7 @@ class Cards extends Model
     use SoftDeletes;
 
     protected $table = 'cards';
+
+    const ACTIVE = 0;
+    const BLOCKED = 1;
 }

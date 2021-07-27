@@ -478,6 +478,13 @@ define({ "api": [
             "optional": true,
             "field": "is_main",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "phone",
+            "description": ""
           }
         ]
       }
@@ -566,6 +573,13 @@ define({ "api": [
             "optional": true,
             "field": "is_main",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "phone",
+            "description": ""
           }
         ]
       }
@@ -599,7 +613,7 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/api/card_history/:card_id",
+    "url": "/api/cards/history/:id",
     "title": "Get Card History",
     "name": "GetCardHistory",
     "group": "AdminCards",
@@ -669,6 +683,29 @@ define({ "api": [
             "optional": true,
             "field": "limit",
             "description": "<p>row count</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminCards"
+  },
+  {
+    "type": "patch",
+    "url": "/api/cards/switch_status/:id",
+    "title": "Switch Status",
+    "name": "SwitchStatus",
+    "group": "AdminCards",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
           }
         ]
       }
@@ -2472,6 +2509,29 @@ define({ "api": [
             "optional": true,
             "field": "hide_deleted",
             "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminProducts"
+  },
+  {
+    "type": "patch",
+    "url": "/api/products/switch_visibility/:id",
+    "title": "Switch Visibility",
+    "name": "SwitchVisibility",
+    "group": "AdminProducts",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
           }
         ]
       }

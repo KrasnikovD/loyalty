@@ -466,6 +466,7 @@ class AdminController extends Controller
      * @apiParam {integer} [user_id]
      * @apiParam {integer=0,1} [is_physical]
      * @apiParam {integer=0,1} [is_main]
+     * @apiParam {string} [phone]
      */
 
     /**
@@ -479,6 +480,7 @@ class AdminController extends Controller
      * @apiParam {integer} [user_id]
      * @apiParam {integer=0,1} [is_physical]
      * @apiParam {integer=0,1} [is_main]
+     * @apiParam {string} [phone]
      */
 
     public function edit_card(Request $request, $id = null)
@@ -509,11 +511,16 @@ class AdminController extends Controller
             $card = $id ? Cards::where('id', '=', $id)->first() : new Cards;
             if ($request->user_id) $card->user_id = $request->user_id;
             if ($request->number) $card->number = $request->number;
+            if ($request->phone) $card->phone = $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
             $isPhysical = $request->is_physical;
             $isMain = $request->is_main;
             if (isset($isPhysical)) $card->is_physical = $isPhysical;
             if (isset($isMain) && $card->user_id) {
-                Cards::where('user_id', '=', $card->user_id)->update(['is_main' => 0]);
+                if ($prevMainCard = Cards::where([['user_id', '=', $card->user_id], ['is_main', '=', 1]])->first()) {
+                    $prevMainCard->is_main = 0;
+                    $prevMainCard->save();
+                    CommonActions::cardHistoryLogEditOrCreate($prevMainCard, false);
+                }
                 $card->is_main = $isMain;
             }
             $card->save();
@@ -1620,6 +1627,31 @@ class AdminController extends Controller
     }
 
     /**
+     * @api {patch} /api/products/switch_visibility/:id Switch Visibility
+     * @apiName SwitchVisibility
+     * @apiGroup AdminProducts
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function switch_product_visibility($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:products,id,archived,0']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $product = Product::where('id', '=', $id)->first();
+            $product->visible = !$product->visible;
+            $product->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
      * @api {post} /api/orders/create Create Order
      * @apiName CreateOrder
      * @apiGroup AdminOrders
@@ -2681,7 +2713,7 @@ class AdminController extends Controller
     }
 
     /**
-     * @api {get} /api/card_history/:card_id Get Card History
+     * @api {get} /api/cards/history/:id Get Card History
      * @apiName GetCardHistory
      * @apiGroup AdminCards
      *
@@ -2705,5 +2737,31 @@ class AdminController extends Controller
             }
         }
         return response()->json(['errors' => [], 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {patch} /api/cards/switch_status/:id Switch Status
+     * @apiName SwitchStatus
+     * @apiGroup AdminCards
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function switch_card_status($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:cards,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $card = Cards::where('id', $id)->first();
+            $card->status = !$card->status;
+            $card->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
 }

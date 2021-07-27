@@ -105,15 +105,27 @@ class ClientController extends Controller
             $user->save();
             $data = CommonActions::sendSms([$phone], $user->code);
             if ($newUser) {
-                $card = new Cards;
-                $card->user_id = $user->id;
-                $card->number = CommonActions::randomString();
-                $card->save();
-                foreach (BillTypes::all() as $billType) {
-                    $bill = new Bills;
-                    $bill->card_id = $card->id;
-                    $bill->bill_type_id = $billType->id;
-                    $bill->save();
+                $cardExists = false;
+                foreach (Cards::where('phone', '=', $phone)->get() as $card) {
+                    $cardExists = true;
+                    $card->user_id = $user->id;
+                    $card->save();
+                    Sales::where('card_id', '=', $card->id)->update(['user_id' => $card->user_id]);
+                    CommonActions::cardHistoryLogBind($card, $user->id);
+                }
+                if (!$cardExists) {
+                    $card = new Cards;
+                    $card->user_id = $user->id;
+                    $card->number = CommonActions::randomString();
+                    $card->phone = $phone;
+                    $card->save();
+                    foreach (BillTypes::all() as $billType) {
+                        $bill = new Bills;
+                        $bill->card_id = $card->id;
+                        $bill->bill_type_id = $billType->id;
+                        $bill->save();
+                    }
+                    CommonActions::cardHistoryLogEditOrCreate($card, true, $user->id);
                 }
             }
         }
@@ -295,6 +307,7 @@ class ClientController extends Controller
                 /*->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')*/
                 ->leftJoin('categories', 'categories.id', '=', 'products.category_id');
             $products->where('archived', '=', 0);
+            $products->where('visible', '=', 1);
             $categoryIds = $request->category_ids;
             if ($categoryIds && count($categoryIds) > 0) {
                 /*if(Categories::where('id', '=', $request->category_id)->value('parent_id') == 0) {
@@ -388,7 +401,7 @@ class ClientController extends Controller
         Validator::extend('check_archived', function($attribute, $value, $parameters, $validator) {
             return Product::where([['id', '=', $value], ['archived', '=', 0]])->exists();
         });
-        $validator = Validator::make(['id' => $id], ['id' => 'exists:products,id|check_archived']);
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:products,id,visible,1|check_archived']);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
@@ -1485,7 +1498,10 @@ class ClientController extends Controller
         }
         if (empty($errors)) {
             $card = $id ? Cards::where('id', '=', $id)->first() : new Cards;
-            if (!$id) $card->user_id = Auth::user()->id;
+            if (!$id) {
+                $card->user_id = Auth::user()->id;
+                $card->phone = Auth::user()->phone;
+            }
             $card->number = $request->number;
             $card->save();
             if (!$id) {

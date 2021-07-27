@@ -37,6 +37,8 @@ Route::post('/cards/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_c
 Route::post('/cards/list', 'App\Http\Controllers\Api\AdminController@list_cards');
 Route::get('/cards/get/{id}', 'App\Http\Controllers\Api\AdminController@list_cards');
 Route::get('/cards/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_card');
+Route::get('/cards/history/{id}', 'App\Http\Controllers\Api\AdminController@card_history');
+Route::patch('/cards/switch_status/{id}', 'App\Http\Controllers\Api\AdminController@switch_card_status');
 
 Route::post('/bill_programs/create', 'App\Http\Controllers\Api\AdminController@edit_bill_program');
 Route::post('/bill_programs/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_bill_program');
@@ -75,6 +77,8 @@ Route::post('/products/edit/{id}', 'App\Http\Controllers\Api\AdminController@edi
 Route::post('/products/list', 'App\Http\Controllers\Api\AdminController@list_products');
 Route::get('/products/get/{id}', 'App\Http\Controllers\Api\AdminController@get_product');
 Route::get('/products/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_product');
+Route::patch('/products/switch_visibility/{id}', 'App\Http\Controllers\Api\AdminController@switch_product_visibility');
+
 
 Route::post('/orders/create', 'App\Http\Controllers\Api\AdminController@edit_order');
 Route::post('/orders/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_order');
@@ -110,8 +114,6 @@ Route::get('/coupons/delete/{id}', 'App\Http\Controllers\Api\AdminController@del
 
 Route::get('/reviews/moderate/{id}', 'App\Http\Controllers\Api\AdminController@moderate_review');
 Route::get('/reviews/list', 'App\Http\Controllers\Api\AdminController@list_reviews');
-
-Route::get('/card_history/{card_id}', 'App\Http\Controllers\Api\AdminController@card_history');
 
 /****** CLIENTS ******/
 

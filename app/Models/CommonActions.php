@@ -175,7 +175,7 @@ class CommonActions extends Model
         $logSale->save();
     }
 
-    public static function cardHistoryLogEditOrCreate($card, $isCreate)
+    public static function cardHistoryLogEditOrCreate($card, $isCreate, $userId = null)
     {
         $logSale = new CardHistory;
         $logSale->card_id = $card->id;
@@ -186,16 +186,16 @@ class CommonActions extends Model
             'is_main' => $card->is_main,
         ];
         $logSale->data = json_encode($data);
-        $logSale->author_id = Auth::user()->id;
+        $logSale->author_id = $userId ?: Auth::user()->id;
         $logSale->save();
     }
 
-    public static function cardHistoryLogBind($card)
+    public static function cardHistoryLogBind($card, $userId = null)
     {
         $logSale = new CardHistory;
         $logSale->card_id = $card->id;
         $logSale->type = CardHistory::BINDED;
-        $logSale->author_id = Auth::user()->id;
+        $logSale->author_id = $userId ?: Auth::user()->id;
         $logSale->save();
     }
 }

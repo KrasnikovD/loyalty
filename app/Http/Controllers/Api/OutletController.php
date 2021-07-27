@@ -483,7 +483,9 @@ class OutletController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $card = Cards::select('*')->where('number', '=', $cardNumber)->get()->toArray();
+            $card = Cards::select('cards.*', 'users.first_name as user_first_name', 'users.second_name as user_second_name', 'users.phone as user_phone')
+                ->leftJoin('users', 'users.id', '=', 'cards.user_id')
+                ->where('number', '=', $cardNumber)->get()->toArray();
             DataHelper::collectCardsInfo($card);
         }
         if ($request->out_format == 'json')

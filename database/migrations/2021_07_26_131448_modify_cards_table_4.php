@@ -14,6 +14,8 @@ class ModifyCardsTable4 extends Migration
     public function up()
     {
         Schema::table('cards', function (Blueprint $table) {
+            $table->integer('status')->default(0);
+            $table->string('phone')->nullable()->default(null);
             $table->softDeletes();
         });
     }

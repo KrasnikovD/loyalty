@@ -483,7 +483,8 @@ class OutletController extends Controller
         $httpStatus = 200;
         $card = null;
         $validatorRules = [
-            'card_number' => 'exists:cards,number',
+           // 'card_number' => 'exists:cards,number',
+            'card_number' => 'required',
             'out_format' => 'in:xml,json'
         ];
         $validator = Validator::make(array_merge($request->all(), ['card_number' => $cardNumber]),
@@ -493,6 +494,12 @@ class OutletController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
+            if (!Cards::where('number', '=', $cardNumber)->exists()) {
+                $card = new Cards;
+                $card->number = $cardNumber;
+                $card->save();
+                CommonActions::cardHistoryLogEditOrCreate($card, true);
+            }
             $card = Cards::select('cards.*', 'users.first_name as user_first_name', 'users.second_name as user_second_name', 'users.phone as user_phone')
                 ->leftJoin('users', 'users.id', '=', 'cards.user_id')
                 ->where('number', '=', $cardNumber)->get()->toArray();

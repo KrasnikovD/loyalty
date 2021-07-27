@@ -184,9 +184,10 @@ class CommonActions extends Model
             'number' => $card->number,
             'is_physical' => $card->is_physical,
             'is_main' => $card->is_main,
+            'phone' => $card->phone,
         ];
         $logSale->data = json_encode($data);
-        $logSale->author_id = $userId ?: Auth::user()->id;
+        $logSale->author_id = $userId ?: @Auth::user()->id;
         $logSale->save();
     }
 
@@ -195,6 +196,13 @@ class CommonActions extends Model
         $logSale = new CardHistory;
         $logSale->card_id = $card->id;
         $logSale->type = CardHistory::BINDED;
+        $data = [
+            'number' => $card->number,
+            'is_physical' => $card->is_physical,
+            'is_main' => $card->is_main,
+            'phone' => $card->phone,
+        ];
+        $logSale->data = json_encode($data);
         $logSale->author_id = $userId ?: Auth::user()->id;
         $logSale->save();
     }

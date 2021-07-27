@@ -1147,6 +1147,7 @@ class ClientController extends Controller
         if (empty($errors)) {
             $card = Cards::where('number', '=', $number)->first();
             $card->user_id = Auth::user()->id;
+            $card->phone = Auth::user()->phone;
             $card->save();
             Sales::where('card_id', '=', $card->id)->update(['user_id' => $card->user_id]);
             CommonActions::cardHistoryLogBind($card);

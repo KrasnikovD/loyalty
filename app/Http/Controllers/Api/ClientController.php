@@ -171,7 +171,7 @@ class ClientController extends Controller
                 if (!$localeKey) {
                     $user->token = md5($user->token);
                     if (!empty($request->expo_token)) {
-                        Devices::where([['expo_token', '<>', $request->expo_token], ['user_id', '=', $user->id]])->update(['disabled' => 1]);
+                        Devices::where([['expo_token', '<>', $request->expo_token], ['user_id', '=', $user->id]])->delete();
                         Devices::where('expo_token', '=', $request->expo_token)->update(['user_id' => $user->id]);
                     }
                     $data = $user;
@@ -230,8 +230,8 @@ class ClientController extends Controller
                 if (!$localeKey) {
                     $data['auth_status'] = 0;
                     if (!empty($request->expo_token)) {
-                        Devices::where([['disabled', '=', 0], ['user_id', '=', $user->id]])
-                            ->update(['expo_token' => $request->expo_token]);
+                        Devices::where([['expo_token', '<>', $request->expo_token], ['user_id', '=', $user->id]])->delete();
+                        Devices::where('expo_token', '=', $request->expo_token)->update(['user_id' => $user->id]);
                     }
                 }
             }

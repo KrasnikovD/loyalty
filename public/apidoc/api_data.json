@@ -4700,6 +4700,33 @@
   },
   {
     "type": "get",
+    "url": "/api/outlets/coupon/get/:id",
+    "title": "Get Coupon",
+    "name": "GetCoupon",
+    "group": "OutletCoupons",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "allowedValues": [
+              "xml",
+              "json"
+            ],
+            "optional": true,
+            "field": "out_format",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/OutletController.php",
+    "groupTitle": "OutletCoupons"
+  },
+  {
+    "type": "get",
     "url": "/api/outlets/sales/cancel/:sale_id",
     "title": "Cancel Sale",
     "name": "CancelSale",

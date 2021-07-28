@@ -183,6 +183,8 @@ Route::post('/outlets/users/find_by_phone', 'App\Http\Controllers\Api\OutletCont
 Route::get('/outlets/sales/get/{sale_id}', 'App\Http\Controllers\Api\OutletController@get_sale');
 Route::get('/outlets/card/get/{card_number}', 'App\Http\Controllers\Api\OutletController@get_card');
 
+Route::get('/outlets/coupon/get/{id}', 'App\Http\Controllers\Api\OutletController@get_coupon');
+
 /****** TEST ******/
 
 Route::post('/test', 'App\Http\Controllers\Api\TestController@test');

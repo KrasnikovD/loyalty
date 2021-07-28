@@ -1545,9 +1545,14 @@ class AdminController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $products = Product::select('products.*', /*'outlets.name as outlet_name',*/ 'categories.name as category_name')
+            $products = Product::select('products.*', /*'outlets.name as outlet_name',*/
+                'categories.name as category_name',
+                'parent_categories.id as parent_category_id',
+                'parent_categories.name as parent_category_name'
+                )
                // ->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')
-                ->leftJoin('categories', 'categories.id', '=', 'products.category_id');
+                ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
+                ->leftJoin('categories as parent_categories', 'parent_categories.id', '=', 'categories.parent_id');
             if ($request->hide_deleted == 1) $products->where('archived', '=', 0);
             if (isset($request->category_id)) {
                 if(Categories::where('id', '=', $request->category_id)->value('parent_id') == 0) {

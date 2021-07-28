@@ -52,7 +52,7 @@ class OutletController extends Controller
         $sale = null;
         Validator::extend('check_product', function($attribute, $value, $parameters, $validator) {
             $count = @floatval($value['count']);
-            if (empty($count))
+            if (empty($value['coupon_id']) && empty($count))
                 return false;
             if (empty($value['coupon_id']) && empty($value['product_id']))
                 return false;
@@ -60,7 +60,7 @@ class OutletController extends Controller
                 return false;
             if (!empty($value['coupon_id'])) {
                 $productId = Coupons::where('id', '=', $value['coupon_id'])->value('product_id');
-                if (!Product::where([['code', '=', $productId], ['archived', '=', 0]])->exists())
+                if (!Product::where([['id', '=', $productId], ['archived', '=', 0]])->exists())
                     return false;
                 $saleId = $parameters[1];
                 $userId = Cards::where('number', '=', $parameters[0])->value('user_id');
@@ -490,8 +490,10 @@ class OutletController extends Controller
             'card_number' => 'required',
             'out_format' => 'in:xml,json'
         ];
-        $validator = Validator::make(array_merge($request->all(), ['card_number' => $cardNumber]),
-            $validatorRules);
+        $validator = Validator::make(
+            array_merge($request->all(), ['card_number' => $cardNumber]),
+            $validatorRules
+        );
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
@@ -512,6 +514,43 @@ class OutletController extends Controller
             return response()->json(['errors' => $errors, 'data' => $card], $httpStatus);
         else
             return response(ArrayToXml::convert(['errors' => $errors, 'data' => $card], [], true, 'UTF-8'), $httpStatus)
+                ->header('Content-Type', 'text/xml');
+    }
+
+    /**
+     * @api {get} /api/outlets/coupon/get/:id Get Coupon
+     * @apiName GetCoupon
+     * @apiGroup OutletCoupons
+     *
+     * @apiParam {string=xml,json} [out_format]
+     */
+
+    public function get_coupon(Request $request, $id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validatorRules = [
+            'id' => 'exists:coupons,id',
+            'out_format' => 'in:xml,json'
+        ];
+        $validator = Validator::make(
+            array_merge($request->all(), ['id' => $id]),
+            $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $data = [];
+            $coupon = Coupons::where('id', $id)->first();
+            $data['count'] = $coupon->count;
+            $data['product'] = Product::where('id', $coupon->product_id)->first();
+        }
+        if ($request->out_format == 'json')
+            return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+        else
+            return response(ArrayToXml::convert(['errors' => $errors, 'data' => $data], [], true, 'UTF-8'), $httpStatus)
                 ->header('Content-Type', 'text/xml');
     }
 }

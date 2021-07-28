@@ -1555,7 +1555,7 @@ class AdminController extends Controller
                 ->leftJoin('categories as parent_categories', 'parent_categories.id', '=', 'categories.parent_id');
             if ($request->hide_deleted == 1) $products->where('archived', '=', 0);
             if (isset($request->category_id)) {
-                if(Categories::where('id', '=', $request->category_id)->value('parent_id') == 0) {
+                if (Categories::where('id', '=', $request->category_id)->value('parent_id') == 0) {
                     $categories = Categories::where('parent_id', '=', $request->category_id)->get()->toArray();
                     $categoriesIds = array_column($categories, 'id');
                     $categoriesIds[] = $request->category_id;
@@ -2672,6 +2672,31 @@ class AdminController extends Controller
         return response()->json(['errors' => $errors, 'data' => $review], $httpStatus);
     }
 
+    /**
+     * @api {get} /api/news/moderate/:id Set/Unset Visibility News
+     * @apiName VisibilityNews
+     * @apiGroup AdminNews
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function moderate_news($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $item = null;
+        $validator = Validator::make(['id' => $id], ['id' => 'required|exists:news,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $item = News::where('id', '=', $id)->first();
+            $item->is_hidden = !$item->is_hidden;
+            $item->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => $item], $httpStatus);
+    }
 
     /**
      * @api {get} /api/reviews/list Get Reviews List

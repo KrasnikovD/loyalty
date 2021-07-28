@@ -1646,6 +1646,29 @@
     "groupTitle": "AdminNews"
   },
   {
+    "type": "get",
+    "url": "/api/news/moderate/:id",
+    "title": "Set/Unset Visibility News",
+    "name": "VisibilityNews",
+    "group": "AdminNews",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminNews"
+  },
+  {
     "type": "post",
     "url": "/api/orders/add_basket/:sale_id",
     "title": "Add Basket",

@@ -676,6 +676,7 @@ class ClientController extends Controller
             $query = News::select('*');
             if ($id) $query->where('id', '=', $id);
             else {
+                $query->where('is_hidden', 0);
                 $count = $query->count();
                 $order = $request->order ?: 'news.id';
                 $dir = $request->dir ?: 'asc';

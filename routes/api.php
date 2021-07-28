@@ -113,6 +113,7 @@ Route::get('/coupons/get/{id}', 'App\Http\Controllers\Api\AdminController@list_c
 Route::get('/coupons/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_coupon');
 
 Route::get('/reviews/moderate/{id}', 'App\Http\Controllers\Api\AdminController@moderate_review');
+Route::get('/news/moderate/{id}', 'App\Http\Controllers\Api\AdminController@moderate_news');
 Route::get('/reviews/list', 'App\Http\Controllers\Api\AdminController@list_reviews');
 
 /****** CLIENTS ******/

@@ -251,6 +251,7 @@ class OutletController extends Controller
                 $added = 0;
                 if ($program) {
                     $added = $birthdayStockValue ?: $program->percent * 0.01 * $sale->amount;
+                    if ($debited) $added = 0;
                     $currentFrom = $program->from;
                     $currentTo = $program->to;
                     $sale->bill_program_id = $program->id;

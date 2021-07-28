@@ -1057,6 +1057,7 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {string} name
+     * @apiParam {boolean} [is_user_editable]
      */
 
     /**
@@ -1067,6 +1068,7 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {string} [name]
+     * @apiParam {boolean} [is_user_editable]
      */
 
     public function edit_field(Request $request, $id = null)

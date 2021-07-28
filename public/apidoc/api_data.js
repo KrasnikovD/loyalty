@@ -3262,6 +3262,13 @@ define({ "api": [
             "optional": false,
             "field": "phone",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "expo_token",
+            "description": ""
           }
         ]
       }

@@ -193,6 +193,7 @@ class ClientController extends Controller
      *
      * @apiParam {string} code
      * @apiParam {string} phone
+     * @apiParam {string} [expo_token]
      */
 
     public function check_auth(Request $request)
@@ -201,7 +202,10 @@ class ClientController extends Controller
         $httpStatus = 200;
         $data = null;
         $validatorData = $request->all();
-        $validator = Validator::make($validatorData, ['code' => 'required', 'phone' => 'required']);
+        $validator = Validator::make($validatorData, [
+            'code' => 'required',
+            'phone' => 'required',
+        ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
@@ -223,7 +227,13 @@ class ClientController extends Controller
                     $localeKey = __('auth.deleted');
                     $data['auth_status'] = 3;
                 }
-                if (!$localeKey) $data['auth_status'] = 0;
+                if (!$localeKey) {
+                    $data['auth_status'] = 0;
+                    if (!empty($request->expo_token)) {
+                        Devices::where([['disabled', '=', 0], ['user_id', '=', $user->id]])
+                            ->update(['expo_token' => $request->expo_token]);
+                    }
+                }
             }
             if ($localeKey) {
                 $httpStatus = 400;

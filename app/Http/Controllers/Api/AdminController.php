@@ -1407,12 +1407,14 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {integer} category_id
+     * @apiParam {string} code
      * @apiParam {string} name
      * @apiParam {string} description
      * @apiParam {integer} price
      * @apiParam {integer} file_content
      * @apiParam {integer} [is_hit]
      * @apiParam {integer} [is_novelty]
+     * @apiParam {integer} is_by_weight
      */
 
     /**
@@ -1423,12 +1425,14 @@ class AdminController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {integer} [category_id]
+     * @apiParam {string} [code]
      * @apiParam {string} [name]
      * @apiParam {string} [description]
      * @apiParam {integer} [price]
      * @apiParam {integer} [file_content]
      * @apiParam {integer} [is_hit]
      * @apiParam {integer} [is_novelty]
+     * @apiParam {integer} [is_by_weight]
      */
 
     public function edit_product(Request $request, $id = null)
@@ -1453,9 +1457,11 @@ class AdminController extends Controller
        // $validatorRules['category_id'] = (!$id ? 'required|' : '') . 'is_child';
         $validatorRules['category_id'] = (!$id ? 'required|' : '') . 'exists:categories,id';
        // $validatorRules['outlet_id'] = (!$id ? 'required|' : '') . 'exists:outlets,id';
+        $validatorRules['code'] = 'unique:products,code,' . $id;
         $validatorRules['price'] = 'integer';
         $validatorRules['is_hit'] = 'in:0,1,true,false';
         $validatorRules['is_novelty'] = 'in:0,1,true,false';
+        $validatorRules['is_by_weight'] = 'nullable|in:0,1,true,false';
 
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
@@ -1466,6 +1472,7 @@ class AdminController extends Controller
             $product = $id ? Product::where('id', '=', $id)->first() : new Product;
          //   if (isset($request->outlet_id)) $product->outlet_id = $request->outlet_id;
             if (isset($request->category_id)) $product->category_id = $request->category_id;
+            if (isset($request->code)) $product->code = $request->code;
             if (isset($request->name)) $product->name = $request->name;
             if (isset($request->description)) $product->description = $request->description;
             if (isset($request->price)) $product->price = $request->price;
@@ -1480,6 +1487,12 @@ class AdminController extends Controller
                     $request->is_novelty === true ||
                     intval($request->is_novelty) === 1);
                 $product->is_novelty = $isNovelty;
+            }
+            if (isset($request->is_by_weight)) {
+                $isByWeight = intval($request->is_by_weight === 'true' ||
+                    $request->is_by_weight === true ||
+                    intval($request->is_by_weight) === 1);
+                $product->is_by_weight = $isByWeight;
             }
             if (isset($request->file_content)) {
                 if ($id) @unlink(Storage::path("images/{$product->file}"));

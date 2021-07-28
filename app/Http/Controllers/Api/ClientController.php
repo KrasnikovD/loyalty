@@ -1228,7 +1228,7 @@ class ClientController extends Controller
         });
 
         $validatorRules =  [
-            'fields' => 'array',
+            'fields' => 'nullable|array',
             'fields.*' => 'field_validation'
         ];
         $validator = Validator::make($request->all(), $validatorRules);

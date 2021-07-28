@@ -1037,14 +1037,14 @@ define({ "api": [
           {
             "group": "Parameter",
             "type": "integer",
-            "optional": false,
+            "optional": true,
             "field": "count",
             "description": ""
           },
           {
             "group": "Parameter",
             "type": "string",
-            "optional": false,
+            "optional": true,
             "field": "date_end",
             "description": ""
           }
@@ -2287,6 +2287,13 @@ define({ "api": [
             "group": "Parameter",
             "type": "string",
             "optional": false,
+            "field": "code",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
             "field": "name",
             "description": ""
           },
@@ -2323,6 +2330,13 @@ define({ "api": [
             "type": "integer",
             "optional": true,
             "field": "is_novelty",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "is_by_weight",
             "description": ""
           }
         ]
@@ -2388,6 +2402,13 @@ define({ "api": [
             "group": "Parameter",
             "type": "string",
             "optional": true,
+            "field": "code",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
             "field": "name",
             "description": ""
           },
@@ -2424,6 +2445,13 @@ define({ "api": [
             "type": "integer",
             "optional": true,
             "field": "is_novelty",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "is_by_weight",
             "description": ""
           }
         ]

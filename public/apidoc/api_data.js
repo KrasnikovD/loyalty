@@ -422,6 +422,42 @@ define({ "api": [
     "groupTitle": "AdminBillTypes"
   },
   {
+    "type": "patch",
+    "url": "/api/cards/attach_user/:id",
+    "title": "Attach / Detach User To Card",
+    "name": "AttachCardUser",
+    "group": "AdminCards",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "user_id",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminCards"
+  },
+  {
     "type": "post",
     "url": "/api/cards/create",
     "title": "Create Card",

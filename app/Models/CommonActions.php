@@ -220,7 +220,7 @@ class CommonActions extends Model
             }
         }
         $user = Users::where('id', $userId)->first();
-        if ($user->birthday) {
+        if ($user && $user->birthday) {
             $count = config('settings.sale_birthday_stock_day_count');
             $fromDate = date('Y-m-d', strtotime(date('Y-m-d') . " - $count days"));
             $toDate = date('Y-m-d', strtotime(date('Y-m-d') . " + $count days"));

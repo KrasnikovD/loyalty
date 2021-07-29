@@ -2840,4 +2840,41 @@ class AdminController extends Controller
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
+
+    /**
+     * @api {patch} /api/cards/attach_user/:id Attach / Detach User To Card
+     * @apiName AttachCardUser
+     * @apiGroup AdminCards
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} [user_id]
+     */
+
+    public function card_attach_user(Request $request, $id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validatorData = array_merge($request->all(), ['id' => $id]);
+        $validator = Validator::make($validatorData, [
+            'id' => 'exists:cards,id',
+            'user_id' => 'nullable|exists:users,id'
+        ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $card = Cards::where('id', $id)->first();
+            $user = Users::where('id', $request->user_id)->first();
+            $userId = $request->user_id ?: null;
+            $userPhone = $request->user_id ? $user->phone : null;
+            $card->user_id = $userId;
+            $card->phone = $userPhone;
+            Sales::where('card_id', '=', $card->id)->update(['user_id' => $userId]);
+            $card->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
 }

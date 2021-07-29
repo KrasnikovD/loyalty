@@ -39,6 +39,7 @@ Route::get('/cards/get/{id}', 'App\Http\Controllers\Api\AdminController@list_car
 Route::get('/cards/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_card');
 Route::get('/cards/history/{id}', 'App\Http\Controllers\Api\AdminController@card_history');
 Route::patch('/cards/switch_status/{id}', 'App\Http\Controllers\Api\AdminController@switch_card_status');
+Route::patch('/cards/attach_user/{id}', 'App\Http\Controllers\Api\AdminController@card_attach_user');
 
 Route::post('/bill_programs/create', 'App\Http\Controllers\Api\AdminController@edit_bill_program');
 Route::post('/bill_programs/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_bill_program');

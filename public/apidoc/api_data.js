@@ -1281,6 +1281,13 @@ define({ "api": [
             "optional": false,
             "field": "name",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "boolean",
+            "optional": true,
+            "field": "is_user_editable",
+            "description": ""
           }
         ]
       }
@@ -1339,6 +1346,13 @@ define({ "api": [
             "type": "string",
             "optional": true,
             "field": "name",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "boolean",
+            "optional": true,
+            "field": "is_user_editable",
             "description": ""
           }
         ]

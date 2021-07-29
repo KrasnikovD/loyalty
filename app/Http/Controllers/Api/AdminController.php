@@ -1078,10 +1078,9 @@ class AdminController extends Controller
         $field = null;
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
-        $validatorRules = [];
-        if(!$id) {
-            $validatorRules['name'] = 'required';
-        } else $validatorRules['id'] = 'exists:fields,id';
+        $validatorRules = ['is_user_editable' => 'nullable|in:0,1,true,false'];
+        $validatorRules['name'] = (!$id ? 'required|' : '') . 'unique:fields,name,' . $id;
+        if ($id) $validatorRules['id'] = 'exists:fields,id';
 
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
@@ -1091,6 +1090,12 @@ class AdminController extends Controller
         if (empty($errors)) {
             $field = $id ? Fields::where('id', '=', $id)->first() : new Fields;
             if ($request->name) $field->name = $request->name;
+            if (isset($request->is_user_editable)) {
+                $isEditable = intval($request->is_user_editable === 'true' ||
+                    $request->is_user_editable === true ||
+                    intval($request->is_user_editable) === 1);
+                $field->is_user_editable = $isEditable;
+            }
             $field->save();
 
             if (!$id) {
@@ -1461,8 +1466,8 @@ class AdminController extends Controller
        // $validatorRules['outlet_id'] = (!$id ? 'required|' : '') . 'exists:outlets,id';
         $validatorRules['code'] = 'unique:products,code,' . $id;
         $validatorRules['price'] = 'integer';
-        $validatorRules['is_hit'] = 'in:0,1,true,false';
-        $validatorRules['is_novelty'] = 'in:0,1,true,false';
+        $validatorRules['is_hit'] = 'nullable|in:0,1,true,false';
+        $validatorRules['is_novelty'] = 'nullable|in:0,1,true,false';
         $validatorRules['is_by_weight'] = 'nullable|in:0,1,true,false';
 
         $validator = Validator::make($validatorData, $validatorRules);

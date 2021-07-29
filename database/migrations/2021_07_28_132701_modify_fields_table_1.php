@@ -15,6 +15,7 @@ class ModifyFieldsTable1 extends Migration
     {
         Schema::table('fields', function (Blueprint $table) {
             $table->boolean('is_user_editable')->default(0);
+            $table->string('name')->unique()->change();
         });
     }
 

@@ -174,7 +174,9 @@ class ClientController extends Controller
                         Devices::where([['expo_token', '<>', $request->expo_token], ['user_id', '=', $user->id]])->delete();
                         Devices::where('expo_token', '=', $request->expo_token)->update(['user_id' => $user->id]);
                     }
-                    $data = $user;
+                    $data = [$user];
+                    DataHelper::collectUsersInfo($data);
+                    $data = $data[0];
                     $data['auth_status'] = 0;
                 }
             }
@@ -228,11 +230,14 @@ class ClientController extends Controller
                     $data['auth_status'] = 3;
                 }
                 if (!$localeKey) {
-                    $data['auth_status'] = 0;
                     if (!empty($request->expo_token)) {
                         Devices::where([['expo_token', '<>', $request->expo_token], ['user_id', '=', $user->id]])->delete();
                         Devices::where('expo_token', '=', $request->expo_token)->update(['user_id' => $user->id]);
                     }
+                    $data = [$user];
+                    DataHelper::collectUsersInfo($data);
+                    $data = $data[0];
+                    $data['auth_status'] = 0;
                 }
             }
             if ($localeKey) {
@@ -1227,7 +1232,7 @@ class ClientController extends Controller
      * @apiParam {object[]} [fields]
      */
 
-    public function edit_profile(Request $request, $id = null)
+    public function edit_profile(Request $request)
     {
         $errors = [];
         $httpStatus = 200;
@@ -1235,7 +1240,7 @@ class ClientController extends Controller
         Validator::extend('field_validation', function($attribute, $value, $parameters, $validator) {
             if (empty($value['name']) || !array_key_exists('value', $value))
                 return false;
-            return Fields::where('name', $value['name'])->exists();
+            return Fields::where([['name', '=', $value['name']], ['is_user_editable', '=', 1]])->exists();
         });
 
         $validatorRules =  [

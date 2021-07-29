@@ -39,6 +39,7 @@ class DataHelper extends Model
         $userFieldsMap = [];
         $fieldUsers = FieldsUsers::join('fields', 'fields.id', '=', 'fields_users.field_id')
             ->whereIn('user_id', $usersIds)
+            ->where('is_user_editable', '=', 1)
             ->select('fields_users.user_id', 'fields.name', 'fields_users.value')->get();
         foreach ($fieldUsers as $item) {
             if (!isset($userFieldsMap[$item->user_id])) $userFieldsMap[$item->user_id] = [];

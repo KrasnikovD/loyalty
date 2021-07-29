@@ -1238,9 +1238,10 @@ class ClientController extends Controller
         $httpStatus = 200;
         $user = null;
         Validator::extend('field_validation', function($attribute, $value, $parameters, $validator) {
-            if (empty($value['name']) || !array_key_exists('value', $value))
+            $fieldId = @intval($value['field_id']);
+            if (empty($fieldId) || !array_key_exists('value', $value))
                 return false;
-            return Fields::where([['name', '=', $value['name']], ['is_user_editable', '=', 1]])->exists();
+            return Fields::where([['id', '=', $fieldId], ['is_user_editable', '=', 1]])->exists();
         });
 
         $validatorRules =  [
@@ -1263,9 +1264,9 @@ class ClientController extends Controller
                 foreach (Fields::all() as $field) {
                     $fieldValue = null;
                     $keyExists = false;
-                    if (!empty($request->fields)) {
+                    if (is_array($request->fields) && count($request->fields) > 0) {
                         foreach ($request->fields as $requestField) {
-                            if ($requestField['name'] == $field['name']) {
+                            if ($requestField['field_id'] == $field['id']) {
                                 $fieldValue = $requestField['value'];
                                 $keyExists = true;
                                 break;

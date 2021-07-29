@@ -9,7 +9,7 @@ class DataHelper extends Model
 {
     use HasFactory;
 
-    public static function collectUsersInfo(&$data)
+    public static function collectUsersInfo(&$data, $isClient = true)
     {
         $usersIds = array_column($data, 'id');
 
@@ -37,13 +37,18 @@ class DataHelper extends Model
         }
 
         $userFieldsMap = [];
-        $fieldUsers = FieldsUsers::join('fields', 'fields.id', '=', 'fields_users.field_id')
-            ->whereIn('user_id', $usersIds)
-            ->where('is_user_editable', '=', 1)
-            ->select('fields_users.user_id', 'fields.name', 'fields_users.value')->get();
+        $q = FieldsUsers::join('fields', 'fields.id', '=', 'fields_users.field_id')
+            ->whereIn('user_id', $usersIds);
+        if ($isClient) $q->where('is_user_editable', '=', 1);
+        $q->select('fields_users.user_id', 'fields.id', 'fields.name', 'fields_users.value');
+        $fieldUsers = $q->get();
         foreach ($fieldUsers as $item) {
             if (!isset($userFieldsMap[$item->user_id])) $userFieldsMap[$item->user_id] = [];
-            $userFieldsMap[$item->user_id][] = ['name' => $item->name, 'value' => $item->value];
+            $userFieldsMap[$item->user_id][] = [
+                'name' => $item->name,
+                'field_id' => $item->id,
+                'value' => $item->value
+            ];
         }
 
         foreach ($data as &$item) {

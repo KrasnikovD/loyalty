@@ -284,9 +284,10 @@ class AdminController extends Controller
             return !Users::where($validateData)->exists();
         });
         Validator::extend('field_validation', function($attribute, $value, $parameters, $validator) {
-            if (empty($value['name']) || !array_key_exists('value', $value))
+            $fieldId = @intval($value['field_id']);
+            if (empty($fieldId) || !array_key_exists('value', $value))
                 return false;
-            return Fields::where('name', $value['name'])->exists();
+            return Fields::where('id', $fieldId)->exists();
         });
         if ($request->phone) $request->phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
         $validatorData = $request->all();
@@ -306,7 +307,7 @@ class AdminController extends Controller
         $validatorRules['birthday'] = 'date';
         $validatorRules['archived'] = 'in:0,1';
         $validatorRules['active'] = 'in:0,1';
-        $validatorRules['fields'] = 'array';
+        $validatorRules['fields'] = 'nullable|array';
         $validatorRules['fields.*'] = 'field_validation';
 
         $validator = Validator::make($validatorData, $validatorRules);
@@ -333,9 +334,9 @@ class AdminController extends Controller
                 foreach (Fields::all() as $field) {
                     $fieldValue = null;
                     $keyExists = false;
-                    if (!empty($request->fields)) {
+                    if (is_array($request->fields) && count($request->fields) > 0) {
                         foreach ($request->fields as $requestField) {
-                            if ($requestField['name'] == $field['name']) {
+                            if ($requestField['field_id'] == $field['id']) {
                                 $fieldValue = $requestField['value'];
                                 $keyExists = true;
                                 break;
@@ -424,7 +425,7 @@ class AdminController extends Controller
                 }
             }
             $list = $query->get()->toArray();
-            DataHelper::collectUsersInfo($list);
+            DataHelper::collectUsersInfo($list, false);
             if ($id) $data = $list[0];
             else $data = ['count' => $count, 'list' => $list];
         }
@@ -1005,6 +1006,7 @@ class AdminController extends Controller
      * @apiParam {integer} radius
      * @apiParam {string} title
      * @apiParam {string} body
+     * @apiParam {object[]} [fields]
      */
 
     public function send_to_nearest(Request $request, $id)
@@ -1013,11 +1015,19 @@ class AdminController extends Controller
         $httpStatus = 200;
         $validatorData = $request->all();
         $validatorData['id'] = $id;
+        Validator::extend('check_field', function($attribute, $value, $parameters, $validator) {
+            $fieldId = @intval($value['field_id']);
+            if (empty($fieldId) || !array_key_exists('value', $value))
+                return false;
+            return Fields::where('id', $fieldId)->exists();
+        });
         $validator = Validator::make($validatorData, [
             'id' => 'exists:outlets,id',
             'radius' => 'required|integer',
             'title' => 'required',
             'body' => 'required',
+            'fields' => 'nullable|array',
+            'fields.*' => 'check_field',
         ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
@@ -1025,16 +1035,25 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $outlet = Outlet::where('id', '=', $id)->first();
-            $users = Users::where([['active', '=', 1], ['archived', '=', 0]])
+            $q = Users::select('users.*', 'devices.expo_token'/*, 'fields.name', 'fields_users.value'*/)
+                ->where([['active', '=', 1], ['archived', '=', 0]])
                 ->join('devices', 'devices.user_id', '=', 'users.id')
                 ->whereNotNull('lat')
                 ->whereNotNull('lon')
-                ->where('devices.disabled', '=', 0)
-                ->get();
+                ->where('devices.disabled', '=', 0);
+            if (is_array($request->fields) && count($request->fields) > 0) {
+                $q->join('fields_users', 'fields_users.user_id', '=', 'users.id')
+                   /*->join('fields', 'fields.id', '=', 'fields_users.field_id')*/;
+                $fieldId = $request->fields[0]['field_id'];
+                $fieldValue = $request->fields[0]['value'];
+                $q->where([['fields_users.field_id', '=', $fieldId], ['fields_users.value', '=', $fieldValue]]);
+            }
+            $users = $q->get();
+
             $tokens = [];
             foreach ($users as $user) {
                 $distance = ceil(CommonActions::calculateDistance($outlet->lat, $outlet->lon, $user->lat, $user->lon));
-                if ($distance <= $request->radius) $tokens[] = $user->expo_token;
+                if ($distance <= $request->radius) $tokens[$user->id] = $user->expo_token;
             }
             if (!empty($tokens)) {
                 $title = $request->title;

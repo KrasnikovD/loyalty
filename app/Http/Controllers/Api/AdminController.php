@@ -1845,7 +1845,7 @@ class AdminController extends Controller
 			if (isset($status))
                 $sales->where('status', '=', $request->status);
             if (!$id) {
-                if ($request->user_id) $sales->where('user_id', '=', $request->user_id);
+                if ($request->user_id) $sales->where('sales.user_id', '=', $request->user_id);
 
                 $count = $sales->count();
 

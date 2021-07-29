@@ -1843,7 +1843,7 @@ class AdminController extends Controller
                 ->leftJoin('cards', 'cards.id', '=', 'sales.card_id');
             $status = $request->status;
 			if (isset($status))
-                $sales->where('status', '=', $request->status);
+                $sales->where('sales.status', '=', $request->status);
             if (!$id) {
                 if ($request->user_id) $sales->where('sales.user_id', '=', $request->user_id);
 

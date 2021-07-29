@@ -120,13 +120,29 @@ class ClientController extends Controller
                     $card->number = CommonActions::randomString();
                     $card->phone = $phone;
                     $card->save();
+
+                    $billProgramId = $remainingAmount = null;
+                    $programs = BillPrograms::orderBy('from', 'asc')->get();
+                    if (isset($programs[0]) && $programs[0]->from == 0) {
+                        $billProgramId = $programs[0]->id;
+                        $remainingAmount = isset($programs[1]) ? $programs[1]->from : $programs[0]->to;
+                    }
                     foreach (BillTypes::all() as $billType) {
                         $bill = new Bills;
                         $bill->card_id = $card->id;
                         $bill->bill_type_id = $billType->id;
+                        $bill->bill_program_id = $billProgramId;
+                        $bill->remaining_amount = $remainingAmount;
                         $bill->save();
                     }
                     CommonActions::cardHistoryLogEditOrCreate($card, true, $user->id);
+                }
+
+                foreach (Fields::all() as $field) {
+                    $fieldsUser = new FieldsUsers;
+                    $fieldsUser->field_id = $field->id;
+                    $fieldsUser->user_id = $user->id;
+                    $fieldsUser->save();
                 }
             }
         }
@@ -603,11 +619,22 @@ class ClientController extends Controller
 
             $salesIds = array_column($list, 'id');
             $basketsMap = [];
-            foreach (Baskets::whereIn('sale_id', $salesIds)->get() as $basket) {
+            $baskets = Baskets::select('baskets.*', 'products.name as product_name', 'products.is_by_weight as product_is_by_weight')
+                ->leftJoin('products', 'products.id', '=', 'baskets.product_id')
+                ->whereIn('sale_id', $salesIds)->get();
+            foreach ($baskets as $basket) {
                 if(!isset($basketsMap[$basket->sale_id])) $basketsMap[$basket->sale_id] = [];
                 $basketsMap[$basket->sale_id][] = $basket->toArray();
             }
+
+            $bonusMap = [];
+            $bonuses = BonusHistory::select('*')->whereIn('sale_id', $salesIds)->get();
+            foreach ($bonuses as $bonus) {
+                if(!isset($bonusMap[$bonus->sale_id])) $bonusMap[$bonus->sale_id] = [];
+                $bonusMap[$bonus->sale_id][] = $bonus->toArray();
+            }
             foreach ($list as &$item) {
+                $item['bonuses'] = @$bonusMap[$item['id']];
                 $item['basket'] = @$basketsMap[$item['id']];
             }
             $data = $id ? $list[0] : ['count' => $count, 'data' => $list];

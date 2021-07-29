@@ -7,6 +7,7 @@ use App\Models\Baskets;
 use App\Models\BillPrograms;
 use App\Models\Bills;
 use App\Models\BillTypes;
+use App\Models\BonusHistory;
 use App\Models\CardHistory;
 use App\Models\Cards;
 use App\Models\Categories;
@@ -1863,14 +1864,22 @@ class AdminController extends Controller
             $list = $sales->get()->toArray();
             $salesIds = array_column($list, 'id');
             $basketsMap = [];
-			$baskets = Baskets::select('baskets.*', 'products.name as product_name')
+			$baskets = Baskets::select('baskets.*', 'products.name as product_name', 'products.is_by_weight as product_is_by_weight')
 				->leftJoin('products', 'products.id', '=', 'baskets.product_id')
 				->whereIn('sale_id', $salesIds)->get();
             foreach ($baskets as $basket) {
                 if(!isset($basketsMap[$basket->sale_id])) $basketsMap[$basket->sale_id] = [];
                 $basketsMap[$basket->sale_id][] = $basket->toArray();
             }
+
+            $bonusMap = [];
+            $bonuses = BonusHistory::select('*')->whereIn('sale_id', $salesIds)->get();
+            foreach ($bonuses as $bonus) {
+                if(!isset($bonusMap[$bonus->sale_id])) $bonusMap[$bonus->sale_id] = [];
+                $bonusMap[$bonus->sale_id][] = $bonus->toArray();
+            }
             foreach ($list as &$item) {
+                $item['bonuses'] = @$bonusMap[$item['id']];
                 $item['basket'] = @$basketsMap[$item['id']];
             }
             $data = $id ? $list[0] : ['count' => $count, 'data' => $list];

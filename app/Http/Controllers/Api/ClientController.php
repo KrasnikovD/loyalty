@@ -631,10 +631,10 @@ class ClientController extends Controller
             $bonuses = BonusHistory::select('*')->whereIn('sale_id', $salesIds)->get();
             foreach ($bonuses as $bonus) {
                 if(!isset($bonusMap[$bonus->sale_id])) $bonusMap[$bonus->sale_id] = [];
-                $bonusMap[$bonus->sale_id][] = $bonus->toArray();
+                $bonusMap[$bonus->sale_id] = $bonus->toArray();
             }
             foreach ($list as &$item) {
-                $item['bonuses'] = @$bonusMap[$item['id']];
+                $item['bonus'] = @$bonusMap[$item['id']];
                 $item['basket'] = @$basketsMap[$item['id']];
             }
             $data = $id ? $list[0] : ['count' => $count, 'data' => $list];

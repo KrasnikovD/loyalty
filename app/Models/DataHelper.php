@@ -70,6 +70,8 @@ class DataHelper extends Model
         $billsMap = [];
         foreach ($billsList as $bill) {
             if(!isset($billsMap[$bill['card_id']])) $billsMap[$bill['card_id']] = [];
+            $bill->real_value = $bill->value;
+            $bill->value = floor($bill->value);
             $billsMap[$bill['card_id']][] = $bill->toArray();
         }
 

@@ -285,10 +285,10 @@ class AdminController extends Controller
             return !Users::where($validateData)->exists();
         });
         Validator::extend('field_validation', function($attribute, $value, $parameters, $validator) {
-            $fieldId = @intval($value['field_id']);
-            if (empty($fieldId) || !array_key_exists('value', $value))
+            $fieldName = @$value['name'];
+            if (empty($fieldName) || !array_key_exists('value', $value))
                 return false;
-            return Fields::where('id', $fieldId)->exists();
+            return Fields::where('name', $fieldName)->exists();
         });
         if ($request->phone) $request->phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
         $validatorData = $request->all();
@@ -337,7 +337,7 @@ class AdminController extends Controller
                     $keyExists = false;
                     if (is_array($request->fields) && count($request->fields) > 0) {
                         foreach ($request->fields as $requestField) {
-                            if ($requestField['field_id'] == $field['id']) {
+                            if ($requestField['name'] == $field['name']) {
                                 $fieldValue = $requestField['value'];
                                 $keyExists = true;
                                 break;
@@ -2466,10 +2466,10 @@ class AdminController extends Controller
      *
      * @apiHeader {string} Authorization Basic current user token
      *
-     * @apiParam {integer[]} [devices_ids]
      * @apiParam {string=all,birthday} scope
      * @apiParam {string} title
      * @apiParam {string} body
+     * @apiParam {object[]} [fields]
      */
 
     public function send_pushes(Request $request)
@@ -2477,12 +2477,20 @@ class AdminController extends Controller
         $errors = [];
         $httpStatus = 200;
 
+        Validator::extend('check_field', function($attribute, $value, $parameters, $validator) {
+            $fieldId = @intval($value['field_id']);
+            if (empty($fieldId) || !array_key_exists('value', $value))
+                return false;
+            return Fields::where('id', $fieldId)->exists();
+        });
         $validator = Validator::make($request->all(), [
             'devices_ids' => 'array',
             'devices_ids.*' => 'exists:devices,id',
             'title' => 'required',
             'body' => 'required',
             'scope' => 'required|in:all,birthday',
+            'fields' => 'nullable|array',
+            'fields.*' => 'check_field',
         ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
@@ -2490,12 +2498,24 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $devices = Devices::select('devices.*')->where('devices.disabled', '=', 0);
-            if (!empty($request->devices_ids)) $devices->whereIn('devices.id', $request->devices_ids);
-            elseif ($request->scope == 'birthday') {
-                $devices->select('devices.*', 'users.first_name', 'users.second_name')
-                    ->join('users', 'users.id', '=', 'devices.user_id')
-                    ->where('users.birthday', '=', DB::raw("DATE_ADD('" . date('Y-m-d') . "', INTERVAL 1 DAY)"));
+            $isFieldsExists = is_array($request->fields) && count($request->fields) > 0;
+            if ($request->scope == 'birthday' || $isFieldsExists) {
+                $devices->join('users', 'users.id', '=', 'devices.user_id');
+                if ($isFieldsExists) {
+                    $devices->join('fields_users', 'fields_users.user_id', '=', 'users.id');
+                    $fieldId = $request->fields[0]['field_id'];
+                    $fieldValue = $request->fields[0]['value'];
+                    $devices->where([
+                        ['fields_users.field_id', '=', $fieldId],
+                        ['fields_users.value', '=', $fieldValue]
+                    ]);
+                }
+                if ($request->scope == 'birthday') {
+                    $devices->select('devices.*', 'users.first_name', 'users.second_name');
+                    $devices->where('users.birthday', '=', DB::raw("DATE_ADD('" . date('Y-m-d') . "', INTERVAL 1 DAY)"));
+                }
             }
+
             if ($request->scope == 'birthday') {
                 foreach ($devices->get() as $device) {
                     $title = Str::replace(self::REPLACED_FIRST_NAME, $device->first_name, $request->title);

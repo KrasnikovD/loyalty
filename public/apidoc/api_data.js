@@ -1252,13 +1252,6 @@ define({ "api": [
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "integer[]",
-            "optional": true,
-            "field": "devices_ids",
-            "description": ""
-          },
-          {
-            "group": "Parameter",
             "type": "string",
             "allowedValues": [
               "all",
@@ -1280,6 +1273,13 @@ define({ "api": [
             "type": "string",
             "optional": false,
             "field": "body",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "object[]",
+            "optional": true,
+            "field": "fields",
             "description": ""
           }
         ]

@@ -373,6 +373,7 @@ class AdminController extends Controller
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
      * @apiParam {integer=0,1} [hide_deleted]
+     * @apiParam {string} [filters]
      */
 
     /**
@@ -414,6 +415,13 @@ class AdminController extends Controller
             if ($request->hide_deleted == 1) $query->where('archived', '=', 0);
             if ($id) $query->where('id', '=', $id);
             else {
+                if ($request->filters) {
+                    $query->orWhere('first_name', 'like', $request->filters . '%');
+                    $query->orWhere('second_name', 'like',  '%' . $request->filters . '%');
+                    $query->orWhere('third_name', 'like',  '%' . $request->filters . '%');
+                    $query->orWhere('phone', 'like', '%' .
+                        str_replace(array("(", ")", " ", "-"), "", $request->filters) . '%');
+                }
                 $count = $query->count();
                 $order = $request->order ?: 'users.id';
                 $dir = $request->dir ?: 'asc';

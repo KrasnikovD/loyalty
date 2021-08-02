@@ -2906,4 +2906,36 @@ class AdminController extends Controller
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }
+
+    /**
+     * @api {patch} /api/bills/edit_value/:id Edit Bill Value
+     * @apiName EditBillValue
+     * @apiGroup AdminCards
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} value
+     */
+
+    public function edit_bill_value(Request $request, $id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validatorData = array_merge($request->all(), ['id' => $id]);
+        $validator = Validator::make($validatorData, [
+            'id' => 'exists:bills,id',
+            'value' => 'required|regex:/^\d+(\.\d+)?$/',
+        ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $bill = Bills::where('id', $id)->first();
+            $bill->value = $request->value;
+            $bill->save();
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
 }

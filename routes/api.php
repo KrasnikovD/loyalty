@@ -117,6 +117,8 @@ Route::get('/reviews/moderate/{id}', 'App\Http\Controllers\Api\AdminController@m
 Route::get('/news/moderate/{id}', 'App\Http\Controllers\Api\AdminController@moderate_news');
 Route::get('/reviews/list', 'App\Http\Controllers\Api\AdminController@list_reviews');
 
+Route::patch('/bills/edit_value/{id}', 'App\Http\Controllers\Api\AdminController@edit_bill_value');
+
 /****** CLIENTS ******/
 
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');

@@ -553,6 +553,42 @@
     "groupTitle": "AdminCards"
   },
   {
+    "type": "patch",
+    "url": "/api/bills/edit_value/:id",
+    "title": "Edit Bill Value",
+    "name": "EditBillValue",
+    "group": "AdminCards",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "value",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminCards"
+  },
+  {
     "type": "post",
     "url": "/api/cards/edit/:id",
     "title": "Edit Card",

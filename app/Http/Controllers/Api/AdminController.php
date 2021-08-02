@@ -2484,7 +2484,7 @@ class AdminController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
-
+        $recipients = null;
         Validator::extend('check_field', function($attribute, $value, $parameters, $validator) {
             $fieldId = @intval($value['field_id']);
             if (empty($fieldId) || !array_key_exists('value', $value))
@@ -2523,26 +2523,30 @@ class AdminController extends Controller
                     $devices->where('users.birthday', '=', DB::raw("DATE_ADD('" . date('Y-m-d') . "', INTERVAL 1 DAY)"));
                 }
             }
+            $devices = $devices->get();
+            if ($devices->count() > 0) {
+                if ($request->scope == 'birthday') {
+                    foreach ($devices as $device) {
+                        $title = Str::replace(self::REPLACED_FIRST_NAME, $device->first_name, $request->title);
+                        $title = Str::replace(self::REPLACED_SECOND_NAME, $device->second_name, $title);
 
-            if ($request->scope == 'birthday') {
-                foreach ($devices->get() as $device) {
-                    $title = Str::replace(self::REPLACED_FIRST_NAME, $device->first_name, $request->title);
-                    $title = Str::replace(self::REPLACED_SECOND_NAME, $device->second_name, $title);
+                        $body = Str::replace(self::REPLACED_FIRST_NAME, $device->first_name, $request->body);
+                        $body = Str::replace(self::REPLACED_SECOND_NAME, $device->second_name, $body);
 
-                    $body = Str::replace(self::REPLACED_FIRST_NAME, $device->first_name, $request->body);
-                    $body = Str::replace(self::REPLACED_SECOND_NAME, $device->second_name, $body);
+                        $device->notify(new WelcomeNotification($title, $body));
+                    }
+                } else {
+                    $expo = Expo::normalSetup();
+                    $channelName = 'channel_' . time();
 
-                    $device->notify(new WelcomeNotification($title, $body));
+                    foreach ($devices as $device)
+                        $expo->subscribe($channelName, $device->expo_token);
+                    $expo->notify([$channelName], ['title' => $request->title, 'body' => $request->body, 'sound' => 'default']);
                 }
-            } else {
-                $expo = Expo::normalSetup();
-                $channelName = 'channel_' . time();
-                foreach ($devices->get() as $device)
-                    $expo->subscribe($channelName, $device->expo_token);
-                $expo->notify([$channelName], ['title' => $request->title, 'body' => $request->body, 'sound' => 'default']);
+                $recipients = $devices;
             }
         }
-        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $recipients], $httpStatus);
     }
 
     /**

@@ -9,6 +9,7 @@ use App\Models\Bills;
 use App\Models\BillTypes;
 use App\Models\BonusHistory;
 use App\Models\Cards;
+use App\Models\Categories;
 use App\Models\CommonActions;
 use App\Models\Coupons;
 use App\Models\DataHelper;
@@ -77,9 +78,11 @@ class OutletController extends Controller
                         $validateData[] = ['count', '>', 0];
                 }
                 return Coupons::where($validateData)->exists();
-            } else {
-                return Product::where([['code', '=', $value['product_id']], ['archived', '=', 0]])->exists();
             }
+            return true;
+            /*else {
+                return Product::where([['code', '=', $value['product_id']], ['archived', '=', 0]])->exists();
+            }*/
         });
         Validator::extend('check_sale', function($attribute, $value, $parameters, $validator) {
             if ($parameters[0]) {
@@ -170,13 +173,13 @@ class OutletController extends Controller
                     if (!empty($idsToDelete)) Baskets::whereIn('id', $idsToDelete)->delete();
                 }*/
                 $sale->save();
-                $priceMap = [];
+                $productsMap = [];
                 if ($saleId) {
                 //    foreach (Product::whereIn('code', array_column($existedBasketProductMap, 'product_id'))->get() as $item)
                 //        $priceMap[$item->code] = $item->price;
                 } else {
                     foreach (Product::whereIn('code', array_column($request->products, 'product_id'))->get() as $item)
-                        $priceMap[$item->code] = $item;
+                        $productsMap[$item->code] = $item;
                 }
 
                 foreach ($request->products as $product) {
@@ -202,14 +205,23 @@ class OutletController extends Controller
                                     $basket->count = $product['count'];
                             }*/
                         } else {
+                            if (!Product::where('code', $product['product_id'])->exists()) {
+                                $newProduct = new Product;
+                                $newProduct->code = $product['product_id'];
+                                $newProduct->price = $product['amount'];
+                                $newProduct->category_id = Categories::where('name', Categories::DEFAULT_NAME)->first()->id;
+                                $newProduct->save();
+                                $productsMap[$product['product_id']] = $newProduct;
+                            }
+
                             $basket = new Baskets;
                             $basket->count = $product['count'];
-                            $basket->real_amount = $priceMap[$product['product_id']]->price;
+                            $basket->real_amount = $productsMap[$product['product_id']]->price;
                             $basket->amount = $product['amount'];
                             $amount += $product['count'] * $product['amount'];
                             //$amount += $product['count'] * $priceMap[$product['product_id']]->price;
                         }
-                        $basket->product_id = $priceMap[$product['product_id']]->id;
+                        $basket->product_id = $productsMap[$product['product_id']]->id;
                     } else {
                         $coupon = Coupons::where('id', '=', $product['coupon_id'])->first();
                         $couponCount = $coupon->count;

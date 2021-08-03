@@ -1389,7 +1389,9 @@ class AdminController extends Controller
         $errors = [];
         $httpStatus = 200;
 
-        $data = Categories::where('parent_id', '=', 0)->get();
+        $data = Categories::where('parent_id', '=', 0)
+            ->where('name', '<>', Categories::DEFAULT_NAME)
+            ->get();
         $parentIds = array_column($data->toArray(), 'id');
         $subCategoriesMap = [];
         if (!empty($parentIds)) {

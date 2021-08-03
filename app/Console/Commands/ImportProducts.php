@@ -55,6 +55,20 @@ class ImportProducts extends Command
             if (in_array($item->code, $registeredCodes)) {
                 print "edit product: {$item->code}\n";
                 $product = $productsList[$item->code];
+                if (Categories::where('id', $product->category_id)->first()->name == Categories::DEFAULT_NAME) {
+                    if (!in_array($item->category, array_keys($categoriesMap))) {
+                        print "new category: {$item->category}\n";
+                        $category = new Categories;
+                        $category->is_imported = 1;
+                        $category->parent_id = 0;
+                        $category->name = $item->category;
+                        $category->save();
+                        $categoriesMap[$item->category] = $category->id;
+                    } else {
+                        print "category exist: {$item->category}\n";
+                    }
+                    $product->category_id = $categoriesMap[$item->category];
+                }
                 $product->price = intval(str_replace(' ', '', $item->price));
                 $product->name = $item->name;
                 $product->description = $item->name;

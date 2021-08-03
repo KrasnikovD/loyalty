@@ -1470,10 +1470,10 @@ class AdminController extends Controller
      * @apiParam {string} [description]
      * @apiParam {integer} [price]
      * @apiParam {integer} [file_content]
-     * @apiParam {integer} [is_hit]
-     * @apiParam {integer} [is_novelty]
-     * @apiParam {integer} [is_by_weight]
-     * @apiParam {integer} [visible]
+     * @apiParam {integer=0,1} [is_hit]
+     * @apiParam {integer=0,1} [is_novelty]
+     * @apiParam {integer=0,1} [is_by_weight]
+     * @apiParam {integer=0,1} [visible]
      */
 
     public function edit_product(Request $request, $id = null)

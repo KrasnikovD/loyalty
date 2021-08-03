@@ -119,6 +119,8 @@ Route::get('/reviews/list', 'App\Http\Controllers\Api\AdminController@list_revie
 
 Route::patch('/bills/edit_value/{id}', 'App\Http\Controllers\Api\AdminController@edit_bill_value');
 
+Route::get('/statistic/sales', 'App\Http\Controllers\Api\StatController@sales');
+
 /****** CLIENTS ******/
 
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');

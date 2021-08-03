@@ -2559,6 +2559,10 @@
           {
             "group": "Parameter",
             "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
             "optional": true,
             "field": "is_hit",
             "description": ""
@@ -2566,6 +2570,10 @@
           {
             "group": "Parameter",
             "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
             "optional": true,
             "field": "is_novelty",
             "description": ""
@@ -2573,6 +2581,10 @@
           {
             "group": "Parameter",
             "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
             "optional": true,
             "field": "is_by_weight",
             "description": ""
@@ -2580,6 +2592,10 @@
           {
             "group": "Parameter",
             "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
             "optional": true,
             "field": "visible",
             "description": ""
@@ -2824,7 +2840,7 @@
   },
   {
     "type": "get",
-    "url": "/api/statistic/average_check",
+    "url": "/api/statistic/sales",
     "title": "Average Check",
     "name": "AverageCheck",
     "group": "AdminStat",

@@ -63,4 +63,36 @@ class StatController extends Controller
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
+
+    /**
+     * @api {get} /api/statistic/product_rates/:product_id Product Rates
+     * @apiName ProductRates
+     * @apiGroup AdminStat
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} product_id
+     * @apiParam {string} [date_from]
+     * @apiParam {string} [date_to]
+     */
+
+    public function product_rates(Request $request, $productId)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validator = Validator::make(['product_id' => $productId],
+            ['product_id' => 'nullable|exists:products,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            if ($request->date_from && $request->date_to) {
+                $from = date("Y-m-d", strtotime($request->date_from));
+                $to = date("Y-m-d", strtotime($request->date_to));
+            }
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
 }

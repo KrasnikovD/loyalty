@@ -497,7 +497,7 @@ class AdminController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
-        $card = null;
+        $data = null;
         Validator::extend('validate_card_number', function($attribute, $value, $parameters, $validator) {
             $validateData = [['number', '=', $value]];
             if (!empty($parameters[0])) $validateData[] = ['id', '<>', $parameters[0]];
@@ -553,8 +553,10 @@ class AdminController extends Controller
                 }
             }
             CommonActions::cardHistoryLogEditOrCreate($card, !$id);
+            $data = [$card->toArray()];
+            DataHelper::collectCardsInfo($data);
         }
-        return response()->json(['errors' => $errors, 'data' => $card], $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 
     /**

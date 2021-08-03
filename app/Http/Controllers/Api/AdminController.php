@@ -1454,6 +1454,7 @@ class AdminController extends Controller
      * @apiParam {integer} [is_hit]
      * @apiParam {integer} [is_novelty]
      * @apiParam {integer} is_by_weight
+     * @apiParam {integer} [visible]
      */
 
     /**
@@ -1472,6 +1473,7 @@ class AdminController extends Controller
      * @apiParam {integer} [is_hit]
      * @apiParam {integer} [is_novelty]
      * @apiParam {integer} [is_by_weight]
+     * @apiParam {integer} [visible]
      */
 
     public function edit_product(Request $request, $id = null)
@@ -1501,6 +1503,7 @@ class AdminController extends Controller
         $validatorRules['is_hit'] = 'nullable|in:0,1,true,false';
         $validatorRules['is_novelty'] = 'nullable|in:0,1,true,false';
         $validatorRules['is_by_weight'] = 'nullable|in:0,1,true,false';
+        $validatorRules['visible'] = 'nullable|in:0,1,true,false';
 
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
@@ -1532,6 +1535,12 @@ class AdminController extends Controller
                     $request->is_by_weight === true ||
                     intval($request->is_by_weight) === 1);
                 $product->is_by_weight = $isByWeight;
+            }
+            if (isset($request->visible)) {
+                $visible = intval($request->visible === 'true' ||
+                    $request->visible === true ||
+                    intval($request->visible) === 1);
+                $product->visible = $visible;
             }
             if (isset($request->file_content)) {
                 if ($id) @unlink(Storage::path("images/{$product->file}"));

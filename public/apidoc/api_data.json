@@ -2454,6 +2454,13 @@
             "optional": false,
             "field": "is_by_weight",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "visible",
+            "description": ""
           }
         ]
       }
@@ -2568,6 +2575,13 @@
             "type": "integer",
             "optional": true,
             "field": "is_by_weight",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "visible",
             "description": ""
           }
         ]
@@ -2807,6 +2821,63 @@
     "version": "0.0.0",
     "filename": "../app/Http/Controllers/Api/AdminController.php",
     "groupTitle": "AdminReviews"
+  },
+  {
+    "type": "get",
+    "url": "/api/statistic/average_check",
+    "title": "Average Check",
+    "name": "AverageCheck",
+    "group": "AdminStat",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "user_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "outlet_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "date_from",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "date_to",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/StatController.php",
+    "groupTitle": "AdminStat"
   },
   {
     "type": "post",

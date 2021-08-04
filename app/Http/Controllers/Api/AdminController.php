@@ -435,7 +435,7 @@ class AdminController extends Controller
             }
             $list = $query->get()->toArray();
             DataHelper::collectUsersInfo($list, false);
-            DataHelper::collectStatInfo($list);
+            DataHelper::collectUserStatInfo($list);
             if ($id) $data = $list[0];
             else $data = ['count' => $count, 'list' => $list];
         }
@@ -978,6 +978,7 @@ class AdminController extends Controller
                 }
             }
             $list = $query->get();
+            DataHelper::collectOutletStatInfo($list);
             if ($id) $data = $list[0];
             else $data = ['count' => $count, 'list' => $list];
         }

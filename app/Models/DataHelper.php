@@ -58,7 +58,7 @@ class DataHelper extends Model
         }
     }
 
-    public static function collectStatInfo(&$data)
+    public static function collectUserStatInfo(&$data)
     {
         $map = [];
         foreach (Baskets::select(DB::raw('count(*) as count, sales.user_id, baskets.product_id, products.name'))
@@ -67,6 +67,21 @@ class DataHelper extends Model
                      ->groupBy('sales.user_id', 'baskets.product_id')
                      ->orderBy('sales.user_id')->orderBy('count', 'desc')->get()->toArray() as $item) {
             if (!isset($map[$item['user_id']])) $map[$item['user_id']] = $item;
+        }
+        foreach ($data as &$item) {
+            $item['top_product'] = @$map[$item['id']];
+        }
+    }
+
+    public static function collectOutletStatInfo(&$data)
+    {
+        $map = [];
+        foreach (Baskets::select(DB::raw('count(*) as count, sales.outlet_id, baskets.product_id, products.name'))
+                     ->join('products', 'products.id', '=', 'baskets.product_id')
+                     ->join('sales', 'sales.id', '=', 'baskets.sale_id')
+                     ->groupBy('sales.outlet_id', 'baskets.product_id')
+                     ->orderBy('sales.outlet_id')->orderBy('count', 'desc')->get()->toArray() as $item) {
+            if (!isset($map[$item['outlet_id']])) $map[$item['outlet_id']] = $item;
         }
         foreach ($data as &$item) {
             $item['top_product'] = @$map[$item['id']];

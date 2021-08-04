@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\WelcomeNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -230,5 +231,17 @@ class CommonActions extends Model
             }
         }
         return false;
+    }
+
+    public static function sendSalePush($userId, $added, $debited)
+    {
+        $device = Devices::where('user_id', '=', $userId)->first();
+        if ($device) {
+            $title = $added > 0 ? __('messages.im_bonus_added_title') : __('messages.im_bonus_debited_title');
+            $body = $added > 0 ?
+                __('messages.im_bonus_added_body', ['sum' => $added]) :
+                __('messages.im_bonus_debited_body', ['sum' => $debited]);
+            $device->notify(new WelcomeNotification($title, $body));
+        }
     }
 }

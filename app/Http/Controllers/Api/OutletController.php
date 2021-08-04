@@ -285,6 +285,7 @@ class OutletController extends Controller
                     $historyEntry->dt = date('Y-m-d H:i:s');
                     if ($debited) $historyEntry->debited = $debited;
                     $historyEntry->save();
+                    CommonActions::sendSalePush($cardInfo->user_id, $added, $debited);
                 }
             }
             if ($debited) $sale->debited = $debited;

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Baskets;
 use App\Models\Sales;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -65,33 +66,41 @@ class StatController extends Controller
     }
 
     /**
-     * @api {get} /api/statistic/product_rates/:product_id Product Rates
+     * @api {get} /api/statistic/product_rates Product Rates
      * @apiName ProductRates
      * @apiGroup AdminStat
      *
      * @apiHeader {string} Authorization Basic current user token
      *
-     * @apiParam {integer} product_id
+     * @apiParam {integer} [limit]
      * @apiParam {string} [date_from]
      * @apiParam {string} [date_to]
      */
 
-    public function product_rates(Request $request, $productId)
+    public function product_rates(Request $request)
     {
         $errors = [];
         $httpStatus = 200;
         $data = null;
-        $validator = Validator::make(['product_id' => $productId],
-            ['product_id' => 'nullable|exists:products,id']);
+        $validator = Validator::make($request->all(), ['limit' => 'integer']);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
         if (empty($errors)) {
+            $q = Baskets::select(DB::raw('count(*) as count, baskets.product_id, products.name'))
+                ->join('products', 'products.id', '=', 'baskets.product_id')
+                ->groupBy('baskets.product_id')
+                ->orderBy('count', 'desc');
             if ($request->date_from && $request->date_to) {
                 $from = date("Y-m-d", strtotime($request->date_from));
                 $to = date("Y-m-d", strtotime($request->date_to));
+                $q->where(DB::raw('cast(baskets.created_at as date)'), '>=', $from);
+                $q->where(DB::raw('cast(baskets.created_at as date)'), '<=', $to);
             }
+            if ($request->limit)
+                $q->limit($request->limit);
+            $data = $q->get();
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

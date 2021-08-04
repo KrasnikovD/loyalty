@@ -120,7 +120,7 @@ Route::get('/reviews/list', 'App\Http\Controllers\Api\AdminController@list_revie
 Route::patch('/bills/edit_value/{id}', 'App\Http\Controllers\Api\AdminController@edit_bill_value');
 
 Route::get('/statistic/sales', 'App\Http\Controllers\Api\StatController@sales');
-Route::get('/statistic/product_rates/{product_id}', 'App\Http\Controllers\Api\StatController@product_rates');
+Route::get('/statistic/product_rates', 'App\Http\Controllers\Api\StatController@product_rates');
 
 /****** CLIENTS ******/
 

@@ -2896,6 +2896,56 @@
     "groupTitle": "AdminStat"
   },
   {
+    "type": "get",
+    "url": "/api/statistic/product_rates",
+    "title": "Product Rates",
+    "name": "ProductRates",
+    "group": "AdminStat",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "limit",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "date_from",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "date_to",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/StatController.php",
+    "groupTitle": "AdminStat"
+  },
+  {
     "type": "post",
     "url": "/api/stocks/create",
     "title": "Create Stock",

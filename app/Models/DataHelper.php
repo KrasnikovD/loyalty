@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class DataHelper extends Model
 {
@@ -54,6 +55,21 @@ class DataHelper extends Model
         foreach ($data as &$item) {
             $item['card_list'] = @$cardMap[$item['id']];
             $item['fields'] = @$userFieldsMap[$item['id']];
+        }
+    }
+
+    public static function collectStatInfo(&$data)
+    {
+        $map = [];
+        foreach (Baskets::select(DB::raw('count(*) as count, sales.user_id, baskets.product_id, products.name'))
+                     ->join('products', 'products.id', '=', 'baskets.product_id')
+                     ->join('sales', 'sales.id', '=', 'baskets.sale_id')
+                     ->groupBy('sales.user_id', 'baskets.product_id')
+                     ->orderBy('sales.user_id')->orderBy('count', 'desc')->get()->toArray() as $item) {
+            if (!isset($map[$item['user_id']])) $map[$item['user_id']] = $item;
+        }
+        foreach ($data as &$item) {
+            $item['top_product'] = @$map[$item['id']];
         }
     }
 

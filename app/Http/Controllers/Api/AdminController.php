@@ -435,6 +435,7 @@ class AdminController extends Controller
             }
             $list = $query->get()->toArray();
             DataHelper::collectUsersInfo($list, false);
+            DataHelper::collectStatInfo($list);
             if ($id) $data = $list[0];
             else $data = ['count' => $count, 'list' => $list];
         }

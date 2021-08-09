@@ -10,4 +10,7 @@ class Reviews extends Model
     use HasFactory;
 
     protected $table = 'reviews';
+
+    const TYPE_PRODUCT = 'product';
+    const TYPE_OUTLET = 'outlet';
 }

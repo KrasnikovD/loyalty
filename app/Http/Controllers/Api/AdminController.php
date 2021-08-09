@@ -2787,11 +2787,11 @@ class AdminController extends Controller
      *
      * @apiHeader {string} Authorization Basic current user token
      *
-     * @apiParam {integer} [product_id]
      * @apiParam {string} [order] order field name
      * @apiParam {string} [dir] order direction
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
+     * @apiParam {string=product,outlet} [type]
      */
 
     /**
@@ -2811,7 +2811,7 @@ class AdminController extends Controller
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validator = Validator::make($validatorData, [
             'id' => 'exists:reviews,id',
-            'product_id' => 'exists:products,id',
+            'type' => 'nullable|in:product,outlet',
         ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
@@ -2819,12 +2819,13 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $count = 0;
-            $query = Reviews::select('reviews.id', 'reviews.message', 'reviews.is_hidden', 'products.name as product_name', 'users.first_name as user_first_name', 'users.second_name as user_second_name')
-                ->join('products', 'products.id', '=', 'reviews.product_id')
+            $query = Reviews::select('reviews.id', 'reviews.message', 'reviews.is_hidden', 'reviews.type', 'reviews.object_id',
+                'users.first_name as user_first_name', 'users.second_name as user_second_name')
                 ->join('users', 'users.id', '=', 'reviews.user_id');
             if ($id) $query->where('id', '=', $id);
             else {
-                if ($request->product_id) $query->where('product_id', '=', $request->product_id);
+                if ($request->type)
+                    $query->where('reviews.type', '=', $request->type);
                 $count = $query->count();
                 $order = $request->order ?: 'reviews.id';
                 $dir = $request->dir ?: 'asc';
@@ -2838,6 +2839,19 @@ class AdminController extends Controller
                 }
             }
             $list = $query->get()->toArray();
+
+            $productsMap = [];
+            foreach (Product::all() as $product)
+                $productsMap[$product['id']] = $product->toArray();
+            $outletsMap = [];
+            foreach (Outlet::all() as $outlet)
+                $outletsMap[$outlet['id']] = $outlet->toArray();
+
+            foreach ($list as &$item) {
+                $item['product_name'] = $item['type'] == Reviews::TYPE_PRODUCT ? @$productsMap[$item['object_id']]['name'] : null;
+                $item['outlet_name'] = $item['type'] == Reviews::TYPE_OUTLET ? @$outletsMap[$item['object_id']]['name'] : null;
+            }
+
             if ($id) $data = $list[0];
             else $data = ['count' => $count, 'list' => $list];
         }

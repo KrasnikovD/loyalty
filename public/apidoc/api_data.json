@@ -2775,13 +2775,6 @@
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "integer",
-            "optional": true,
-            "field": "product_id",
-            "description": ""
-          },
-          {
-            "group": "Parameter",
             "type": "string",
             "optional": true,
             "field": "order",
@@ -2807,6 +2800,17 @@
             "optional": true,
             "field": "limit",
             "description": "<p>row count</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "allowedValues": [
+              "product",
+              "outlet"
+            ],
+            "optional": true,
+            "field": "type",
+            "description": ""
           }
         ]
       }
@@ -4818,13 +4822,6 @@
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "integer",
-            "optional": true,
-            "field": "product_id",
-            "description": ""
-          },
-          {
-            "group": "Parameter",
             "type": "string",
             "optional": true,
             "field": "order",
@@ -4850,6 +4847,17 @@
             "optional": true,
             "field": "limit",
             "description": "<p>row count</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "allowedValues": [
+              "product",
+              "outlet"
+            ],
+            "optional": true,
+            "field": "type",
+            "description": ""
           }
         ]
       }

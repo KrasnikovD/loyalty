@@ -11,14 +11,16 @@ class TranslationTexts extends Model
 
     protected $table = 'translation_texts';
 
-    const LOCALE_EN = 'en';
-    const LOCALE_RU = 'ru';
-
     const KEY_IM_RATE_STORE_TITLE = 'im_rate_store_title';
     const KEY_IM_RATE_STORE_BODY = 'im_rate_store_body';
 
     public static function getByKey($key, $locale)
     {
         return self::where([['key', '=', $key], ['locale', '=', $locale]])->first()->text;
+    }
+
+    public static function setByKey($key, $locale, $value)
+    {
+        self::where([['key', '=', $key], ['locale', '=', $locale]])->update(['text' => $value]);
     }
 }

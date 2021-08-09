@@ -238,8 +238,8 @@ class CommonActions extends Model
         $device = Devices::where('user_id', '=', $userId)->first();
         $outletName = Outlet::where('id', $outletId)->first()->name;
         if ($device) {
-            $title = 'Оцените обслуживание';
-            $body = 'Оцените обслуживание';
+            $title = TranslationTexts::getByKey(TranslationTexts::KEY_IM_RATE_STORE_TITLE, config('app.locale'));
+            $body = TranslationTexts::getByKey(TranslationTexts::KEY_IM_RATE_STORE_BODY, config('app.locale'));
             $device->notify(new WelcomeNotification($title, $body,
                 json_encode(['outlet_id' => $outletId, 'outlet_name' => $outletName])));
         }

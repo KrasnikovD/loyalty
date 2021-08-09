@@ -3167,6 +3167,72 @@ define({ "api": [
     "groupTitle": "AdminStocks"
   },
   {
+    "type": "get",
+    "url": "/api/translations/rate_store",
+    "title": "Get Store Rates Texts",
+    "name": "GetStoreRatesTexts",
+    "group": "AdminTranslations",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/TranslationController.php",
+    "groupTitle": "AdminTranslations"
+  },
+  {
+    "type": "patch",
+    "url": "/api/translations/rate_store",
+    "title": "Set Store Rates Texts",
+    "name": "SetStoreRatesTexts",
+    "group": "AdminTranslations",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "title",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "body",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/TranslationController.php",
+    "groupTitle": "AdminTranslations"
+  },
+  {
     "type": "post",
     "url": "/api/users/create",
     "title": "Create User",
@@ -4723,7 +4789,7 @@ define({ "api": [
           {
             "group": "Parameter",
             "type": "integer",
-            "optional": false,
+            "optional": true,
             "field": "rating",
             "description": ""
           }

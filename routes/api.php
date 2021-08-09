@@ -122,6 +122,9 @@ Route::patch('/bills/edit_value/{id}', 'App\Http\Controllers\Api\AdminController
 Route::get('/statistic/sales', 'App\Http\Controllers\Api\StatController@sales');
 Route::get('/statistic/product_rates', 'App\Http\Controllers\Api\StatController@product_rates');
 
+Route::get('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@get_rate_store');
+Route::patch('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@update_rate_store');
+
 /****** CLIENTS ******/
 
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');

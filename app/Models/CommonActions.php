@@ -233,15 +233,15 @@ class CommonActions extends Model
         return false;
     }
 
-    public static function sendSalePush($userId, $added, $debited)
+    public static function sendSalePush($userId, $added, $debited, $outletId)
     {
         $device = Devices::where('user_id', '=', $userId)->first();
+        $outletName = Outlet::where('id', $outletId)->first()->name;
         if ($device) {
-            $title = $added > 0 ? __('messages.im_bonus_added_title') : __('messages.im_bonus_debited_title');
-            $body = $added > 0 ?
-                __('messages.im_bonus_added_body', ['sum' => $added]) :
-                __('messages.im_bonus_debited_body', ['sum' => $debited]);
-            $device->notify(new WelcomeNotification($title, $body));
+            $title = 'Оцените обслуживание';
+            $body = 'Оцените обслуживание';
+            $device->notify(new WelcomeNotification($title, $body,
+                json_encode(['outlet_id' => $outletId, 'outlet_name' => $outletName])));
         }
     }
 }

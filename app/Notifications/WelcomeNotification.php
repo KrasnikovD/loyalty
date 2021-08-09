@@ -13,11 +13,13 @@ class WelcomeNotification extends Notification
 
     private $title;
     private $body;
+    private $data;
 
-    public function __construct($title, $body)
+    public function __construct($title, $body, $data = null)
     {
         $this->title = $title;
         $this->body = $body;
+        $this->data = @$data;
     }
 
     public function via($notifiable)
@@ -31,6 +33,7 @@ class WelcomeNotification extends Notification
         $message->expo_token = $notifiable->expo_token;
         $message->title = $this->title;
         $message->body = $this->body;
+        $message->data = $this->data;
         return $message;
     }
 }

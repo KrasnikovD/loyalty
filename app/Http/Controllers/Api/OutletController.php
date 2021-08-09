@@ -274,7 +274,6 @@ class OutletController extends Controller
                 if (!$nextFrom) $nextFrom = $currentTo + 1;
                 $bill->remaining_amount = ($currentAmount > $maxProgram->to) ? 0 : $nextFrom - $currentAmount;
                 $bill->save();
-
                 if ($program) {
                     $historyEntry = new BonusHistory;
                     $historyEntry->bill_program_id = $program->id;
@@ -285,7 +284,7 @@ class OutletController extends Controller
                     $historyEntry->dt = date('Y-m-d H:i:s');
                     if ($debited) $historyEntry->debited = $debited;
                     $historyEntry->save();
-                    CommonActions::sendSalePush($cardInfo->user_id, $added, $debited);
+                    CommonActions::sendSalePush($cardInfo->user_id, $added, $debited, $sale->outlet_id);
                 }
             }
             if ($debited) $sale->debited = $debited;

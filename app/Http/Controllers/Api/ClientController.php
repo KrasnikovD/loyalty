@@ -751,6 +751,7 @@ class ClientController extends Controller
      * @apiParam {string} message
      * @apiParam {integer} object_id
      * @apiParam {string=product,outlet} type
+     * @apiParam {integer} rating
      */
 
     public function edit_review(Request $request)
@@ -769,6 +770,7 @@ class ClientController extends Controller
             'type' => 'required|in:product,outlet',
             'object_id' => 'required|check_object:' . $request->type,
             'message' => 'required',
+            'rating' => 'required|integer|min:1|max:5',
         ];
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
@@ -780,6 +782,7 @@ class ClientController extends Controller
             $review->message = $request->message;
             $review->object_id = $request->object_id;
             $review->type = $request->type;
+            $review->rating = $request->rating;
             $review->user_id = Auth::user()->id;
             $review->save();
 
@@ -791,6 +794,7 @@ class ClientController extends Controller
             $data->user_id = $review->user_id;
             $data->created_at = $review->created_at;
             $data->type = $review->type;
+            $data->rating = $review->rating;
             $data->user_first_name = $user->first_name;
             $data->user_second_name = $user->second_name;
         }
@@ -836,7 +840,7 @@ class ClientController extends Controller
         }
         if (empty($errors)) {
             $count = 0;
-            $query = Reviews::select('reviews.id', 'reviews.message', 'reviews.object_id', 'reviews.type');
+            $query = Reviews::select('reviews.id', 'reviews.message', 'reviews.object_id', 'reviews.rating', 'reviews.type');
             $query->where('is_hidden', '=', 0);
             if ($id) $query->where('id', '=', $id);
             else {

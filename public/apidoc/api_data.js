@@ -4719,6 +4719,13 @@ define({ "api": [
             "optional": false,
             "field": "type",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "rating",
+            "description": ""
           }
         ]
       }

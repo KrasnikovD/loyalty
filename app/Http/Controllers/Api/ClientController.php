@@ -751,7 +751,7 @@ class ClientController extends Controller
      * @apiParam {string} message
      * @apiParam {integer} object_id
      * @apiParam {string=product,outlet} type
-     * @apiParam {integer} rating
+     * @apiParam {integer} [rating]
      */
 
     public function edit_review(Request $request)
@@ -770,7 +770,7 @@ class ClientController extends Controller
             'type' => 'required|in:product,outlet',
             'object_id' => 'required|check_object:' . $request->type,
             'message' => 'required',
-            'rating' => 'required|integer|min:1|max:5',
+            'rating' => 'nullable|integer|min:1|max:5',
         ];
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
@@ -782,7 +782,8 @@ class ClientController extends Controller
             $review->message = $request->message;
             $review->object_id = $request->object_id;
             $review->type = $request->type;
-            $review->rating = $request->rating;
+            if ($request->rating)
+                $review->rating = $request->rating;
             $review->user_id = Auth::user()->id;
             $review->save();
 

@@ -14,7 +14,7 @@ class ModifyReviewsTable4 extends Migration
     public function up()
     {
         Schema::table('reviews', function (Blueprint $table) {
-            $table->integer('rating');
+            $table->integer('rating')->nullable()->default(null);
         });
     }
 

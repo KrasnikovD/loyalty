@@ -305,7 +305,7 @@ class AdminController extends Controller
         $validatorRules['type'] = (!$id ? 'required|' : '') . 'in:0,1';
         $validatorRules['phone'] = (!$id ? 'required|' : '') . "phone_validate:{$id}";
 
-        $validatorRules['birthday'] = 'date';
+        $validatorRules['birthday'] = 'nullable|date';
         $validatorRules['archived'] = 'in:0,1';
         $validatorRules['active'] = 'in:0,1';
         $validatorRules['fields'] = 'nullable|array';

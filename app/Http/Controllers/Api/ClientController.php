@@ -749,55 +749,48 @@ class ClientController extends Controller
      * @apiHeader {string} Authorization Basic current user token
      *
      * @apiParam {string} message
-     * @apiParam {integer} product_id
+     * @apiParam {integer} object_id
+     * @apiParam {string=product,outlet} type
      */
 
-    /**
-     * @api {post} /api/clients/reviews/edit/:id Edit Review
-     * @apiName EditReview
-     * @apiGroup ClientReviews
-     *
-     * @apiHeader {string} Authorization Basic current user token
-     *
-     * @apiParam {string} [message]
-     */
-
-    public function edit_review(Request $request, $id = null)
+    public function edit_review(Request $request)
     {
         $errors = [];
         $httpStatus = 200;
         $data = null;
 
-        Validator::extend('is_creator', function($attribute, $value, $parameters, $validator) {
-            return Reviews::where([['id', '=', $value], ['user_id', '=', $parameters[0]]])->exists();
+        Validator::extend('check_object', function($attribute, $value, $parameters, $validator) {
+            $class = $parameters[0] == Reviews::TYPE_PRODUCT ? 'App\Models\Product' : 'App\Models\Outlet';
+            return $class::where('id', '=', $value)->exists();
         });
 
         $validatorData = $request->all();
-        if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [
-            'product_id' => (!$id ? 'required|' : '') . 'exists:products,id',
-            'id' => "exists:reviews,id|is_creator:" . Auth::user()->id
+            'type' => 'required|in:product,outlet',
+            'object_id' => 'required|check_object:' . $request->type,
+            'message' => 'required',
         ];
-        if(!$id) $validatorRules['message'] = 'required';
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $review = $id ? Reviews::where('id', '=', $id)->first() : new Reviews;
-            if (isset($request->message)) $review->message = $request->message;
-            if (isset($request->product_id)) $review->product_id = $request->product_id;
-            if (!$id) $review->user_id = Auth::user()->id;
+            $review = new Reviews;
+            $review->message = $request->message;
+            $review->object_id = $request->object_id;
+            $review->type = $request->type;
+            $review->user_id = Auth::user()->id;
             $review->save();
 
             $user = Users::where('id', '=', Auth::user()->id)->first();
             $data = new \stdClass;
             $data->message = $review->message;
             $data->id = $review->id;
-            $data->product_id = $review->product_id;
+            $data->object_id = $review->object_id;
             $data->user_id = $review->user_id;
             $data->created_at = $review->created_at;
+            $data->type = $review->type;
             $data->user_first_name = $user->first_name;
             $data->user_second_name = $user->second_name;
         }

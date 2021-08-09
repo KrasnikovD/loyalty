@@ -4706,7 +4706,18 @@
             "group": "Parameter",
             "type": "integer",
             "optional": false,
-            "field": "product_id",
+            "field": "object_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "allowedValues": [
+              "product",
+              "outlet"
+            ],
+            "optional": false,
+            "field": "type",
             "description": ""
           }
         ]
@@ -4731,42 +4742,6 @@
             "optional": false,
             "field": "Authorization",
             "description": "<p>Basic current user token</p>"
-          }
-        ]
-      }
-    },
-    "version": "0.0.0",
-    "filename": "../app/Http/Controllers/Api/ClientController.php",
-    "groupTitle": "ClientReviews"
-  },
-  {
-    "type": "post",
-    "url": "/api/clients/reviews/edit/:id",
-    "title": "Edit Review",
-    "name": "EditReview",
-    "group": "ClientReviews",
-    "header": {
-      "fields": {
-        "Header": [
-          {
-            "group": "Header",
-            "type": "string",
-            "optional": false,
-            "field": "Authorization",
-            "description": "<p>Basic current user token</p>"
-          }
-        ]
-      }
-    },
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "string",
-            "optional": true,
-            "field": "message",
-            "description": ""
           }
         ]
       }

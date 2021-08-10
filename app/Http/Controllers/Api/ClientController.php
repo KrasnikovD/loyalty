@@ -117,7 +117,7 @@ class ClientController extends Controller
                 if (!$cardExists) {
                     $card = new Cards;
                     $card->user_id = $user->id;
-                    $card->number = CommonActions::randomString();
+                    $card->number = 'z' . CommonActions::randomString(7, true);
                     $card->phone = $phone;
                     $card->save();
 
@@ -1551,7 +1551,12 @@ class ClientController extends Controller
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [
             'number' => 'required|unique:cards,number,' . $id,
-            'id' => 'exists:cards,id,deleted_at,NULL'
+            'id' => 'exists:cards,id,deleted_at,NULL',
+            'number' => [
+                !$id ? 'required' : 'nullable',
+                "unique:cards,number,{$id}",
+                "regex:/^z\d{7}$/"
+            ]
         ];
 
         $validator = Validator::make($validatorData, $validatorRules);

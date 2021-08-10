@@ -136,11 +136,12 @@ class CommonActions extends Model
         return $ad * self::EARTH_RADIUS;
     }
 
-    public static function randomString()
+    public static function randomString($n, $onlyNumbers = false)
     {
-        $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $characters = $onlyNumbers ? '0123456789' : '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $str = '';
-        for ($i = 0; $i < 12; $i++) $str .= $characters[rand(0, strlen($characters)-1)];
+        for ($i = 0; $i < $n; $i++)
+            $str .= $characters[rand(0, strlen($characters)-1)];
         return $str;
     }
 

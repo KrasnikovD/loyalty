@@ -507,7 +507,11 @@ class AdminController extends Controller
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [];
-        $validatorRules['number'] = (!$id ? 'required|' : '') . "validate_card_number:$id";
+        $validatorRules['number'] = [
+            !$id ? 'required' : 'nullable',
+            "unique:cards,number,{$id}",
+            "regex:/^z\d{7}$|^\d{8}$/"
+        ];
         if ($id) $validatorRules['id'] = 'exists:cards,id,deleted_at,NULL';
         $validatorRules['user_id'] = 'exists:users,id';
         $validatorRules['is_physical'] = 'in:0,1';

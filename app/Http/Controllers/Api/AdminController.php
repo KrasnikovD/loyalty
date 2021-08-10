@@ -1843,7 +1843,7 @@ class AdminController extends Controller
         if (!$id) {
             $validatorRules = [
                 'dir' => 'in:asc,desc',
-                'order' => 'in:id,status,amount,amount_now,created_at,updated_at',
+                'order' => 'in:id,dt,status,amount,amount_now,created_at,updated_at',
                 'offset' => 'integer',
                 'limit' => 'integer',
                 'user_id' => 'integer|exists:users,id',

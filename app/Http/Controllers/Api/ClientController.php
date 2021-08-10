@@ -1550,11 +1550,10 @@ class ClientController extends Controller
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [
-            'number' => 'required|unique:cards,number,' . $id,
             'id' => 'exists:cards,id,deleted_at,NULL',
             'number' => [
                 !$id ? 'required' : 'nullable',
-                "unique:cards,number,{$id}",
+                "unique:cards,number," . $id,
                 "regex:/^z\d{7}$/"
             ]
         ];

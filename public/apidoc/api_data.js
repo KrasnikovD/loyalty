@@ -4732,6 +4732,13 @@ define({ "api": [
           },
           {
             "group": "Parameter",
+            "type": "datetime",
+            "optional": true,
+            "field": "birthday",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
             "type": "object[]",
             "optional": true,
             "field": "fields",

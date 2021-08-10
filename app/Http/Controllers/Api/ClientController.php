@@ -1266,6 +1266,7 @@ class ClientController extends Controller
      * @apiParam {string} [first_name]
      * @apiParam {string} [second_name]
      * @apiParam {string} [password]
+     * @apiParam {datetime} [birthday]
      * @apiParam {object[]} [fields]
      */
 
@@ -1283,7 +1284,8 @@ class ClientController extends Controller
 
         $validatorRules =  [
             'fields' => 'nullable|array',
-            'fields.*' => 'field_validation'
+            'fields.*' => 'field_validation',
+            'birthday' => 'nullable|date',
         ];
         $validator = Validator::make($request->all(), $validatorRules);
         if ($validator->fails()) {
@@ -1295,6 +1297,7 @@ class ClientController extends Controller
             if ($request->first_name) $user->first_name = $request->first_name;
             if ($request->second_name) $user->second_name = $request->second_name;
             if ($request->password) $user->password = md5($request->password);
+            if ($request->birthday) $user->birthday = date("Y-m-d H:i:s", strtotime($request->birthday));
             $user->save();
 
             if (!empty($request->fields)) {

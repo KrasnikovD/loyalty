@@ -979,7 +979,8 @@ class ClientController extends Controller
             $reviews = Reviews::select('reviews.*',
                 'users.first_name as user_first_name',
                 'users.second_name as user_second_name')
-                ->whereIn('product_id', $productsIds)
+                ->whereIn('object_id', $productsIds)
+                ->where('reviews.type', Reviews::TYPE_PRODUCT)
                 ->leftJoin('users', 'users.id', '=', 'reviews.user_id')
                 ->get();
             foreach ($reviews as $item) {

@@ -861,6 +861,8 @@ class AdminController extends Controller
      * @apiParam {string} phone
      * @apiParam {string} lon
      * @apiParam {string} lat
+     * @apiParam {string} from
+     * @apiParam {string} to
      */
 
     /**
@@ -874,6 +876,8 @@ class AdminController extends Controller
      * @apiParam {string} [phone]
      * @apiParam {string} [lon]
      * @apiParam {string} [lat]
+     * @apiParam {string} [from]
+     * @apiParam {string} [to]
      */
 
     public function edit_outlet(Request $request, $id = null)
@@ -888,6 +892,8 @@ class AdminController extends Controller
             'phone' => (!$id ? 'required|' : '') . 'unique:outlets',
             'lon' => (!$id ? 'required|' : '') . 'regex:/^\d+(\.\d+)?$/',
             'lat' => (!$id ? 'required|' : '') . 'regex:/^\d+(\.\d+)?$/',
+            'from' => (!$id ? 'required|' : '') . 'regex:/^\d{2}:\d{2}$/',
+            'to' => (!$id ? 'required|' : '') . 'regex:/^\d{2}:\d{2}$/',
         ];
 
         if (!$id) $validatorRules['name'] = 'required';
@@ -904,6 +910,8 @@ class AdminController extends Controller
             if ($request->phone) $outlet->phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
             if ($request->lon) $outlet->lon = $request->lon;
             if ($request->lat) $outlet->lat = $request->lat;
+            if ($request->from) $outlet->from = $request->from;
+            if ($request->to) $outlet->to = $request->to;
             if($request->lon && $request->lat && ($address = CommonActions::geocode($request->lon, $request->lat))) {
                 $outlet->address = $address['address'];
                 $outlet->city_name = $address['city'];

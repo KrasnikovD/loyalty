@@ -1433,7 +1433,7 @@ class AdminController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
-        $validator = Validator::make(['id' => $id], ['id' => 'exists:categories,id']);
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:categories,id,deleted_at,NULL']);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
@@ -1585,14 +1585,16 @@ class AdminController extends Controller
         $errors = [];
         $httpStatus = 200;
         $data = null;
-
+        Validator::extend('check_categories', function($attribute, $value, $parameters, $validator) {
+            return $value == -1 || Categories::where('id', $value)->exists();
+        });
         $validatorRules = [
             'dir' => 'in:asc,desc',
             'order' => 'in:id,category_id,name,description,file,price,created_at,updated_at',
             'offset' => 'integer',
             'limit' => 'integer',
            // 'outlet_id' => 'exists:outlets,id',
-            'category_id' => 'exists:categories,id',
+            'category_id' => 'check_categories',
             'hide_deleted' => 'in:0,1',
         ];
         $validator = Validator::make($request->all(), $validatorRules);
@@ -1603,23 +1605,27 @@ class AdminController extends Controller
         if (empty($errors)) {
             $products = Product::select('products.*', /*'outlets.name as outlet_name',*/
                 'categories.name as category_name',
+                DB::raw('categories.deleted_at is not null as category_deleted'),
                 'parent_categories.id as parent_category_id',
                 'parent_categories.name as parent_category_name'
                 )
                // ->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')
                 ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
                 ->leftJoin('categories as parent_categories', 'parent_categories.id', '=', 'categories.parent_id');
-            if ($request->hide_deleted == 1) $products->where('archived', '=', 0);
+            if ($request->hide_deleted == 1)
+                $products->where('archived', '=', 0);
             if (isset($request->category_id)) {
-                if (Categories::where('id', '=', $request->category_id)->value('parent_id') == 0) {
+                if (Categories::where('id', '=', $request->category_id)->value('parent_id') === 0) {
                     $categories = Categories::where('parent_id', '=', $request->category_id)->get()->toArray();
                     $categoriesIds = array_column($categories, 'id');
                     $categoriesIds[] = $request->category_id;
-                    if(!empty($categoriesIds)) {
+                    if(!empty($categoriesIds))
                         $products->whereIn('category_id', $categoriesIds);
-                    }
                 } else {
-                    $products->where('category_id', '=', $request->category_id);
+                    if ($request->category_id == -1)
+                        $products->whereNotNull('categories.deleted_at');
+                    else
+                        $products->where('category_id', '=', $request->category_id);
                 }
             }
            /* if (isset($request->outlet_id)) {

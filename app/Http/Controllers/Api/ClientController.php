@@ -1194,6 +1194,9 @@ class ClientController extends Controller
             $errors['number'] = __('messages.error_text_bind_card_non_exist');
         if (!empty($card->user_id))
             $errors['number'] = __('messages.error_text_bind_card_busy');
+        if (!empty($errors)) {
+            $httpStatus = 400;
+        }
         if (empty($errors)) {
             $card = Cards::where('number', '=', $number)->first();
             $card->user_id = Auth::user()->id;

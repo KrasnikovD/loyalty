@@ -14,4 +14,7 @@ return [
     'im_bonus_added_body' => 'You have made a purchase. Added to your account: :sum',
     'im_bonus_debited_title' => 'You have made a purchase',
     'im_bonus_debited_body' => 'You have made a purchase. Debited from your account: :sum',
+
+    'error_text_bind_card_non_exist' => 'No card with this number found.',
+    'error_text_bind_card_busy' => 'The card with this number is associated with another user.',
 ];

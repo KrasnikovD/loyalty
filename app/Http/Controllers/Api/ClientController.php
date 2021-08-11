@@ -1189,15 +1189,11 @@ class ClientController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
-        Validator::extend('check_no_owner', function($attribute, $value, $parameters, $validator) {
-            return Cards::where('number', '=', $value)
-                ->whereNull('user_id')->exists();
-        });
-        $validator = Validator::make(['number' => $number], ['number' => 'required|exists:cards,number|check_no_owner']);
-        if ($validator->fails()) {
-            $errors = $validator->errors()->toArray();
-            $httpStatus = 400;
-        }
+        $card = Cards::where('number', '=', $number)->first();
+        if (!$card)
+            $errors['number'] = __('messages.error_text_bind_card_non_exist');
+        if (!empty($card->user_id))
+            $errors['number'] = __('messages.error_text_bind_card_busy');
         if (empty($errors)) {
             $card = Cards::where('number', '=', $number)->first();
             $card->user_id = Auth::user()->id;

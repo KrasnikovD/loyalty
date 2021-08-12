@@ -414,7 +414,7 @@ class AdminController extends Controller
             $query = Users::select('users.*')
                 ->leftJoin('cards', 'cards.user_id', '=', 'users.id');
             if ($request->hide_deleted == 1) $query->where('users.archived', '=', 0);
-            if ($id) $query->where('id', '=', $id);
+            if ($id) $query->where('users.id', '=', $id);
             else {
                 if ($request->filters) {
                     $query->orWhere('users.first_name', 'like', $request->filters . '%');

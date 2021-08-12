@@ -517,7 +517,13 @@ class AdminController extends Controller
         $validatorRules['is_physical'] = 'in:0,1';
         $validatorRules['is_main'] = 'in:0,1';
 
-        $validator = Validator::make($validatorData, $validatorRules);
+        $messages = [
+            'number.unique' => 'Номер уже занят.',
+            'number.regex' => 'Формат номера не корректный.',
+            'number.required' => 'Поле номер обязательно для заполнения.',
+        ];
+
+        $validator = Validator::make($validatorData, $validatorRules, $messages);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;

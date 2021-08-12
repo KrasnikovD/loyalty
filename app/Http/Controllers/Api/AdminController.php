@@ -411,18 +411,20 @@ class AdminController extends Controller
 
         if (empty($errors)) {
             $count = 0;
-            $query = Users::select('*');
-            if ($request->hide_deleted == 1) $query->where('archived', '=', 0);
+            $query = Users::select('users.*')
+                ->leftJoin('cards', 'cards.user_id', '=', 'users.id');
+            if ($request->hide_deleted == 1) $query->where('users.archived', '=', 0);
             if ($id) $query->where('id', '=', $id);
             else {
                 if ($request->filters) {
-                    $query->orWhere('first_name', 'like', $request->filters . '%');
-                    $query->orWhere('second_name', 'like',  '%' . $request->filters . '%');
-                    $query->orWhere('third_name', 'like',  '%' . $request->filters . '%');
-                    $query->orWhere('phone', 'like', '%' .
+                    $query->orWhere('users.first_name', 'like', $request->filters . '%');
+                    $query->orWhere('users.second_name', 'like',  '%' . $request->filters . '%');
+                    $query->orWhere('users.third_name', 'like',  '%' . $request->filters . '%');
+                    $query->orWhere('users.phone', 'like', '%' .
                         str_replace(array("(", ")", " ", "-"), "", $request->filters) . '%');
+                    $query->orWhere('cards.number', 'like', $request->filters . '%');
                 }
-                $count = $query->count();
+                $count = $query->distinct()->count('users.id');
                 $order = $request->order ?: 'users.id';
                 $dir = $request->dir ?: 'asc';
                 $offset = $request->offset;
@@ -433,7 +435,7 @@ class AdminController extends Controller
                     if ($offset) $query->offset($offset);
                 }
             }
-            $list = $query->get()->toArray();
+            $list = $query->distinct()->get()->toArray();
             DataHelper::collectUsersInfo($list, false);
             DataHelper::collectUserStatInfo($list);
             if ($id) $data = $list[0];

@@ -80,7 +80,7 @@ class ImportUsers extends Command
         $billPrograms = BillPrograms::orderBy('to', 'desc')->get();
 
         array_walk($data, function ($userArray, $key) use ($billPrograms) {
-            @list($firstName, $secondName, $thirdName) = explode(' ', $userArray[0][0]);
+            @list($secondName, $firstName, $thirdName) = explode(' ', $userArray[0][0]);
             $firstName = self::mbUcfirst($firstName);
             if ($secondName) $secondName = self::mbUcfirst($secondName);
             if ($thirdName) $thirdName = self::mbUcfirst($thirdName);

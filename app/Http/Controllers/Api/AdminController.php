@@ -2956,7 +2956,9 @@ class AdminController extends Controller
             $card->phone = $userPhone;
             Sales::where('card_id', '=', $card->id)->update(['user_id' => $userId]);
             $card->save();
-            $data = $card;
+            $data = [$card];
+            DataHelper::collectCardsInfo($data);
+            $data = $data[0];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

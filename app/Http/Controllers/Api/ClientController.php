@@ -117,7 +117,7 @@ class ClientController extends Controller
                 if (!$cardExists) {
                     $card = new Cards;
                     $card->user_id = $user->id;
-                    $card->number = 'z' . CommonActions::randomString(7, true);
+                    $card->number = 'Z' . CommonActions::randomString(7, true);
                     $card->phone = $phone;
                     $card->save();
 

@@ -423,7 +423,7 @@
   },
   {
     "type": "patch",
-    "url": "/api/cards/attach_user/:id",
+    "url": "/api/cards/attach_user/:number",
     "title": "Attach / Detach User To Card",
     "name": "AttachCardUser",
     "group": "AdminCards",

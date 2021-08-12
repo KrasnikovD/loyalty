@@ -510,7 +510,7 @@ class AdminController extends Controller
         $validatorRules['number'] = [
             !$id ? 'required' : 'nullable',
             "unique:cards,number,{$id}",
-            "regex:/^z\d{7}$|^\d{8}$/"
+            "regex:/^z\d{7}$|^\d{8}$/i"
         ];
         if ($id) $validatorRules['id'] = 'exists:cards,id,deleted_at,NULL';
         $validatorRules['user_id'] = 'exists:users,id';
@@ -525,7 +525,7 @@ class AdminController extends Controller
         if (empty($errors)) {
             $card = $id ? Cards::where('id', '=', $id)->first() : new Cards;
             if ($request->user_id) $card->user_id = $request->user_id;
-            if ($request->number) $card->number = $request->number;
+            if ($request->number) $card->number = strtoupper($request->number);
             if ($request->phone) $card->phone = $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
             $isPhysical = $request->is_physical;
             $isMain = $request->is_main;
@@ -2924,7 +2924,7 @@ class AdminController extends Controller
     }
 
     /**
-     * @api {patch} /api/cards/attach_user/:id Attach / Detach User To Card
+     * @api {patch} /api/cards/attach_user/:number Attach / Detach User To Card
      * @apiName AttachCardUser
      * @apiGroup AdminCards
      *
@@ -2933,14 +2933,14 @@ class AdminController extends Controller
      * @apiParam {integer} [user_id]
      */
 
-    public function card_attach_user(Request $request, $id)
+    public function card_attach_user(Request $request, $number)
     {
         $errors = [];
         $httpStatus = 200;
         $data = null;
-        $validatorData = array_merge($request->all(), ['id' => $id]);
+        $validatorData = array_merge($request->all(), ['number' => $number]);
         $validator = Validator::make($validatorData, [
-            'id' => 'exists:cards,id',
+            'number' => 'exists:cards,number',
             'user_id' => 'nullable|exists:users,id'
         ]);
         if ($validator->fails()) {
@@ -2948,7 +2948,7 @@ class AdminController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $card = Cards::where('id', $id)->first();
+            $card = Cards::where('number', $number)->first();
             $user = Users::where('id', $request->user_id)->first();
             $userId = $request->user_id ?: null;
             $userPhone = $request->user_id ? $user->phone : null;

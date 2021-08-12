@@ -2939,16 +2939,20 @@ class AdminController extends Controller
      * @apiParam {integer} [user_id]
      */
 
-    public function card_attach_user(Request $request, $number)
+    public function card_attach_user(Request $request, $number = null)
     {
         $errors = [];
         $httpStatus = 200;
         $data = null;
+
+        $messages = [
+            'number.exists' => 'Указанная карта либо не существует либо привязана к другому пользователю.'
+        ];
         $validatorData = array_merge($request->all(), ['number' => $number]);
         $validator = Validator::make($validatorData, [
-            'number' => 'exists:cards,number',
+            'number' => 'exists:cards,number' . ($request->user_id ? ',user_id,NULL' : ''),
             'user_id' => 'nullable|exists:users,id'
-        ]);
+        ], $messages);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;

@@ -89,6 +89,10 @@ class ImportUsers extends Command
             $userId = self::createUser($firstName, $secondName, $thirdName, $phone, $birthday);
             foreach ($userArray as $item) {
                 $cardNumber = $item[2];
+                if (Cards::where('number', $cardNumber)->exists()) {
+                    print "Card $cardNumber already exists\n";
+                    continue;
+                }
                 $bonusValue = abs(floatval($item[3]));
                 $currentAmount = floatval(str_replace(' ', '', $item[4]));
                 print $phone.' '.$cardNumber.' '.$bonusValue.' '.$currentAmount."\n";
@@ -147,21 +151,33 @@ class ImportUsers extends Command
 
     private static function createUser($firstName, $secondName, $thirdName, $phone, $birthday)
     {
-        $user = new Users;
+        $isNew = true;
+        $user = Users::where('phone', $phone)->first();
+        if (!$user) {
+            print "New user: $phone\n";
+            $user = new Users;
+        } else {
+            $isNew = false;
+            print "Edit user: {$user->id}\n";
+        }
         $user->first_name = $firstName;
         $user->second_name = $secondName;
         $user->third_name = $thirdName;
-        $user->phone = $phone;
         $user->birthday = $birthday;
-        $user->type = Users::TYPE_USER;
-        $user->token = sha1(microtime() . 'salt' . time());
+        if ($isNew) {
+            $user->phone = $phone;
+            $user->type = Users::TYPE_USER;
+            $user->token = sha1(microtime() . 'salt' . time());
+        }
         $user->save();
 
-        foreach (Fields::all() as $field) {
-            $fieldsUser = new FieldsUsers;
-            $fieldsUser->field_id = $field->id;
-            $fieldsUser->user_id = $user->id;
-            $fieldsUser->save();
+        if ($isNew) {
+            foreach (Fields::all() as $field) {
+                $fieldsUser = new FieldsUsers;
+                $fieldsUser->field_id = $field->id;
+                $fieldsUser->user_id = $user->id;
+                $fieldsUser->save();
+            }
         }
 
         return $user->id;

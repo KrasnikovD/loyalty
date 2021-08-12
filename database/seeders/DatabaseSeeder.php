@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\BillPrograms;
 use App\Models\Categories;
 use App\Models\TranslationTexts;
 use Illuminate\Database\Seeder;
@@ -20,7 +21,7 @@ class DatabaseSeeder extends Seeder
             'parent_id' => 0,
             'name' => 'default'
         ]);*/
-       $translations = [
+       /*$translations = [
            [
                'text' => 'Rate the store',
                'key' => 'im_rate_store_title',
@@ -42,6 +43,30 @@ class DatabaseSeeder extends Seeder
                'locale' => 'ru'
            ],
        ];
-       TranslationTexts::insert($translations);
+       TranslationTexts::insert($translations);*/
+       /*$billPrograms = [
+           [
+               'from' => 0,
+               'to' => 10000,
+               'percent' => 2,
+               'created_at' => date('Y-m-d H:i:s'),
+               'updated_at' => date('Y-m-d H:i:s'),
+           ],
+           [
+               'from' => 10001,
+               'to' => 50000,
+               'percent' => 4,
+               'created_at' => date('Y-m-d H:i:s'),
+               'updated_at' => date('Y-m-d H:i:s'),
+           ],
+           [
+               'from' => 50001,
+               'to' => 100000,
+               'percent' => 6,
+               'created_at' => date('Y-m-d H:i:s'),
+               'updated_at' => date('Y-m-d H:i:s'),
+           ]
+       ];
+        BillPrograms::insert($billPrograms);*/
     }
 }

@@ -11,6 +11,7 @@ use App\Models\Fields;
 use App\Models\FieldsUsers;
 use App\Models\Users;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class ImportUsers extends Command
 {
@@ -89,7 +90,7 @@ class ImportUsers extends Command
             $userId = self::createUser($firstName, $secondName, $thirdName, $phone, $birthday);
             foreach ($userArray as $item) {
                 $cardNumber = $item[2];
-                if (Cards::where('number', $cardNumber)->exists()) {
+                if (DB::table('cards')->whereRaw("number='{$cardNumber}'")->exists()) {
                     print "Card $cardNumber already exists\n";
                     continue;
                 }

@@ -16,7 +16,7 @@ use App\Models\Users;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-class ImportUsers extends Command
+class fixUsers extends Command
 {
     /**
      * The name and signature of the console command.

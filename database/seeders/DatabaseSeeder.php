@@ -3,8 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\BillPrograms;
+use App\Models\BillTypes;
 use App\Models\Categories;
 use App\Models\TranslationTexts;
+use App\Models\Users;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -16,12 +18,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
-       /* Categories::insert([
+       //  \App\Models\User::factory(10)->create();
+        BillTypes::insert([
+            'name' => 'default',
+        ]);
+        Users::insert([
+            'first_name' => 'admin',
+            'second_name' => 'admin',
+            'phone' => '+111111111111',
+            'password' => '56c88ccbd5ed243738b643b5ca8446a9',
+            'token' => sha1(microtime() . 'salt' . time()),
+            'type' => Users::TYPE_ADMIN,
+        ]);
+        Categories::insert([
             'parent_id' => 0,
             'name' => 'default'
-        ]);*/
-       /*$translations = [
+        ]);
+       $translations = [
            [
                'text' => 'Rate the store',
                'key' => 'im_rate_store_title',
@@ -43,8 +56,8 @@ class DatabaseSeeder extends Seeder
                'locale' => 'ru'
            ],
        ];
-       TranslationTexts::insert($translations);*/
-       /*$billPrograms = [
+       TranslationTexts::insert($translations);
+       $billPrograms = [
            [
                'from' => 0,
                'to' => 10000,
@@ -67,6 +80,6 @@ class DatabaseSeeder extends Seeder
                'updated_at' => date('Y-m-d H:i:s'),
            ]
        ];
-        BillPrograms::insert($billPrograms);*/
+        BillPrograms::insert($billPrograms);
     }
 }

@@ -4,10 +4,9 @@ namespace App\Console\Commands;
 
 use App\Models\BillPrograms;
 use App\Models\Bills;
-use App\Models\BillTypes;
 use App\Models\Cards;
-use App\Models\CommonActions;
 use Illuminate\Console\Command;
+use mysql_xdevapi\Exception;
 
 class fixUsers2 extends Command
 {
@@ -49,14 +48,17 @@ class fixUsers2 extends Command
         $billPrograms = BillPrograms::orderBy('to', 'desc')->get();
 
         $handle = @fopen($pathToFile, "r");
+        $unExisted = [];
         if ($handle) {
             while (($buffer = fgets($handle)) !== false) {
-                list($cardNumber, $currentAmount) = explode("\t", $buffer);
+                list($cardNumber, $currentAmount) = explode(" ", $buffer);
+                if (strlen($cardNumber) > 8) continue;
                 $cardNumber = str_repeat('0', 8 - strlen($cardNumber)) . $cardNumber;
+                
                 $currentAmount = trim($currentAmount);
                 $card = Cards::where('number', $cardNumber)->first();
                 if (!$card) {
-                    print $cardNumber . "\n";
+                    $unExisted[] = $cardNumber;
                 } else {
                     print $cardNumber . "\n";
                     self::updateBill($card->id, $currentAmount, $billPrograms);
@@ -65,6 +67,7 @@ class fixUsers2 extends Command
             }
             fclose($handle);
         }
+        print_r($unExisted);
         return 0;
     }
 

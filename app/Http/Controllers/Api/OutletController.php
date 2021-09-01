@@ -120,7 +120,7 @@ class OutletController extends Controller
         }
         if (empty($errors)) {
             $debited = $request->debited ?: 0;
-            $cardInfo = Cards::select('cards.id', 'user_id', 'bills.id as bill_id')
+            $cardInfo = Cards::select('cards.id', 'user_id', 'bills.id as bill_id', 'bills.init_amount')
                 ->join('bills', 'bills.card_id', '=', 'cards.id')
                 ->join('bill_types', 'bill_types.id', '=', 'bills.bill_type_id')
                 ->where([
@@ -129,7 +129,8 @@ class OutletController extends Controller
 
             $birthdayStockValue = CommonActions::getBirthdayStockInfo($cardInfo->user_id, $saleId, $request->products);
 
-            $currentAmount = Sales::where([['bill_id', '=', $cardInfo->bill_id], ['status', '=', Sales::STATUS_COMPLETED]])->sum('amount');
+            $currentAmount = $cardInfo->init_amount;
+            $currentAmount += Sales::where([['bill_id', '=', $cardInfo->bill_id], ['status', '=', Sales::STATUS_COMPLETED]])->sum('amount');
 
             $sale = $saleId ? Sales::where('id', '=', $saleId)->first() : new Sales;
             if (isset($request->outlet_id)) $sale->outlet_id = $request->outlet_id;
@@ -243,7 +244,7 @@ class OutletController extends Controller
                 $amount -= $debited;
                 $sale->amount = $sale->amount_now = $amount;
             }
-           // $currentAmount = 10000;
+
             $historyEntry = null;
             $billPrograms = BillPrograms::orderBy('to', 'desc')->get();
             if ($billPrograms) {

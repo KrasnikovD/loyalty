@@ -243,21 +243,25 @@ class OutletController extends Controller
                 $amount -= $debited;
                 $sale->amount = $sale->amount_now = $amount;
             }
-
+           // $currentAmount = 10000;
             $historyEntry = null;
             $billPrograms = BillPrograms::orderBy('to', 'desc')->get();
             if ($billPrograms) {
-                $program = null;
+                $bill = Bills::where('id', '=', $saleId ? $sale->bill_id : $cardInfo->bill_id)->first();
+                $program = BillPrograms::where('id', $bill->bill_program_id)->first();
                 $maxProgram = $billPrograms[0];
                 if ($currentAmount >= $maxProgram->to)
                     $program = $maxProgram;
+                $tempProgram = null;
                 foreach ($billPrograms as $row) {
                     if ($currentAmount >= $row->from && $currentAmount <= $row->to) {
-                        $program = $row;
+                        $tempProgram = $row;
                         break;
                     }
                 }
-                $bill = Bills::where('id', '=', $saleId ? $sale->bill_id : $cardInfo->bill_id)->first();
+                if ($tempProgram && $tempProgram->from > $program->from) {
+                    $program = $tempProgram;
+                }
                 $currentFrom = 0;
                 $currentTo = 0;
                 $added = 0;

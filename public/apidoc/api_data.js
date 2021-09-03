@@ -3299,6 +3299,13 @@ define({ "api": [
           {
             "group": "Parameter",
             "type": "string",
+            "optional": true,
+            "field": "third_name",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
             "optional": false,
             "field": "password",
             "description": ""
@@ -3414,6 +3421,13 @@ define({ "api": [
             "type": "string",
             "optional": true,
             "field": "second_name",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "third_name",
             "description": ""
           },
           {

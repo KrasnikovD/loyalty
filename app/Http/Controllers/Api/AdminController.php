@@ -245,6 +245,7 @@ class AdminController extends Controller
      *
      * @apiParam {string} first_name
      * @apiParam {string} second_name
+     * @apiParam {string} [third_name]
      * @apiParam {string} password
      * @apiParam {string} phone
      * @apiParam {datetime} [birthday]
@@ -263,6 +264,7 @@ class AdminController extends Controller
      *
      * @apiParam {string} [first_name]
      * @apiParam {string} [second_name]
+     * @apiParam {string} [third_name]
      * @apiParam {string} [password]
      * @apiParam {string} [phone]
      * @apiParam {datetime} [birthday]
@@ -298,7 +300,7 @@ class AdminController extends Controller
         if(!$id) {
             $validatorRules['first_name'] = 'required';
             $validatorRules['second_name'] = 'required';
-            $validatorRules['password'] = 'required';
+         //   $validatorRules['password'] = 'required';
         } else {
             $validatorRules['id'] = 'exists:users,id';
         }
@@ -318,7 +320,7 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $user = $id ? Users::where('id', '=', $id)->first() : new Users;
-            foreach (['first_name', 'second_name', 'phone', 'type'] as $field)
+            foreach (['first_name', 'second_name', 'third_name', 'phone', 'type'] as $field)
                 if (isset($request->{$field})) $user->{$field} = $request->{$field};
 
             if ($request->password) $user->password = md5($request->password);

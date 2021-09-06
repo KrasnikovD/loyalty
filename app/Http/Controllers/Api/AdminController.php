@@ -72,7 +72,7 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
-            $user = Users::where([['type', '=', 0], ['phone', '=', $phone], ['password', '=', md5($request->password)]])->first();
+            $user = Users::where([['type', '=', 0], ['phone', '=', $phone], ['archived', 0], ['password', '=', md5($request->password)]])->first();
             if (empty($user)) {
                 $errors['user'] = __('auth.failed');
                 $httpStatus = 400;

@@ -112,7 +112,7 @@ class OutletController extends Controller
                 'products' => (!$saleId ? 'required|' : '') . 'array',
                 'products.*' => 'check_product:' . $request->card_number .',' . $saleId,
                 'out_format' => 'in:xml,json',
-                'debited' => 'regex:/^\d+(\.\d{1,2})?$/|check_debited:' . $request->card_number,
+                'debited' => 'integer|check_debited:' . $request->card_number,
             ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
@@ -269,6 +269,7 @@ class OutletController extends Controller
                 if ($program) {
                     $added = $birthdayStockValue ?: $program->percent * 0.01 * $sale->amount;
                     if ($debited) $added = 0;
+                    $added = ceil($added);
                     $currentFrom = $program->from;
                     $currentTo = $program->to;
                     $sale->bill_program_id = $program->id;

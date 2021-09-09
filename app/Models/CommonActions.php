@@ -224,10 +224,11 @@ class CommonActions extends Model
         $user = Users::where('id', $userId)->first();
         if ($user && $user->birthday) {
             $count = config('settings.sale_birthday_stock_day_count');
-            $fromDate = date('Y-m-d', strtotime(date('Y-m-d') . " - $count days"));
-            $toDate = date('Y-m-d', strtotime(date('Y-m-d') . " + $count days"));
-            if ((strtotime($fromDate) <= strtotime($user->birthday)) &&
-                (strtotime($toDate) >= strtotime($user->birthday))) {
+            $fromDate = date('0000-m-d', strtotime(date('Y-m-d') . " - $count days"));
+            $toDate = date('0000-m-d', strtotime(date('Y-m-d') . " + $count days"));
+            $birthDay = date('0000-m-d', strtotime($user->birthday));
+            if ((strtotime($fromDate) <= strtotime($birthDay)) &&
+                (strtotime($toDate) >= strtotime($birthDay))) {
                 return config('settings.sale_birthday_stock_value');
             }
         }

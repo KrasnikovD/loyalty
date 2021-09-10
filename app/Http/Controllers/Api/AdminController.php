@@ -585,6 +585,8 @@ class AdminController extends Controller
      * @apiParam {string} [dir] order direction
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
+     * @apiParam {integer} [filters]
+     * @apiParam {integer=0,1} [unattached] only without users
      */
 
     /**
@@ -608,6 +610,7 @@ class AdminController extends Controller
                 'order' => 'in:id,user_id,number,created_at,updated_at',
                 'offset' => 'integer',
                 'limit' => 'integer',
+                'unattached' => 'nullable|in:0,1',
             ];
         } else {
             $validatorRules = ['id' => 'exists:cards,id'];
@@ -622,6 +625,14 @@ class AdminController extends Controller
             $query = Cards::select('*');
             if ($id) $query->where('id', '=', $id);
             else {
+                if ($request->filters) {
+                    $query->orWhere('cards.phone', 'like', '%' .
+                        str_replace(array("(", ")", " ", "-"), "", $request->filters) . '%');
+                    $query->orWhere('cards.number', 'like', $request->filters . '%');
+                }
+                if (intval($request->unattached) === 1) {
+                    $query->whereNull('user_id');
+                }
                 $count = $query->count();
                 $order = $request->order ?: 'cards.id';
                 $dir = $request->dir ?: 'asc';

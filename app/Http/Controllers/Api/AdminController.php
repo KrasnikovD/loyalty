@@ -1525,7 +1525,7 @@ class AdminController extends Controller
         } else
             $validatorRules['id'] = 'exists:products,id';
        // $validatorRules['category_id'] = (!$id ? 'required|' : '') . 'is_child';
-        $validatorRules['category_id'] = (!$id ? 'required|' : '') . 'exists:categories,id';
+        $validatorRules['category_id'] = (!$id ? 'required|' : '') . 'exists:categories,id,deleted_at,NULL';
        // $validatorRules['outlet_id'] = (!$id ? 'required|' : '') . 'exists:outlets,id';
         $validatorRules['code'] = 'unique:products,code,' . $id;
         $validatorRules['price'] = 'integer';
@@ -1582,6 +1582,8 @@ class AdminController extends Controller
                 $product->file = $fileName;
             }
             $product->save();
+            $parentCatId = @Categories::where('id', $request->category_id ?: $product->category_id)->first()->parent_id;
+            $product->parent_category_id = intval($parentCatId);
         }
         return response()->json(['errors' => $errors, 'data' => $product], $httpStatus);
     }

@@ -102,8 +102,11 @@ class ClientController extends Controller
                 $user->token = sha1(microtime() . 'salt' . time());
                 $newUser = true;
             }
-            $user->code = mt_rand(10000,90000);
+            if (strpos($user->phone, '+7888') === false || $newUser) {
+                $user->code = mt_rand(10000, 90000);
+            }
             $user->save();
+
             $data = CommonActions::sendSms([$phone], $user->code);
             if ($newUser) {
                 $cardExists = false;

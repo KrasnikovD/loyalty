@@ -3374,6 +3374,13 @@
             "optional": true,
             "field": "fields",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "code",
+            "description": ""
           }
         ]
       }
@@ -3500,6 +3507,13 @@
             "type": "object[]",
             "optional": true,
             "field": "fields",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "code",
             "description": ""
           }
         ]

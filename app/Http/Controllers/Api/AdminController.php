@@ -253,6 +253,7 @@ class AdminController extends Controller
      * @apiParam {boolean} [active]
      * @apiParam {integer=0,1,2} type
      * @apiParam {object[]} [fields]
+     * @apiParam {integer} [code]
      */
 
     /**
@@ -272,6 +273,7 @@ class AdminController extends Controller
      * @apiParam {boolean} [active]
      * @apiParam {integer=0,1,2} [type]
      * @apiParam {object[]} [fields]
+     * @apiParam {integer} [code]
      */
 
     public function edit_user(Request $request, $id = null)
@@ -312,6 +314,7 @@ class AdminController extends Controller
         $validatorRules['active'] = 'in:0,1';
         $validatorRules['fields'] = 'nullable|array';
         $validatorRules['fields.*'] = 'field_validation';
+        $validatorRules['code'] = 'nullable|integer';
 
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
@@ -320,7 +323,7 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $user = $id ? Users::where('id', '=', $id)->first() : new Users;
-            foreach (['first_name', 'second_name', 'third_name', 'phone', 'type'] as $field)
+            foreach (['first_name', 'second_name', 'third_name', 'phone', 'type', 'code'] as $field)
                 if (isset($request->{$field})) $user->{$field} = $request->{$field};
 
             if ($request->password) $user->password = md5($request->password);

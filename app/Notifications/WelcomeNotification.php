@@ -14,12 +14,14 @@ class WelcomeNotification extends Notification
     private $title;
     private $body;
     private $data;
+    private $ttl;
 
-    public function __construct($title, $body, $data = null)
+    public function __construct($title, $body, $data = null, $ttl = null)
     {
         $this->title = $title;
         $this->body = $body;
         $this->data = @$data;
+        $this->ttl = $ttl ?: 3600;
     }
 
     public function via($notifiable)
@@ -34,6 +36,7 @@ class WelcomeNotification extends Notification
         $message->title = $this->title;
         $message->body = $this->body;
         $message->data = $this->data;
+        $message->ttl = $this->ttl;
         return $message;
     }
 }

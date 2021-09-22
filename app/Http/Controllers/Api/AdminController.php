@@ -1111,7 +1111,7 @@ class AdminController extends Controller
                 $channelName = 'channel_' . time();
                 foreach ($tokens as $token)
                     $expo->subscribe($channelName, $token);
-                $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default']);
+                $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default', 'ttl' => 30]);
             }
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
@@ -2219,7 +2219,7 @@ class AdminController extends Controller
                             $channelName = 'channel_' . time();
                             foreach ($tokens as $token)
                                 $expo->subscribe($channelName, $token);
-                            $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default']);
+                            $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default', 'ttl' => 3600]);
                         }
                     }
                 }
@@ -2398,7 +2398,7 @@ class AdminController extends Controller
                             $channelName = 'channel_' . time();
                             foreach ($tokens as $token)
                                 $expo->subscribe($channelName, $token);
-                            $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default']);
+                            $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default', 'ttl' => 3600]);
                         }
                     }
                 }
@@ -2573,7 +2573,7 @@ class AdminController extends Controller
                 }
                 if ($request->scope == 'birthday') {
                     $devices->select('devices.*', 'users.first_name', 'users.second_name');
-                    $devices->where('users.birthday', '=', DB::raw("DATE_ADD('" . date('Y-m-d') . "', INTERVAL 1 DAY)"));
+                    $devices->where(DB::raw("DATE_FORMAT(users.birthday,CONCAT(YEAR(NOW()), '-%m-%d'))"), '=', DB::raw("DATE_ADD('" . date('Y-m-d') . "', INTERVAL 1 DAY)"));
                 }
             }
             $devices = $devices->get();
@@ -2594,7 +2594,7 @@ class AdminController extends Controller
 
                     foreach ($devices as $device)
                         $expo->subscribe($channelName, $device->expo_token);
-                    $expo->notify([$channelName], ['title' => $request->title, 'body' => $request->body, 'sound' => 'default']);
+                    $expo->notify([$channelName], ['title' => $request->title, 'body' => $request->body, 'sound' => 'default', 'ttl' => 3600]);
                 }
                 $recipients = $devices;
             }

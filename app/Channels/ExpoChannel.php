@@ -12,7 +12,7 @@ class ExpoChannel
         $message = $notification->toExpoPush($notifiable);
         $expo = Expo::normalSetup();
         $expo->subscribe($message->expo_token, $message->expo_token);
-        $notification = ['title' => $message->title, 'body' => $message->body, 'sound' => 'default'];
+        $notification = ['title' => $message->title, 'body' => $message->body, 'sound' => 'default', 'ttl' => $message->ttl];
         if ($message->data)
             $notification['data'] = $message->data;
         $expo->notify([$message->expo_token], $notification);

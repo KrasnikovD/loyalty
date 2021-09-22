@@ -378,8 +378,8 @@ class ClientController extends Controller
                 $products->where('outlet_id', '=', $request->outlet_id);
             }*/
 
-            $order = $request->order ?: 'products.id';
-            $dir = $request->dir ?: 'asc';
+            $order = $request->order ?: 'products.position';
+            $dir = $request->dir ?: 'desc';
             $offset = $request->offset;
             $limit = $request->limit;
 

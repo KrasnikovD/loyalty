@@ -1758,6 +1758,39 @@ class AdminController extends Controller
     }
 
     /**
+     * @api {patch} /api/products/set_position Set positions
+     * @apiName SetPositions
+     * @apiGroup AdminProducts
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer[]} ids_list
+     */
+
+    public function set_position(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $validator = Validator::make($request->all(), [
+            'ids_list' => 'required|array',
+            'ids_list.*' => 'exists:products,id'
+        ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $idsList = array_reverse($request->ids_list);
+            for ($i=0; $i<count($idsList); $i++) {
+                $product = Product::where('id', $idsList[$i])->first();
+                $product->position = $i;
+                $product->save();
+            }
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
      * @api {post} /api/orders/create Create Order
      * @apiName CreateOrder
      * @apiGroup AdminOrders

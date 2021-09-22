@@ -79,6 +79,7 @@ Route::post('/products/list', 'App\Http\Controllers\Api\AdminController@list_pro
 Route::get('/products/get/{id}', 'App\Http\Controllers\Api\AdminController@get_product');
 Route::get('/products/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_product');
 Route::patch('/products/switch_visibility/{id}', 'App\Http\Controllers\Api\AdminController@switch_product_visibility');
+Route::patch('/products/set_position', 'App\Http\Controllers\Api\AdminController@set_position');
 
 
 Route::post('/orders/create', 'App\Http\Controllers\Api\AdminController@edit_order');

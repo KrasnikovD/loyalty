@@ -2753,6 +2753,42 @@
   },
   {
     "type": "patch",
+    "url": "/api/products/set_position",
+    "title": "Set positions",
+    "name": "SetPositions",
+    "group": "AdminProducts",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer[]",
+            "optional": false,
+            "field": "ids_list",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminProducts"
+  },
+  {
+    "type": "patch",
     "url": "/api/products/switch_visibility/:id",
     "title": "Switch Visibility",
     "name": "SwitchVisibility",

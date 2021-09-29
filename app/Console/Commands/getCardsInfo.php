@@ -46,7 +46,7 @@ class getCardsInfo extends Command
         foreach (str_getcsv(file_get_contents($pathToFile), "\n") as &$row) {
             $row = str_getcsv($row, ";");
             if ($card = Cards::where('number', $row[0])->first()) {
-                print $card->phone." ".$card->old_holder_name."\n";
+                print "number: ".$row[0]." phone: ".$card->phone." fio: ".$card->old_holder_name."\n";
             } else {
                 $nonExists[] = $row[0];
             }

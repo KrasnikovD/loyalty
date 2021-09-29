@@ -102,7 +102,7 @@ class ClientController extends Controller
                 $user->token = sha1(microtime() . 'salt' . time());
                 $newUser = true;
             }
-            if (strpos($user->phone, '+7888') === false || $newUser) {
+            if (strpos($user->phone, '+7098') === false || $newUser) {
                 $user->code = mt_rand(10000, 90000);
             }
             $user->save();

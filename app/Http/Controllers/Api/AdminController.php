@@ -1013,7 +1013,7 @@ class AdminController extends Controller
                     if ($offset) $query->offset($offset);
                 }
             }
-            $list = $query->get();
+            $list = $query->get()->toArray();
             DataHelper::collectOutletStatInfo($list);
             if ($id) $data = $list[0];
             else $data = ['count' => $count, 'list' => $list];

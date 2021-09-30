@@ -60,10 +60,12 @@ class DataHelper extends Model
 
     public static function collectUserStatInfo(&$data)
     {
+        $ids = array_column($data, 'id');
         $map = [];
         foreach (Baskets::select(DB::raw('count(*) as count, sales.user_id, baskets.product_id, products.name'))
                      ->join('products', 'products.id', '=', 'baskets.product_id')
                      ->join('sales', 'sales.id', '=', 'baskets.sale_id')
+                     ->whereIn('sales.user_id', $ids)
                      ->groupBy('sales.user_id', 'baskets.product_id')
                      ->orderBy('sales.user_id')->orderBy('count', 'desc')->get()->toArray() as $item) {
             if (!isset($map[$item['user_id']])) $map[$item['user_id']] = $item;

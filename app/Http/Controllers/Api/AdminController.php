@@ -1616,7 +1616,7 @@ class AdminController extends Controller
         });
         $validatorRules = [
             'dir' => 'in:asc,desc',
-            'order' => 'in:id,category_id,name,description,file,price,created_at,updated_at',
+            'order' => 'in:id,category_id,name,description,file,price,created_at,updated_at,position',
             'offset' => 'integer',
             'limit' => 'integer',
            // 'outlet_id' => 'exists:outlets,id',
@@ -1660,8 +1660,8 @@ class AdminController extends Controller
 
             $count = $products->count();
 
-            $order = $request->order ?: 'products.id';
-            $dir = $request->dir ?: 'asc';
+            $order = $request->order ?: 'products.position';
+            $dir = $request->dir ?: 'desc';
             $offset = $request->offset;
             $limit = $request->limit;
 

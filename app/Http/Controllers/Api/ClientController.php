@@ -1612,7 +1612,7 @@ class ClientController extends Controller
         $messageText = 'Имя: ' . $user->first_name . "\n";
         $messageText .= 'Фамилия: ' . $user->second_name . "\n";
         $messageText .= 'Отчество: ' . $user->third_name . "\n";
-        $messageText .= 'Телефон: ' . $user->phone . "\n";
+        $messageText .= 'Телефон: ' . $user->phone . "\n\n";
         foreach ($request->all() as $item) $messageText .= $item . "\n";
         Mail::raw($messageText, function ($message) {
             $message->to('fb@cheskylev.ru')

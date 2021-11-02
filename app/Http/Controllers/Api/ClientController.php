@@ -1608,7 +1608,11 @@ class ClientController extends Controller
 
     public function send_support_email(Request $request)
     {
-        $messageText = '';
+        $user = Auth::user();
+        $messageText = 'Имя: ' . $user->first_name . "\n";
+        $messageText .= 'Фамилия: ' . $user->second_name . "\n";
+        $messageText .= 'Отчество: ' . $user->third_name . "\n";
+        $messageText .= 'Телефон: ' . $user->phone . "\n";
         foreach ($request->all() as $item) $messageText .= $item . "\n";
         Mail::raw($messageText, function ($message) {
             $message->to('fb@cheskylev.ru')

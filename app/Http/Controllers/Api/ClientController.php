@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+//use App\CustomClasses\Events\OnLogin\SixPercentBonus;
 use App\Http\Controllers\Controller;
 use App\Models\Baskets;
 use App\Models\BillPrograms;
@@ -14,6 +15,7 @@ use App\Models\CommonActions;
 use App\Models\Coupons;
 use App\Models\DataHelper;
 use App\Models\Devices;
+use App\Models\EventServices;
 use App\Models\Favorites;
 use App\Models\Fields;
 use App\Models\FieldsUsers;
@@ -194,6 +196,7 @@ class ClientController extends Controller
                         Devices::where('expo_token', '=', $request->expo_token)->update(['user_id' => $user->id]);
                     }
                     $data = [$user];
+                    EventServices::onLogin(['user_id' => $user->id]);
                     DataHelper::collectUsersInfo($data);
                     $data = $data[0];
                     $data['auth_status'] = 0;

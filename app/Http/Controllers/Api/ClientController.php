@@ -729,8 +729,8 @@ class ClientController extends Controller
             else {
                 $query->where('is_hidden', 0);
                 $count = $query->count();
-                $order = $request->order ?: 'news.id';
-                $dir = $request->dir ?: 'asc';
+                $order = $request->order ?: 'news.created_at';
+                $dir = $request->dir ?: 'desc';
                 $offset = $request->offset;
                 $limit = $request->limit;
 

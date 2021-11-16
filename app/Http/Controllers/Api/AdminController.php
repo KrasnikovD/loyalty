@@ -1531,7 +1531,7 @@ class AdminController extends Controller
         $validatorRules['category_id'] = (!$id ? 'required|' : '') . 'exists:categories,id,deleted_at,NULL';
        // $validatorRules['outlet_id'] = (!$id ? 'required|' : '') . 'exists:outlets,id';
         $validatorRules['code'] = 'unique:products,code,' . $id;
-        $validatorRules['price'] = 'integer';
+      //  $validatorRules['price'] = 'integer';
         $validatorRules['is_hit'] = 'nullable|in:0,1,true,false';
         $validatorRules['is_novelty'] = 'nullable|in:0,1,true,false';
         $validatorRules['is_by_weight'] = 'nullable|in:0,1,true,false';

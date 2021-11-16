@@ -1604,6 +1604,7 @@ class AdminController extends Controller
      * @apiParam {integer} [limit] row count
      * @apiParam {integer} [category_id]
      * @apiParam {integer=0,1} [hide_deleted]
+     * @apiParam {string} [filters]
      */
 
     public function list_products(Request $request)
@@ -1657,7 +1658,9 @@ class AdminController extends Controller
            /* if (isset($request->outlet_id)) {
                 $products->where('outlet_id', '=', $request->outlet_id);
             }*/
-
+            if ($request->filters) {
+                $products->orWhere('products.code', 'like', $request->filters . '%');
+            }
             $count = $products->count();
 
             $order = $request->order ?: 'products.position';

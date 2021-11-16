@@ -2743,6 +2743,13 @@ define({ "api": [
             "optional": true,
             "field": "hide_deleted",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "filters",
+            "description": ""
           }
         ]
       }

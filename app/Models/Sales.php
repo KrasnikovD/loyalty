@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,4 +17,11 @@ class Sales extends Model
     const STATUS_CANCELED_BY_ADMIN = 7;
 
     protected $table = 'sales';
+
+    public function getCreatedAtAttribute($value)
+    {
+        return Carbon::createFromTimestamp(strtotime($value))
+            ->timezone('Europe/Moscow')
+            ->toDateTimeString();
+    }
 }

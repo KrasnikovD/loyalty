@@ -2818,6 +2818,49 @@
     "groupTitle": "AdminProducts"
   },
   {
+    "type": "post",
+    "url": "/api/generate_report",
+    "title": "Generate Report",
+    "name": "GenerateReport",
+    "group": "AdminReports",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "type",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer[]",
+            "optional": true,
+            "field": "program_id",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminReports"
+  },
+  {
     "type": "get",
     "url": "/api/reviews/get/:id",
     "title": "Get Review",

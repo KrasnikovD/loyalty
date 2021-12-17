@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\CardExport;
 use App\Http\Controllers\Controller;
 use App\Models\Baskets;
 use App\Models\BillPrograms;
@@ -31,6 +32,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AdminController extends Controller
 {
@@ -3059,5 +3061,41 @@ class AdminController extends Controller
             $bill->save();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/generate_report Generate Report
+     * @apiName GenerateReport
+     * @apiGroup AdminReports
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} type
+     * @apiParam {integer[]} [program_id]
+     */
+
+    public function generate_report(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validator = Validator::make($request->all(), [
+            'report_type' => 'nullable|in:cards',
+            'program_id' => 'nullable|array',
+            'program_id.*' => 'exists:bill_programs,id',
+        ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $programId = @$request->program_id;
+            $fileName = "reports/" . date('Y-m-d_H_i_s') . '_cards.xlsx';
+            Storage::disk('local')->put($fileName, '');
+            $export = new CardExport($programId);
+            Excel::store($export, Storage::path($fileName));
+            $data = $fileName;
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 }

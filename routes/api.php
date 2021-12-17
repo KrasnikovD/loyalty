@@ -126,6 +126,8 @@ Route::get('/statistic/product_rates', 'App\Http\Controllers\Api\StatController@
 Route::get('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@get_rate_store');
 Route::patch('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@update_rate_store');
 
+Route::post('/generate_report', 'App\Http\Controllers\Api\AdminController@generate_report');
+
 /****** CLIENTS ******/
 
 Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');

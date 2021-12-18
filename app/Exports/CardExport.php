@@ -32,7 +32,8 @@ class CardExport implements FromArray
             $this->dtEnd = date('Y-m-d', strtotime($this->dtEnd));
             $q->join('sales', 'sales.card_id', '=', 'cards.id')
                 ->where('sales.created_at', '>=', $this->dtStart)
-                ->where('sales.created_at', '<=', $this->dtEnd);
+                ->where('sales.created_at', '<=', $this->dtEnd)
+            ->groupBy('cards.id');
         }
         return $q->get()->toArray();
     }

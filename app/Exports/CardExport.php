@@ -8,10 +8,14 @@ use Maatwebsite\Excel\Concerns\FromArray;
 class CardExport implements FromArray
 {
     private $programId;
+    private $dtStart;
+    private $dtEnd;
 
-    public function __construct(array $programId)
+    public function __construct($programId, $dtStart, $dtEnd)
     {
         $this->programId = $programId;
+        $this->dtStart = $dtStart;
+        $this->dtEnd = $dtEnd;
     }
 
     public function array(): array
@@ -23,7 +27,13 @@ class CardExport implements FromArray
         if ($this->programId) {
             $q->whereIn('bill_programs.id', $this->programId);
         }
-        $result = $q->get()->toArray();
-        return $result;
+        if ($this->dtStart && $this->dtEnd) {
+            $this->dtStart = date('Y-m-d', strtotime($this->dtStart));
+            $this->dtEnd = date('Y-m-d', strtotime($this->dtEnd));
+            $q->join('sales', 'sales.card_id', '=', 'cards.id')
+                ->where('sales.created_at', '>=', $this->dtStart)
+                ->where('sales.created_at', '<=', $this->dtEnd);
+        }
+        return $q->get()->toArray();
     }
 }

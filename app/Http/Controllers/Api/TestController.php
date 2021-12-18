@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\CardExport;
 use App\Http\Controllers\Controller;
 use App\Models\Cards;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TestController extends Controller
 {
@@ -15,8 +18,10 @@ class TestController extends Controller
      */
     public function test()
     {
-        //print_r(Cards::whereIn('number', ['73146223'])->first());
-        print_r(DB::table('cards')->whereRaw("number='73146223'")->exists());
-        return response()->json([]);
+        $fileName = "reports/" . date('Y-m-d_H_i_s') . '_cards.xlsx';
+        Storage::disk('local')->put($fileName, '');
+        $export = new CardExport();
+        Excel::store($export, Storage::path($fileName));
+        return response()->json([$fileName]);
     }
 }

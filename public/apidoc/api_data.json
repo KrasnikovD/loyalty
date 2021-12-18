@@ -2852,6 +2852,20 @@
             "optional": true,
             "field": "program_id",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "start_dt",
+            "description": "<p>Date in format Y-m-d (example: 2022-01-13)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "end_dt",
+            "description": "<p>Date in format Y-m-d (example: 2022-01-13)</p>"
           }
         ]
       }

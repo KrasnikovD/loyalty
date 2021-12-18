@@ -3072,6 +3072,8 @@ class AdminController extends Controller
      *
      * @apiParam {string} type
      * @apiParam {integer[]} [program_id]
+     * @apiParam {string} [start_dt] Date in format Y-m-d (example: 2022-01-13)
+     * @apiParam {string} [end_dt] Date in format Y-m-d (example: 2022-01-13)
      */
 
     public function generate_report(Request $request)
@@ -3090,9 +3092,11 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $programId = @$request->program_id;
+            $dtStart = @$request->start_dt;
+            $dtEnd = @$request->end_dt;
             $fileName = "reports/" . date('Y-m-d_H_i_s') . '_cards.xlsx';
             Storage::disk('local')->put($fileName, '');
-            $export = new CardExport($programId);
+            $export = new CardExport($programId, $dtStart, $dtEnd);
             Excel::store($export, Storage::path($fileName));
             $data = $fileName;
         }

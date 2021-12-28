@@ -19,6 +19,7 @@ use App\Models\Devices;
 use App\Models\News;
 use App\Models\Outlet;
 use App\Models\Product;
+use App\Models\PushTokens;
 use App\Models\Reviews;
 use App\Models\Sales;
 use App\Models\Stocks;
@@ -1107,13 +1108,16 @@ class AdminController extends Controller
                 if ($distance <= $request->radius) $tokens[$user->id] = $user->expo_token;
             }
             if (!empty($tokens)) {
-                $title = $request->title;
-                $body = $request->body;
-                $expo = Expo::normalSetup();
+                $pushTokens = new PushTokens;
+                $pushTokens->title = $request->title;
+                $pushTokens->body = $request->body;
+                $pushTokens->tokens = json_encode(array_values($tokens));
+                $pushTokens->save();
+               /* $expo = Expo::normalSetup();
                 $channelName = 'channel_' . time();
                 foreach ($tokens as $token)
                     $expo->subscribe($channelName, $token);
-                $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default', 'ttl' => 30]);
+                $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default', 'ttl' => 30]);*/
             }
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
@@ -2627,12 +2631,20 @@ class AdminController extends Controller
                         $device->notify(new WelcomeNotification($title, $body));
                     }
                 } else {
-                    $expo = Expo::normalSetup();
+                    $tokens = [];
+                    foreach ($devices as $device)
+                        $tokens[] = $device->expo_token;
+                    $pushTokens = new PushTokens;
+                    $pushTokens->title = $request->title;
+                    $pushTokens->body = $request->body;
+                    $pushTokens->tokens = json_encode(array_values($tokens));
+                    $pushTokens->save();
+              /*      $expo = Expo::normalSetup();
                     $channelName = 'channel_' . time();
 
                     foreach ($devices as $device)
                         $expo->subscribe($channelName, $device->expo_token);
-                    $expo->notify([$channelName], ['title' => $request->title, 'body' => $request->body, 'sound' => 'default', 'ttl' => 3600]);
+                    $expo->notify([$channelName], ['title' => $request->title, 'body' => $request->body, 'sound' => 'default', 'ttl' => 3600]);*/
                 }
                 $recipients = $devices;
             }

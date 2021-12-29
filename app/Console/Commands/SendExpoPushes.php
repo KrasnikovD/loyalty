@@ -45,8 +45,12 @@ class SendExpoPushes extends Command
             $item->save();
             foreach (json_decode($item->tokens) as $token) {
                 $device = Devices::where('expo_token', '=', $token)->first();
-                $device->notify(new WelcomeNotification($item->title, $item->body,
-                    json_encode(['sound' => 'default', 'ttl' => 30])));
+                try {
+                    $device->notify(new WelcomeNotification($item->title, $item->body,
+                        json_encode(['sound' => 'default', 'ttl' => 30])));
+                } catch (\Exception $exception) {
+                    print $exception->getMessage() . "\n";
+                }
             }
         }
 

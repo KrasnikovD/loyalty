@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\CustomClasses\Events\OnSale00\SixPercentBonus;
 use App\Http\Controllers\Controller;
 use App\Models\Baskets;
 use App\Models\BillPrograms;
@@ -13,6 +14,7 @@ use App\Models\Categories;
 use App\Models\CommonActions;
 use App\Models\Coupons;
 use App\Models\DataHelper;
+use App\Models\EventServices;
 use App\Models\Product;
 use App\Models\Sales;
 use App\Models\Users;
@@ -248,6 +250,10 @@ class OutletController extends Controller
             $historyEntry = null;
             $billPrograms = BillPrograms::orderBy('to', 'desc')->get();
             if ($billPrograms) {
+                /**************/
+                EventServices::OnSale00([$saleId ? $sale->bill_id : $cardInfo->bill_id], $diff);
+                $currentAmount += $diff;
+                /**************/
                 $bill = Bills::where('id', '=', $saleId ? $sale->bill_id : $cardInfo->bill_id)->first();
                 $program = BillPrograms::where('id', $bill->bill_program_id)->first();
                 $maxProgram = $billPrograms[0];
@@ -290,7 +296,7 @@ class OutletController extends Controller
                     $historyEntry->dt = date('Y-m-d H:i:s');
                     if ($debited) $historyEntry->debited = $debited;
                     $historyEntry->save();
-                    CommonActions::sendSalePush($cardInfo->user_id, $added, $debited, $sale->outlet_id);
+ //!!!!!!!!!!!!!!!!                   CommonActions::sendSalePush($cardInfo->user_id, $added, $debited, $sale->outlet_id);
                 }
             }
             if ($debited) $sale->debited = $debited;

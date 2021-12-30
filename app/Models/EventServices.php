@@ -23,4 +23,18 @@ class EventServices extends Model
             }
         }
     }
+
+    public static function OnSale00(array $params, &$return)
+    {
+        foreach (self::where([['expiration', '>=', date('Y-m-d')], ['since', '<=', date('Y-m-d')],
+            ['trigger', '=', 'OnSale00']])->get() as $eventService) {
+            $className = $eventService->class;
+            if (class_exists($className)) {
+                $method = $eventService->method;
+                if (method_exists($className, $method)) {
+                    $className::$method($params, $return);
+                }
+            }
+        }
+    }
 }

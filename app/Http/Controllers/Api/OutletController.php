@@ -251,8 +251,11 @@ class OutletController extends Controller
             $billPrograms = BillPrograms::orderBy('to', 'desc')->get();
             if ($billPrograms) {
                 /**************/
-                EventServices::OnSale00([$saleId ? $sale->bill_id : $cardInfo->bill_id], $diff);
-                $currentAmount += $diff;
+                if ($sale->amount >= 3000) {
+                    EventServices::OnSale00([$saleId ? $sale->bill_id : $cardInfo->bill_id], $diff);
+                    if ($diff)
+                        $currentAmount += $diff;
+                }
                 /**************/
                 $bill = Bills::where('id', '=', $saleId ? $sale->bill_id : $cardInfo->bill_id)->first();
                 $program = BillPrograms::where('id', $bill->bill_program_id)->first();
@@ -296,7 +299,7 @@ class OutletController extends Controller
                     $historyEntry->dt = date('Y-m-d H:i:s');
                     if ($debited) $historyEntry->debited = $debited;
                     $historyEntry->save();
- //!!!!!!!!!!!!!!!!                   CommonActions::sendSalePush($cardInfo->user_id, $added, $debited, $sale->outlet_id);
+                    CommonActions::sendSalePush($cardInfo->user_id, $added, $debited, $sale->outlet_id);
                 }
             }
             if ($debited) $sale->debited = $debited;

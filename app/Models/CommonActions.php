@@ -38,6 +38,7 @@ class CommonActions extends Model
 
     public static function sendSms(array $phones, $message)
     {
+        return [];
         $ruPnones = [];
         $phenixPhones = [];
         $responseList = [];
@@ -68,6 +69,16 @@ class CommonActions extends Model
             $responseList[] = self::curlExec('https://sms.ru/sms/send', $params);
         }
         return $responseList;
+    }
+
+    public static function call($phone)
+    {
+        $params = [
+            'phone' => $phone,
+            'api_id' => "72866002-CB09-F8D8-C28E-2B76945CABA4",
+        ];
+        $params = http_build_query($params);
+        return CommonActions::curlExec('https://sms.ru/code/call', $params);
     }
 
     private static function curlExec($url, $params, $json = false)

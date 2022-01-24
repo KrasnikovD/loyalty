@@ -104,12 +104,11 @@ class ClientController extends Controller
                 $user->token = sha1(microtime() . 'salt' . time());
                 $newUser = true;
             }
-            if (strpos($user->phone, '+7098') === false || $newUser) {
-                $user->code = mt_rand(10000, 90000);
-            }
+
+            $data = CommonActions::call($phone);
+            $user->code = $data->code;
             $user->save();
 
-            $data = CommonActions::sendSms([$phone], $user->code);
             if ($newUser) {
                 $cardExists = false;
                 foreach (Cards::where('phone', '=', $phone)->get() as $card) {
@@ -175,8 +174,9 @@ class ClientController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
+            $code = substr($request->code, 0, 4);
             $localeKey = null;
-            $user = Users::where([['type', '=', Users::TYPE_USER], ['code', '=', $request->code]])->first();
+            $user = Users::where([['type', '=', Users::TYPE_USER], ['code', '=', $code]])->first();
             if (empty($user)) {
                 $localeKey = 'auth.failed';
                 $data['auth_status'] = 1;

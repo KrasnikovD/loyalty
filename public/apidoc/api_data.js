@@ -554,7 +554,7 @@ define({ "api": [
   },
   {
     "type": "patch",
-    "url": "/api/bills/edit_value/:id",
+    "url": "/api/bills/edit_value",
     "title": "Edit Bill Value",
     "name": "EditBillValue",
     "group": "AdminCards",
@@ -576,9 +576,16 @@ define({ "api": [
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "string",
+            "type": "integer",
             "optional": false,
             "field": "value",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "number",
             "description": ""
           }
         ]

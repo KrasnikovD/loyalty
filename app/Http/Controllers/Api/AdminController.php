@@ -3044,33 +3044,48 @@ class AdminController extends Controller
     }
 
     /**
-     * @api {patch} /api/bills/edit_value/:id Edit Bill Value
+     * @api {patch} /api/bills/edit_value Edit Bill Value
      * @apiName EditBillValue
      * @apiGroup AdminCards
      *
      * @apiHeader {string} Authorization Basic current user token
      *
-     * @apiParam {string} value
+     * @apiParam {integer} value
+     * @apiParam {string} number
      */
 
-    public function edit_bill_value(Request $request, $id)
+    public function edit_bill_value(Request $request)
     {
         $errors = [];
         $httpStatus = 200;
         $data = null;
-        $validatorData = array_merge($request->all(), ['id' => $id]);
-        $validator = Validator::make($validatorData, [
-            'id' => 'exists:bills,id',
-            'value' => 'required|regex:/^\d+(\.\d+)?$/',
+        $validator = Validator::make($request->all(), [
+            'number' => 'required|exists:cards,number',
+            'value' => 'required|exists:bill_programs,percent',
         ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $bill = Bills::where('id', $id)->first();
-            $bill->value = $request->value;
-            $bill->save();
+            $program = BillPrograms::where('percent', $request->value)->first();
+            $bill = Bills::select('bills.*', 'bill_programs.percent')
+                ->join('cards', 'bills.card_id', '=', 'cards.id')
+                ->join('bill_types', 'bills.bill_type_id', '=', 'bill_types.id')
+                ->join('bill_programs', 'bill_programs.id', '=', 'bills.bill_program_id')
+                ->where([['cards.number', '=', $request->number], ['bill_types.name', '=', BillTypes::TYPE_DEFAULT]])
+                ->first();
+            if ($bill->percent < $program->percent) {
+                $remaining_amount = $program->to - $program->from + 1;
+                $currentAmount = Sales::where([['bill_id', '=', $bill->id], ['status', '=', Sales::STATUS_COMPLETED]])->sum('amount');
+                $diff = $program->from - $currentAmount;
+                $bill->init_amount = $diff + 1;
+                $bill->bill_program_id = $program->id;
+                $bill->remaining_amount = $remaining_amount;
+                $bill->save();
+            } else {
+                $errors['card'] = "Invalid card";
+            }
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }

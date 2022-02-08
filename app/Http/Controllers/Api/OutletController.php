@@ -35,6 +35,7 @@ class OutletController extends Controller
      * @apiParam {string} debited
      * @apiParam {object[]} products
      * @apiParam {string=xml,json} [out_format]
+     * @apiParam {integer=1,2,3} [cert]
      */
 
     /**
@@ -115,6 +116,7 @@ class OutletController extends Controller
                 'products.*' => 'check_product:' . $request->card_number .',' . $saleId,
                 'out_format' => 'in:xml,json',
                 'debited' => 'integer|check_debited:' . $request->card_number,
+                'cert' => 'nullable|integer|in:1,2,3'
             ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
@@ -305,6 +307,16 @@ class OutletController extends Controller
             if ($debited) $sale->debited = $debited;
             $sale->save();
             CommonActions::cardHistoryLogSale($sale, $historyEntry);
+
+            if ($request->cert) {
+                CommonActions::createCertCard($request->cert, $cardInfo->user_id);
+            }
+
+            if (strpos($request->card_number, 'S') === 0 && $bill->value <= 0) {
+                $card = Cards::where('number', $request->card_number)->first();
+                $card->user_id = null;
+                $card->save();
+            }
         }
         if ($request->out_format == 'json')
             return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);

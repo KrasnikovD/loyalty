@@ -5310,6 +5310,18 @@ define({ "api": [
             "optional": true,
             "field": "out_format",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "1",
+              "2",
+              "3"
+            ],
+            "optional": true,
+            "field": "cert",
+            "description": ""
           }
         ]
       }

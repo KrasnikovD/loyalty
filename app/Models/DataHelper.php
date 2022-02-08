@@ -14,7 +14,9 @@ class DataHelper extends Model
     {
         $usersIds = array_column($data, 'id');
 
-        $cardList = Cards::select('id', 'number', 'user_id')->whereIn('user_id', $usersIds)->get()->toArray();
+        $cardList = Cards::select('cards.id', 'cards.number', 'cards.user_id', 'users.birthday')
+            ->leftJoin('users', 'users.id', '=', 'cards.user_id')
+            ->whereIn('user_id', $usersIds)->get()->toArray();
         self::collectCardsInfo($cardList);
         /*$cardsIds = array_column($cardList->toArray(), 'id');
         $billsList = Bills::join('bill_types', 'bills.bill_type_id', '=', 'bill_types.id')

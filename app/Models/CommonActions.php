@@ -257,4 +257,29 @@ class CommonActions extends Model
                 json_encode(['outlet_id' => $outletId, 'outlet_name' => $outletName])));
         }
     }
+
+    public static function createCertCard($cert, $userId)
+    {
+        $certAmount = Cards::getCertAmount($cert);
+        $programs = BillPrograms::orderBy('from', 'desc')->first();
+        $card = new Cards;
+        $card->number = 'S' . $cert . self::randomString(6, true);
+        $card->phone = Users::where('id', $userId)->value('phone');
+        $card->user_id = $userId;
+        $card->save();
+
+        foreach (BillTypes::all() as $billType) {
+            $bill = new Bills;
+            $bill->card_id = $card->id;
+            $bill->bill_type_id = $billType->id;
+            $bill->bill_program_id = $programs->id;
+            $bill->remaining_amount = 0;
+            if ($billType->name == BillTypes::TYPE_DEFAULT) {
+                $bill->value = $certAmount;
+                $bill->init_amount = $programs->to + 1;
+            }
+            $bill->save();
+        }
+        self::cardHistoryLogEditOrCreate($card, true);
+    }
 }

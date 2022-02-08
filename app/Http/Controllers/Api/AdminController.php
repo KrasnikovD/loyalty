@@ -628,8 +628,9 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $count = 0;
-            $query = Cards::select('*');
-            if ($id) $query->where('id', '=', $id);
+            $query = Cards::select('cards.*', 'users.birthday')
+                ->leftJoin('users', 'users.id', '=', 'cards.user_id');
+            if ($id) $query->where('cards.id', '=', $id);
             else {
                 if ($request->filters) {
                     $query->orWhere('cards.phone', 'like', '%' .

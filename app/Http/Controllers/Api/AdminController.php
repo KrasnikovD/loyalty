@@ -3045,8 +3045,8 @@ class AdminController extends Controller
     }
 
     /**
-     * @api {patch} /api/bills/edit_value Edit Bill Value
-     * @apiName EditBillValue
+     * @api {patch} /api/bills/up_card_program Up Card Program
+     * @apiName UpCardqProgram
      * @apiGroup AdminCards
      *
      * @apiHeader {string} Authorization Basic current user token
@@ -3055,7 +3055,7 @@ class AdminController extends Controller
      * @apiParam {string} number
      */
 
-    public function edit_bill_value(Request $request)
+    public function up_card_program(Request $request)
     {
         $errors = [];
         $httpStatus = 200;
@@ -3087,6 +3087,38 @@ class AdminController extends Controller
             } else {
                 $errors['card'] = "Invalid card";
             }
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {patch} /api/bills/edit_value/:id Edit Bill Value
+     * @apiName EditBillValue
+     * @apiGroup AdminCards
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} value
+     */
+
+    public function edit_bill_value(Request $request, $id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validatorData = array_merge($request->all(), ['id' => $id]);
+        $validator = Validator::make($validatorData, [
+            'id' => 'exists:bills,id',
+            'value' => 'required|regex:/^\d+(\.\d+)?$/',
+        ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $bill = Bills::where('id', $id)->first();
+            $bill->value = $request->value;
+            $bill->save();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
     }

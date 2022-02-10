@@ -554,7 +554,7 @@ define({ "api": [
   },
   {
     "type": "patch",
-    "url": "/api/bills/edit_value",
+    "url": "/api/bills/edit_value/:id",
     "title": "Edit Bill Value",
     "name": "EditBillValue",
     "group": "AdminCards",
@@ -576,16 +576,9 @@ define({ "api": [
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "integer",
-            "optional": false,
-            "field": "value",
-            "description": ""
-          },
-          {
-            "group": "Parameter",
             "type": "string",
             "optional": false,
-            "field": "number",
+            "field": "value",
             "description": ""
           }
         ]
@@ -803,6 +796,49 @@ define({ "api": [
             "optional": false,
             "field": "Authorization",
             "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminCards"
+  },
+  {
+    "type": "patch",
+    "url": "/api/bills/up_card_program",
+    "title": "Up Card Program",
+    "name": "UpCardqProgram",
+    "group": "AdminCards",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "value",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "number",
+            "description": ""
           }
         ]
       }

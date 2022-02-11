@@ -104,9 +104,10 @@ class ClientController extends Controller
                 $user->token = sha1(microtime() . 'salt' . time());
                 $newUser = true;
             }
-
-            $data = CommonActions::call($phone);
-            $user->code = $data->code;
+            if (strpos($user->phone, '+7098') === false) {
+                $data = CommonActions::call($phone);
+                $user->code = $data->code;
+            }
             $user->save();
 
             if ($newUser) {

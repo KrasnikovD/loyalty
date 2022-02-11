@@ -118,7 +118,8 @@ Route::get('/reviews/moderate/{id}', 'App\Http\Controllers\Api\AdminController@m
 Route::get('/news/moderate/{id}', 'App\Http\Controllers\Api\AdminController@moderate_news');
 Route::get('/reviews/list', 'App\Http\Controllers\Api\AdminController@list_reviews');
 
-Route::patch('/bills/edit_value', 'App\Http\Controllers\Api\AdminController@edit_bill_value');
+Route::patch('/bills/up_card_program', 'App\Http\Controllers\Api\AdminController@up_card_program');
+Route::patch('/bills/edit_value/{id}', 'App\Http\Controllers\Api\AdminController@edit_bill_value');
 
 Route::get('/statistic/sales', 'App\Http\Controllers\Api\StatController@sales');
 Route::get('/statistic/product_rates', 'App\Http\Controllers\Api\StatController@product_rates');

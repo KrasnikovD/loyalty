@@ -3821,6 +3821,13 @@ define({ "api": [
             "group": "Parameter",
             "type": "string",
             "optional": true,
+            "field": "phone",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
             "field": "expo_token",
             "description": ""
           }

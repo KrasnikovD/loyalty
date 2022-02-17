@@ -160,6 +160,7 @@ class ClientController extends Controller
      * @apiGroup ClientAuth
      *
      * @apiParam {string} code
+     * @apiParam {string} [phone]
      * @apiParam {string} [expo_token]
      */
 
@@ -169,7 +170,7 @@ class ClientController extends Controller
         $httpStatus = 200;
         $data = null;
         $validatorData = $request->all();
-        $validator = Validator::make($validatorData, ['code' => 'required']);
+        $validator = Validator::make($validatorData, ['code' => 'required', 'phone' => 'nullable|exists:users,phone']);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
@@ -177,7 +178,10 @@ class ClientController extends Controller
         if (empty($errors)) {
             $code = substr($request->code, 0, 4);
             $localeKey = null;
-            $user = Users::where([['type', '=', Users::TYPE_USER], ['code', '=', $code]])->first();
+            $query = Users::where([['type', '=', Users::TYPE_USER], ['code', '=', $code]]);
+            if (!empty($request->phone))
+                $query->where([['phone', '=', $request->phone]]);
+            $user = $query->first();
             if (empty($user)) {
                 $localeKey = 'auth.failed';
                 $data['auth_status'] = 1;

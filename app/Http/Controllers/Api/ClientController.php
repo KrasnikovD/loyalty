@@ -169,6 +169,7 @@ class ClientController extends Controller
         $errors = [];
         $httpStatus = 200;
         $data = null;
+        $phone = null;
         $validatorData = ['code' => $request->code];
         if ($request->phone) {
             $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
@@ -183,8 +184,8 @@ class ClientController extends Controller
             $code = substr($request->code, 0, 4);
             $localeKey = null;
             $query = Users::where([['type', '=', Users::TYPE_USER], ['code', '=', $code]]);
-            if (!empty($request->phone))
-                $query->where([['phone', '=', $request->phone]]);
+            if (!empty($phone))
+                $query->where([['phone', '=', $phone]]);
             $user = $query->first();
             if (empty($user)) {
                 $localeKey = 'auth.failed';

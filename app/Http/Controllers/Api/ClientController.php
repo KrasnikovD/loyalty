@@ -169,7 +169,11 @@ class ClientController extends Controller
         $errors = [];
         $httpStatus = 200;
         $data = null;
-        $validatorData = $request->all();
+        $validatorData = ['code' => $request->code];
+        if ($request->phone) {
+            $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
+            $validatorData['phone'] = $phone;
+        }
         $validator = Validator::make($validatorData, ['code' => 'required', 'phone' => 'nullable|exists:users,phone']);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();

@@ -16,6 +16,7 @@ use App\Models\CommonActions;
 use App\Models\Coupons;
 use App\Models\DataHelper;
 use App\Models\Devices;
+use App\Models\Files;
 use App\Models\News;
 use App\Models\Outlet;
 use App\Models\Product;
@@ -1489,7 +1490,7 @@ class AdminController extends Controller
      * @apiParam {string} name
      * @apiParam {string} description
      * @apiParam {integer} price
-     * @apiParam {integer} file_content
+     * @apiParam {string[]} images
      * @apiParam {integer} [is_hit]
      * @apiParam {integer} [is_novelty]
      * @apiParam {integer} is_by_weight
@@ -1508,7 +1509,7 @@ class AdminController extends Controller
      * @apiParam {string} [name]
      * @apiParam {string} [description]
      * @apiParam {integer} [price]
-     * @apiParam {integer} [file_content]
+     * @apiParam {string[]} [images]
      * @apiParam {integer=0,1} [is_hit]
      * @apiParam {integer=0,1} [is_novelty]
      * @apiParam {integer=0,1} [is_by_weight]
@@ -1531,7 +1532,7 @@ class AdminController extends Controller
         if(!$id) {
             $validatorRules['name'] = 'required';
             $validatorRules['description'] = 'required';
-            $validatorRules['file_content'] = 'required';
+            $validatorRules['images'] = 'required|array';
         } else
             $validatorRules['id'] = 'exists:products,id';
        // $validatorRules['category_id'] = (!$id ? 'required|' : '') . 'is_child';
@@ -1581,17 +1582,29 @@ class AdminController extends Controller
                     intval($request->visible) === 1);
                 $product->visible = $visible;
             }
-            if (isset($request->file_content)) {
-                if ($id) @unlink(Storage::path("images/{$product->file}"));
-                $fileName = uniqid() . ".jpeg";
-                Storage::disk('local')->put("images/$fileName", '');
-                $path = Storage::path("images/$fileName");
-                $imageTmp = imagecreatefromstring(base64_decode($request->file_content));
-                imagejpeg($imageTmp, $path);
-                imagedestroy($imageTmp);
-                $product->file = $fileName;
-            }
             $product->save();
+            if (is_array($request->images)) {
+                if ($id) {
+                    foreach (Files::where('parent_item_id', '=', $id)->get() as $file) {
+                        @unlink(Storage::path("images/{$file->name}"));
+                    }
+                    Files::where('parent_item_id', '=', $id)->delete();
+                }
+                foreach ($request->images as $fileContent) {
+                    $file = new Files;
+                    $fileName = uniqid() . ".jpeg";
+                    Storage::disk('local')->put("images/$fileName", '');
+                    $path = Storage::path("images/$fileName");
+                    $imageTmp = imagecreatefromstring(base64_decode($fileContent));
+                    imagejpeg($imageTmp, $path);
+                    imagedestroy($imageTmp);
+                    $file->parent_item_id = $product->id;
+                    $file->name = $fileName;
+                    $file->type = "products";
+                    $file->save();
+                }
+            }
+
             $parentCatId = @Categories::where('id', $request->category_id ?: $product->category_id)->first()->parent_id;
             $product->parent_category_id = intval($parentCatId);
         }
@@ -1681,7 +1694,25 @@ class AdminController extends Controller
                 if ($offset) $products->offset($offset);
             }
 
-            $data = ['count' => $count, 'data' => $products->get()];
+            $products = $products->get();
+            if (!empty($products)) {
+                $filesMap = [];
+                $productIds = [];
+                foreach ($products as $product) {
+                    $productIds[] = $product->id;
+                }
+                $files = Files::whereIn('parent_item_id', $productIds)->get();
+                foreach ($files as $file) {
+                    if (!isset($filesMap[$file['parent_item_id']]))
+                        $filesMap[$file['parent_item_id']] = [];
+                    $filesMap[$file['parent_item_id']][] = $file->toArray();
+                }
+                foreach ($products as &$product) {
+                    $product['images'] = @$filesMap[$product->id];
+                }
+            }
+
+            $data = ['count' => $count, 'data' => $products];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
@@ -1709,6 +1740,9 @@ class AdminController extends Controller
                 //->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')
                 ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
                 ->where('products.id', '=', $id)->first();
+
+            $files = Files::where('parent_item_id', '=', $product->id)->get();
+            $product['images'] = $files;
         }
         return response()->json(['errors' => $errors, 'data' => $product], $httpStatus);
     }

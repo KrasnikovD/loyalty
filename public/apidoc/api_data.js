@@ -2518,9 +2518,9 @@ define({ "api": [
           },
           {
             "group": "Parameter",
-            "type": "integer",
+            "type": "string[]",
             "optional": false,
-            "field": "file_content",
+            "field": "images",
             "description": ""
           },
           {
@@ -2640,9 +2640,9 @@ define({ "api": [
           },
           {
             "group": "Parameter",
-            "type": "integer",
+            "type": "string[]",
             "optional": true,
-            "field": "file_content",
+            "field": "images",
             "description": ""
           },
           {

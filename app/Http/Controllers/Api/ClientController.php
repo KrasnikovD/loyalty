@@ -425,9 +425,6 @@ class ClientController extends Controller
                         $filesMap[$file['parent_item_id']] = [];
                     $filesMap[$file['parent_item_id']][] = $file->toArray();
                 }
-                /*foreach ($products as &$product) {
-                    $product['images'] = @$filesMap[$product->id];
-                }*/
             }
 
             $favorites = Favorites::select('product_id')

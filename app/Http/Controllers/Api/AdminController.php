@@ -1607,6 +1607,8 @@ class AdminController extends Controller
 
             $parentCatId = @Categories::where('id', $request->category_id ?: $product->category_id)->first()->parent_id;
             $product->parent_category_id = intval($parentCatId);
+            $files = Files::where('parent_item_id', '=', $product->id)->get();
+            $product['images'] = $files;
         }
         return response()->json(['errors' => $errors, 'data' => $product], $httpStatus);
     }

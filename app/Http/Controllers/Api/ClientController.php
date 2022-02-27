@@ -19,6 +19,7 @@ use App\Models\EventServices;
 use App\Models\Favorites;
 use App\Models\Fields;
 use App\Models\FieldsUsers;
+use App\Models\Files;
 use App\Models\News;
 use App\Models\Outlet;
 use App\Models\Product;
@@ -416,6 +417,17 @@ class ClientController extends Controller
                     if(!isset($reviewsMap[$item['object_id']])) $reviewsMap[$item['object_id']] = [];
                     $reviewsMap[$item['object_id']][] = $item;
                 }
+
+                $filesMap = [];
+                $files = Files::whereIn('parent_item_id', $productsIds)->get();
+                foreach ($files as $file) {
+                    if (!isset($filesMap[$file['parent_item_id']]))
+                        $filesMap[$file['parent_item_id']] = [];
+                    $filesMap[$file['parent_item_id']][] = $file->toArray();
+                }
+                /*foreach ($products as &$product) {
+                    $product['images'] = @$filesMap[$product->id];
+                }*/
             }
 
             $favorites = Favorites::select('product_id')
@@ -425,6 +437,7 @@ class ClientController extends Controller
             foreach ($list as &$item) {
                 $item['is_favorite'] = intval(in_array($item['id'], $favoritesIds));
                 $item['reviews_list'] = @$reviewsMap[$item['id']];
+                $item['images'] = @$filesMap[$item['id']];
             }
         }
         return response()->json([
@@ -462,6 +475,9 @@ class ClientController extends Controller
                 /*->leftJoin('outlets', 'outlets.id', '=', 'products.outlet_id')*/
                 ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
                 ->where('products.id', '=', $id)->first();
+
+            $files = Files::where('parent_item_id', '=', $product->id)->get();
+            $product['images'] = $files;
         }
         return response()->json(['errors' => $errors, 'data' => $product], $httpStatus);
     }

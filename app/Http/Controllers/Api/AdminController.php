@@ -1280,6 +1280,52 @@ class AdminController extends Controller
     }
 
     /**
+     * @api {post} /api/fields/set_client_field_value Set Client Field Value
+     * @apiName SetClientFieldValue
+     * @apiGroup AdminFields
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer[]} client_ids list of client ids
+     * @apiParam {integer} field_id field
+     * @apiParam {boolean=0,1} value
+     */
+
+    public function set_client_field_value(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+
+        $validatorRules = [
+            'client_ids' => 'required|array',
+            'client_ids.*' => 'exists:users,id',
+            'field_id' => 'required|exists:fields,id',
+            'value' => 'required|in:0,1',
+        ];
+
+        $validator = Validator::make($request->all(), $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+
+        if (empty($errors)) {
+            foreach ($request->client_ids as $clientId) {
+                $fieldsUser = FieldsUsers::where([
+                    ['field_id', $request->field_id],
+                    ['user_id', $clientId]])->first();
+                if ($fieldsUser) {
+                    $fieldsUser->value = $request->value;
+                    $fieldsUser->save();
+                }
+            }
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+
+    /**
      * @api {post} /api/categories/create Create Category
      * @apiName CreateCategory
      * @apiGroup AdminCategories

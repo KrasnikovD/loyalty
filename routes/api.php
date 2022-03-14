@@ -59,6 +59,13 @@ Route::post('/fields/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_
 Route::post('/fields/list', 'App\Http\Controllers\Api\AdminController@list_fields');
 Route::get('/fields/get/{id}', 'App\Http\Controllers\Api\AdminController@list_fields');
 Route::get('/fields/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_field');
+Route::post('/fields/set_client_field_value', 'App\Http\Controllers\Api\AdminController@set_client_field_value');
+
+Route::post('/bonus_rules/create', 'App\Http\Controllers\Api\BonusRulesController@edit_bonus_rules');
+Route::post('/bonus_rules/edit/{id}', 'App\Http\Controllers\Api\BonusRulesController@edit_bonus_rules');
+Route::post('/bonus_rules/list', 'App\Http\Controllers\Api\BonusRulesController@list_bonus_rules');
+Route::get('/bonus_rules/get/{id}', 'App\Http\Controllers\Api\BonusRulesController@get_bonus_rule');
+Route::get('/bonus_rules/delete/{id}', 'App\Http\Controllers\Api\BonusRulesController@delete_bonus_rules');
 
 //Route::post('/sales/create', 'App\Http\Controllers\Api\AdminController@edit_sale');
 //Route::post('/sales/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_sale');

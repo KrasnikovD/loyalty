@@ -422,6 +422,259 @@ define({ "api": [
     "groupTitle": "AdminBillTypes"
   },
   {
+    "type": "post",
+    "url": "/api/bonus_rules/create",
+    "title": "Create Bonus Rule",
+    "name": "CreateBonusRule",
+    "group": "AdminBonusRules",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "start_stock_dt",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "month",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "day",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "duration",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "field_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "enabled",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/BonusRulesController.php",
+    "groupTitle": "AdminBonusRules"
+  },
+  {
+    "type": "get",
+    "url": "/api/bonus_rules/delete/:id",
+    "title": "Delete Bonus Rules",
+    "name": "DeleteBonusRules",
+    "group": "AdminBonusRules",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/BonusRulesController.php",
+    "groupTitle": "AdminBonusRules"
+  },
+  {
+    "type": "post",
+    "url": "/api/bonus_rules/edit/:id",
+    "title": "Edit Bonus Rule",
+    "name": "EditBonusRule",
+    "group": "AdminBonusRules",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "start_stock_dt",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "month",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "day",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "duration",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "field_id",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "enabled",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/BonusRulesController.php",
+    "groupTitle": "AdminBonusRules"
+  },
+  {
+    "type": "get",
+    "url": "/api/bonus_rules/get/:id",
+    "title": "Get Bonus Rule",
+    "name": "GetBonusRule",
+    "group": "AdminBonusRules",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/BonusRulesController.php",
+    "groupTitle": "AdminBonusRules"
+  },
+  {
+    "type": "post",
+    "url": "/api/bonus_rules/list",
+    "title": "Get Bonus Rules List",
+    "name": "GetBonusRulesList",
+    "group": "AdminBonusRules",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "order",
+            "description": "<p>order field name</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "dir",
+            "description": "<p>order direction</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "offset",
+            "description": "<p>start row number, used only when limit is set</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>row count</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/BonusRulesController.php",
+    "groupTitle": "AdminBonusRules"
+  },
+  {
     "type": "patch",
     "url": "/api/cards/attach_user/:number",
     "title": "Attach / Detach User To Card",
@@ -1567,6 +1820,60 @@ define({ "api": [
             "optional": true,
             "field": "limit",
             "description": "<p>row count</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminFields"
+  },
+  {
+    "type": "post",
+    "url": "/api/fields/set_client_field_value",
+    "title": "Set Client Field Value",
+    "name": "SetClientFieldValue",
+    "group": "AdminFields",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer[]",
+            "optional": false,
+            "field": "client_ids",
+            "description": "<p>list of client ids</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "field_id",
+            "description": "<p>field</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "boolean",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": false,
+            "field": "value",
+            "description": ""
           }
         ]
       }

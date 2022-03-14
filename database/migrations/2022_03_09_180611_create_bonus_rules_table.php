@@ -15,7 +15,7 @@ class CreateBonusRulesTable extends Migration
     {
         Schema::create('bonus_rules', function (Blueprint $table) {
             $table->id();
-            $table->date('start_stock_dt')->nullable()->default(null);
+            $table->date('start_dt')->nullable()->default(null);
             $table->unsignedInteger('month')->nullable()->default(null);
             $table->unsignedInteger('day')->nullable()->default(null);
             $table->unsignedInteger('duration')->nullable()->default(null);

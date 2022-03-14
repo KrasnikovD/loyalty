@@ -16,7 +16,7 @@ class BonusRulesController extends Controller
      *
      * @apiHeader {string} Authorization Basic current user token
      *
-     * @apiParam {string} [start_stock_dt]
+     * @apiParam {string} [start_dt]
      * @apiParam {integer} [month]
      * @apiParam {integer} [day]
      * @apiParam {integer} duration
@@ -31,11 +31,10 @@ class BonusRulesController extends Controller
      *
      * @apiHeader {string} Authorization Basic current user token
      *
-     * @apiParam {string} [start_stock_dt]
+     * @apiParam {string} [start_dt]
      * @apiParam {integer} [month]
      * @apiParam {integer} [day]
      * @apiParam {integer} duration
-     * @apiParam {integer} field_id
      * @apiParam {integer=0,1} [enabled]
      */
 
@@ -47,10 +46,10 @@ class BonusRulesController extends Controller
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [
-            'start_stock_dt' => 'nullable|date|date_format:Y-m-d',
-            'month' => 'nullable|integer|between:1,12',
-            'day' => 'nullable|integer|between:1,31',
-            'duration' => (!$id ? 'required|' : '') . 'required|integer',
+            'start_dt' => 'nullable|date|date_format:Y-m-d',
+            'month' => 'nullable|integer|between:0,12',
+            'day' => 'nullable|integer|between:0,31',
+            'duration' => (!$id ? 'required|' : 'nullable|') . 'integer',
         ];
         if (!$id)
             $validatorRules['field_id'] = 'required|exists:fields,id';
@@ -64,13 +63,17 @@ class BonusRulesController extends Controller
         }
         if (empty($errors)) {
             $bonus = $id ? BonusRules::where('id', '=', $id)->first() : new BonusRules;
-            if ($request->start_stock_dt)
-                $bonus->start_stock_dt = $request->start_stock_dt;
+            if ($request->start_dt)
+                $bonus->start_dt = $request->start_dt;
             if ($request->month && $request->day) {
                 $bonus->month = $request->month;
                 $bonus->day = $request->day;
             }
-            $bonus->duration = $request->duration;
+            if ($request->month === '0') {
+                $bonus->month = $bonus->day = null;
+            }
+            if ($request->duration)
+                $bonus->duration = $request->duration;
             if (!$id)
                 $bonus->field_id = $request->field_id;
             $bonus->save();
@@ -100,7 +103,7 @@ class BonusRulesController extends Controller
         $validatorData = $request->all();
         $validatorRules = [
             'dir' => 'in:asc,desc',
-            'order' => 'in:start_stock_dt,month,day,duration,field_id,created_at,updated_at',
+            'order' => 'in:start_dt,month,day,duration,field_id,created_at,updated_at',
             'offset' => 'integer',
             'limit' => 'integer',
         ];

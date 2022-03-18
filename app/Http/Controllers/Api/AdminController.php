@@ -565,14 +565,14 @@ class AdminController extends Controller
                     $billProgramId = $programs[0]->id;
                     $remainingAmount = isset($programs[1]) ? $programs[1]->from : $programs[0]->to;
                 }
-                foreach (BillTypes::all() as $billType) {
+            //    foreach (BillType::all() as $billType) {
                     $bill = new Bills;
                     $bill->card_id = $card->id;
-                    $bill->bill_type_id = $billType->id;
+                    $bill->bill_type_id = BillTypes::TYPE_DEFAULT;
                     $bill->bill_program_id = $billProgramId;
                     $bill->remaining_amount = $remainingAmount;
                     $bill->save();
-                }
+          //      }
             }
             CommonActions::cardHistoryLogEditOrCreate($card, !$id);
             $data = [$card->toArray()];
@@ -1288,7 +1288,7 @@ class AdminController extends Controller
      *
      * @apiParam {integer[]} client_ids list of client ids
      * @apiParam {integer} field_id field
-     * @apiParam {boolean=0,1} value
+     * @apiParam {boolean} value
      */
 
     public function set_client_field_value(Request $request)
@@ -1301,7 +1301,7 @@ class AdminController extends Controller
             'client_ids' => 'required|array',
             'client_ids.*' => 'exists:users,id',
             'field_id' => 'required|exists:fields,id',
-            'value' => 'required|in:0,1',
+            'value' => 'required',
         ];
 
         $validator = Validator::make($request->all(), $validatorRules);

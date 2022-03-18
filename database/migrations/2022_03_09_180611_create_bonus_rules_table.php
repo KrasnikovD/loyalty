@@ -22,6 +22,7 @@ class CreateBonusRulesTable extends Migration
             $table->unsignedBigInteger('field_id');
             $table->foreign('field_id')->references('id')->on('fields');
             $table->tinyInteger('enabled')->default(1);
+            $table->unsignedInteger('value')->default(0);
             $table->softDeletes();
             $table->timestamps();
         });

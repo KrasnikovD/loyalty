@@ -12,4 +12,5 @@ class BillTypes extends Model
     protected $table = 'bill_types';
 
     const TYPE_DEFAULT = 'default';
+    const TYPE_BONUS = 'bonus';
 }

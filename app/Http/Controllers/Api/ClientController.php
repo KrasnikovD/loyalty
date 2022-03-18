@@ -120,6 +120,7 @@ class ClientController extends Controller
                     Sales::where('card_id', '=', $card->id)->update(['user_id' => $card->user_id]);
                     CommonActions::cardHistoryLogBind($card, $user->id);
                 }
+
                 if (!$cardExists) {
                     $card = new Cards;
                     $card->user_id = $user->id;
@@ -133,14 +134,15 @@ class ClientController extends Controller
                         $billProgramId = $programs[0]->id;
                         $remainingAmount = isset($programs[1]) ? $programs[1]->from : $programs[0]->to;
                     }
-                    foreach (BillTypes::all() as $billType) {
+                 //   foreach (BillType::all() as $billType) {
                         $bill = new Bills;
                         $bill->card_id = $card->id;
-                        $bill->bill_type_id = $billType->id;
+                        $bill->bill_type_id = BillTypes::where('name', '=', BillTypes::TYPE_DEFAULT)->value('id');
                         $bill->bill_program_id = $billProgramId;
                         $bill->remaining_amount = $remainingAmount;
                         $bill->save();
-                    }
+                 //   }
+
                     CommonActions::cardHistoryLogEditOrCreate($card, true, $user->id);
                 }
 
@@ -1607,14 +1609,14 @@ class ClientController extends Controller
                     $billProgramId = $programs[0]->id;
                     $remainingAmount = isset($programs[1]) ? $programs[1]->from : $programs[0]->to;
                 }
-                foreach (BillTypes::all() as $billType) {
+             //   foreach (BillType::all() as $billType) {
                     $bill = new Bills;
                     $bill->card_id = $card->id;
-                    $bill->bill_type_id = $billType->id;
+                    $bill->bill_type_id = BillTypes::TYPE_DEFAULT;
                     $bill->bill_program_id = $billProgramId;
                     $bill->remaining_amount = $remainingAmount;
                     $bill->save();
-                }
+             //   }
             }
             CommonActions::cardHistoryLogEditOrCreate($card, !$id);
         }

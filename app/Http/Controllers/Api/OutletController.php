@@ -549,14 +549,14 @@ class OutletController extends Controller
                     $billProgramId = $programs[0]->id;
                     $remainingAmount = isset($programs[1]) ? $programs[1]->from : $programs[0]->to;
                 }
-                foreach (BillTypes::all() as $billType) {
+          //      foreach (BillType::all() as $billType) {
                     $bill = new Bills;
                     $bill->card_id = $card->id;
-                    $bill->bill_type_id = $billType->id;
+                    $bill->bill_type_id = BillTypes::TYPE_DEFAULT;
                     $bill->bill_program_id = $billProgramId;
                     $bill->remaining_amount = $remainingAmount;
                     $bill->save();
-                }
+          //      }
                 CommonActions::cardHistoryLogEditOrCreate($card, true);
             }
             $card = Cards::select('cards.*', 'users.first_name as user_first_name', 'users.second_name as user_second_name', 'users.phone as user_phone')

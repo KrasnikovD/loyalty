@@ -100,7 +100,7 @@ class DataHelper extends Model
         $billsList = Bills::join('bill_types', 'bills.bill_type_id', '=', 'bill_types.id')
             ->leftJoin('bill_programs', 'bill_programs.id', '=', 'bills.bill_program_id')
             ->select('bills.id', 'bills.value', 'bills.card_id',
-                'bills.remaining_amount', 'bills.bill_program_id',
+                'bills.remaining_amount', 'bills.bill_program_id', 'bills.end_dt', 'bills.rule_id',
                 'bill_types.name as type_name', 'bill_programs.file', 'bill_programs.percent')
             ->whereIn('bills.card_id', $cardsIds)->get();
 

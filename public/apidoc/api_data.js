@@ -481,6 +481,13 @@ define({ "api": [
           {
             "group": "Parameter",
             "type": "integer",
+            "optional": false,
+            "field": "value",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
             "allowedValues": [
               "0",
               "1"
@@ -572,8 +579,8 @@ define({ "api": [
           {
             "group": "Parameter",
             "type": "integer",
-            "optional": false,
-            "field": "field_id",
+            "optional": true,
+            "field": "value",
             "description": ""
           },
           {
@@ -1867,10 +1874,6 @@ define({ "api": [
           {
             "group": "Parameter",
             "type": "boolean",
-            "allowedValues": [
-              "0",
-              "1"
-            ],
             "optional": false,
             "field": "value",
             "description": ""

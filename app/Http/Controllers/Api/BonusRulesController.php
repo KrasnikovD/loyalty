@@ -21,6 +21,7 @@ class BonusRulesController extends Controller
      * @apiParam {integer} [day]
      * @apiParam {integer} duration
      * @apiParam {integer} field_id
+     * @apiParam {integer} value
      * @apiParam {integer=0,1} [enabled]
      */
 
@@ -35,6 +36,7 @@ class BonusRulesController extends Controller
      * @apiParam {integer} [month]
      * @apiParam {integer} [day]
      * @apiParam {integer} duration
+     * @apiParam {integer} [value]
      * @apiParam {integer=0,1} [enabled]
      */
 
@@ -51,9 +53,10 @@ class BonusRulesController extends Controller
             'day' => 'nullable|integer|between:0,31',
             'duration' => (!$id ? 'required|' : 'nullable|') . 'integer',
         ];
-        if (!$id)
+        if (!$id) {
             $validatorRules['field_id'] = 'required|exists:fields,id';
-        else
+            $validatorRules['value'] = 'required|integer';
+        } else
             $validatorRules['id'] = 'exists:bonus_rules,id';
 
         $validator = Validator::make($validatorData, $validatorRules);
@@ -76,6 +79,9 @@ class BonusRulesController extends Controller
                 $bonus->duration = $request->duration;
             if (!$id)
                 $bonus->field_id = $request->field_id;
+            if ($request->value)
+                $bonus->value = $request->value;
+
             $bonus->save();
         }
         return response()->json(['errors' => $errors, 'data' => $bonus], $httpStatus);

@@ -34,6 +34,7 @@ class OutletController extends Controller
      * @apiParam {string} card_number
      * @apiParam {string} debited
      * @apiParam {object[]} products
+     * @apiParam {integer=0,1} [is_bonus]
      * @apiParam {string=xml,json} [out_format]
      * @apiParam {integer=1,2,3} [cert]
      */
@@ -46,6 +47,7 @@ class OutletController extends Controller
      * @apiParam {string} card_number
      * @apiParam {string} debited
      * @apiParam {object[]} [products]
+     * @apiParam {integer=0,1} [is_bonus]
      * @apiParam {string=xml,json} [out_format]
      */
 
@@ -97,13 +99,18 @@ class OutletController extends Controller
             return @Sales::where('id', '=', $value)->first()->status == Sales::STATUS_PRE_ORDER;
         });
         Validator::extend('check_debited', function($attribute, $value, $parameters, $validator) {
-            $cardInfo = Cards::select('bills.*')
+            $q = Cards::select('bills.*')
                 ->join('bills', 'bills.card_id', '=', 'cards.id')
                 ->join('bill_types', 'bill_types.id', '=', 'bills.bill_type_id')
                 ->where([
                     ['number', '=', $parameters[0]],
-                    ['bill_types.name', '=', BillTypes::TYPE_DEFAULT]])->first();
-            return $cardInfo->value >= $value;
+                    ['bill_types.name', '=', $parameters[1] == 1 ? BillTypes::TYPE_BONUS : BillTypes::TYPE_DEFAULT]])
+                ->whereNull('bills.deleted_at')
+                ->orderBy('end_dt', 'asc');
+            if ($parameters[1] == 1)
+                $q->where('bills.value', '>', 0);
+            $cardInfo = $q->first();
+            return @$cardInfo->value >= $value;
         });
         $validatorData = $request->all();
         if ($saleId) $validatorData = array_merge($validatorData, ['sale_id' => $saleId]);
@@ -115,21 +122,27 @@ class OutletController extends Controller
                 'products' => (!$saleId ? 'required|' : '') . 'array',
                 'products.*' => 'check_product:' . $request->card_number .',' . $saleId,
                 'out_format' => 'in:xml,json',
-                'debited' => 'integer|check_debited:' . $request->card_number,
+                'debited' => 'integer|check_debited:' . $request->card_number . ',' . $request->is_bonus,
                 'cert' => 'nullable|integer|in:1,2,3'
             ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
+
         if (empty($errors)) {
             $debited = $request->debited ?: 0;
-            $cardInfo = Cards::select('cards.id', 'user_id', 'bills.id as bill_id', 'bills.init_amount')
+            $q = Cards::select('cards.id', 'user_id', 'bills.id as bill_id', 'bills.init_amount')
                 ->join('bills', 'bills.card_id', '=', 'cards.id')
                 ->join('bill_types', 'bill_types.id', '=', 'bills.bill_type_id')
                 ->where([
                     ['number', '=', $request->card_number],
-                    ['bill_types.name', '=', BillTypes::TYPE_DEFAULT]])->first();
+                    ['bill_types.name', '=', $request->is_bonus == 1 ? BillTypes::TYPE_BONUS : BillTypes::TYPE_DEFAULT]])
+                ->whereNull('bills.deleted_at')
+                ->orderBy('end_dt', 'asc');
+            if ($request->is_bonus == 1)
+                $q->where('bills.value', '>', 0);
+            $cardInfo = $q->first();
 
             $birthdayStockValue = CommonActions::getBirthdayStockInfo($cardInfo->user_id, $saleId, $request->products);
 

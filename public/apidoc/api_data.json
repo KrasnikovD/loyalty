@@ -5655,6 +5655,17 @@
           },
           {
             "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "is_bonus",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
             "type": "string",
             "allowedValues": [
               "xml",
@@ -5711,6 +5722,17 @@
             "type": "object[]",
             "optional": true,
             "field": "products",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "is_bonus",
             "description": ""
           },
           {

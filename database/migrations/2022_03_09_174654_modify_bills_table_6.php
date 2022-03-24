@@ -16,6 +16,7 @@ class ModifyBillsTable6 extends Migration
         Schema::table('bills', function (Blueprint $table) {
             $table->date('end_dt')->nullable()->default(null);
             $table->unsignedBigInteger('rule_id')->nullable()->default(null);
+            $table->softDeletes();
         });
     }
 

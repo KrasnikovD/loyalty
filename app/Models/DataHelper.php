@@ -102,10 +102,13 @@ class DataHelper extends Model
             ->select('bills.id', 'bills.value', 'bills.card_id',
                 'bills.remaining_amount', 'bills.bill_program_id', 'bills.end_dt', 'bills.rule_id',
                 'bill_types.name as type_name', 'bill_programs.file', 'bill_programs.percent')
+            ->orderBy('bills.end_dt', 'asc')
             ->whereIn('bills.card_id', $cardsIds)->get();
 
         $billsMap = [];
         foreach ($billsList as $bill) {
+            if ($bill->value == 0 && $bill->type_name == BillTypes::TYPE_BONUS)
+                continue;
             if(!isset($billsMap[$bill['card_id']])) $billsMap[$bill['card_id']] = [];
             $bill->real_value = $bill->value;
             $bill->value = floor($bill->value);

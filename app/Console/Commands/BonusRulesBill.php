@@ -53,7 +53,7 @@ class BonusRulesBill extends Command
             ->join('bonus_rules', 'bonus_rules.id', '=', 'bills.rule_id')
             ->get();
         foreach ($bills as $bill) {
-            if (strtotime($bill->end_dt) < time() || $bill->value == 0) {
+            if (strtotime($bill->end_dt) < time() /*|| $bill->value == 0*/) {
                 $bill->delete();
             }
         }

@@ -68,7 +68,7 @@ class BonusRulesController extends Controller
             $bonus = $id ? BonusRules::where('id', '=', $id)->first() : new BonusRules;
             if ($request->start_dt)
                 $bonus->start_dt = $request->start_dt;
-            if ($request->month && $request->day) {
+            elseif ($request->month && $request->day) {
                 $bonus->month = $request->month;
                 $bonus->day = $request->day;
             }

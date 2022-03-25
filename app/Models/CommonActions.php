@@ -220,6 +220,43 @@ class CommonActions extends Model
         $logSale->save();
     }
 
+    public static function cardHistoryLogAddBonusByRule($card, $bonusBill)
+    {
+        $logSale = new CardHistory;
+        $logSale->card_id = $card->id;
+        $logSale->type = CardHistory::BONUS_BY_RULE_ADDED;
+        $data = [
+            'number' => $card->number,
+            'is_physical' => $card->is_physical,
+            'is_main' => $card->is_main,
+            'phone' => $card->phone,
+            'bill_id' => $bonusBill->id,
+            'rule_id' => $bonusBill->rule_id,
+            'value' => $bonusBill->value,
+            'end_dt' => $bonusBill->end_dt
+        ];
+        $logSale->data = json_encode($data);
+        $logSale->save();
+    }
+
+    public static function cardHistoryLogRemoveBonusByRule($card, $bonusBill)
+    {
+        $logSale = new CardHistory;
+        $logSale->card_id = $card->id;
+        $logSale->type = CardHistory::BONUS_BY_RULE_REMOVED;
+        $data = [
+            'number' => $card->number,
+            'is_physical' => $card->is_physical,
+            'is_main' => $card->is_main,
+            'phone' => $card->phone,
+            'bill_id' => $bonusBill->id,
+            'rule_id' => $bonusBill->rule_id,
+            'end_dt' => $bonusBill->end_dt
+        ];
+        $logSale->data = json_encode($data);
+        $logSale->save();
+    }
+
     public static function getBirthdayStockInfo($userId, $saleId, $products)
     {
         if ($saleId) {
@@ -268,18 +305,15 @@ class CommonActions extends Model
         $card->user_id = $userId;
         $card->save();
 
-        foreach (BillTypes::all() as $billType) {
-            $bill = new Bills;
-            $bill->card_id = $card->id;
-            $bill->bill_type_id = $billType->id;
-            $bill->bill_program_id = $programs->id;
-            $bill->remaining_amount = 0;
-            if ($billType->name == BillTypes::TYPE_DEFAULT) {
-                $bill->value = $certAmount;
-                $bill->init_amount = $programs->to + 1;
-            }
-            $bill->save();
-        }
+        $bill = new Bills;
+        $bill->card_id = $card->id;
+        $bill->bill_type_id = BillTypes::where('name', '=', BillTypes::TYPE_DEFAULT)->value('id');
+        $bill->bill_program_id = $programs->id;
+        $bill->remaining_amount = 0;
+        $bill->value = $certAmount;
+        $bill->init_amount = $programs->to + 1;
+        $bill->save();
+
         self::cardHistoryLogEditOrCreate($card, true);
     }
 }

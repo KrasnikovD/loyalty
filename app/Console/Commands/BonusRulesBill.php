@@ -7,6 +7,7 @@ use App\Models\Bills;
 use App\Models\BillTypes;
 use App\Models\BonusRules;
 use App\Models\Cards;
+use App\Models\CommonActions;
 use Illuminate\Console\Command;
 
 class BonusRulesBill extends Command
@@ -52,10 +53,27 @@ class BonusRulesBill extends Command
         $bills = Bills::select('bills.*')
             ->join('bonus_rules', 'bonus_rules.id', '=', 'bills.rule_id')
             ->get();
+        $billIds = [];
         foreach ($bills as $bill) {
-            if (strtotime($bill->end_dt) < time() /*|| $bill->value == 0*/) {
-                $bill->delete();
+            if (strtotime($bill->end_dt) < time()) {
+                $billIds[] = $bill->id;
             }
+        }
+        $billIds = array_unique($billIds);
+        if (!empty($billIds)) {
+            $cards = Cards::distinct()
+                ->select('cards.*')
+                ->join('bills', 'bills.card_id', '=', 'cards.id')
+                ->whereIn('bills.id', $billIds)
+                ->get();
+            $cardsList = [];
+            foreach ($cards as $card) {
+                $cardsList[$card->id] = $card;
+            }
+            foreach ($bills as $bill) {
+                CommonActions::cardHistoryLogRemoveBonusByRule($cardsList[$bill->card_id], $bill);
+            }
+            Bills::whereIn('id', $billIds)->delete();
         }
     }
 
@@ -68,10 +86,9 @@ class BonusRulesBill extends Command
                 $startDt = date('Y') . '-' . $rule->month . '-' . $rule->day;
             }
             if (time() <= strtotime($startDt) || time() >= strtotime($startDt . ' + ' . $rule->duration . ' days')) {
-                print "out of date, $startDt {$rule->duration}\n";
                 continue;
             }
-            $cards = Cards::select('cards.id', 'bills.rule_id')
+            $cards = Cards::select('cards.id', 'cards.number', 'cards.is_physical', 'cards.is_main', 'cards.phone', 'bills.rule_id')
                 ->join('fields_users', 'fields_users.user_id', '=', 'cards.user_id')
                 ->join('bills', 'bills.card_id', '=', 'cards.id')
                 ->where([['fields_users.value', '=', 1], ['fields_users.field_id', '=', $rule->field_id]])
@@ -93,8 +110,6 @@ class BonusRulesBill extends Command
             foreach (array_unique(array_column($cards->toArray(), 'id')) as $cardId) {
                 if (in_array($cardId, $excludeCardList))
                     continue;
-                print "rule id=".$rule->id."\n";
-                print "card id=".$cardId."\n";
                 $bill = new Bills;
                 $bill->card_id = $cardId;
                 $bill->bill_type_id = BillTypes::where('name', BillTypes::TYPE_BONUS)->value('id');
@@ -104,6 +119,13 @@ class BonusRulesBill extends Command
                 $bill->rule_id = $rule->id;
                 $bill->end_dt = date('Y-m-d', strtotime($startDt . ' + ' . $rule->duration . ' days'));
                 $bill->save();
+
+                foreach ($cards as $card) {
+                    if ($card->id == $cardId) {
+                        CommonActions::cardHistoryLogAddBonusByRule($card, $bill);
+                        break;
+                    }
+                }
             }
         }
     }

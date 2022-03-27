@@ -2,10 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\BonusRuleExport;
+use App\Exports\CardExport;
 use App\Http\Controllers\Controller;
+use App\Models\Bills;
 use App\Models\BonusRules;
+use App\Models\CardHistory;
+use App\Models\Cards;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BonusRulesController extends Controller
 {
@@ -204,5 +211,82 @@ class BonusRulesController extends Controller
             BonusRules::where('id', '=', $id)->delete();
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/bonus_rules/history/:id Bonus Rule History
+     * @apiName BonusRuleHistory
+     * @apiGroup AdminBonusRules
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function bonus_rule_history($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $report = null;
+        $validator = Validator::make(['id' => $id], ['id' => 'required|exists:bonus_rules,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $bills = Bills::select('cards.id as card_id', 'bills.id as bill_id')
+                ->join('cards', 'cards.id', '=', 'bills.card_id')
+                ->where('rule_id', '=', $id)->get();
+            $cardIds = array_column($bills->toArray(), 'card_id');
+            $billsIds = array_column($bills->toArray(), 'bill_id');
+            $historyData = Cards::select('card_history.id', 'cards.number', 'card_history.type', 'card_history.data', 'card_history.created_at')
+                ->join('card_history', 'card_history.card_id', '=', 'cards.id')
+                ->whereIn('card_history.type', [CardHistory::BONUS_BY_RULE_ADDED, CardHistory::SALE])
+                ->whereIn('cards.id', $cardIds)
+                ->orderBy('card_history.created_at', 'desc')
+                ->get();
+
+            $report = [];
+            foreach ($historyData->toArray() as $entry) {
+                $entryData = json_decode($entry['data']);
+                if (in_array($entryData->bill_id, $billsIds)) {
+                    $amount = $entry['type'] == CardHistory::SALE ? "-{$entryData->debited}" : "+{$entryData->value}";
+                    $report[] = [
+                        'number' => $entry['number'],
+                        'bill_id' => $entryData->bill_id,
+                        'type' => $entry['type'] == CardHistory::SALE ? 'debited' : 'added',
+                        'date' => date('Y-m-d', strtotime($entry['created_at'])),
+                        'amount' => $amount
+                    ];
+                }
+            }
+        }
+        return response()->json(['errors' => $errors, 'data' => $report], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/generate_bonus_rules_report/:id Generate Bonus Rules Report
+     * @apiName GenerateBonusRulesReport
+     * @apiGroup AdminReports
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function generate_bonus_rules_report($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validator = Validator::make(['id' => $id], ['id' => 'required|exists:bonus_rules,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $fileName = "reports/" . date('Y-m-d_H_i_s') . '_bonus_rule_' . $id . '.xlsx';
+            Storage::disk('local')->put($fileName, '');
+            $export = new BonusRuleExport($id);
+            Excel::store($export, Storage::path($fileName));
+            $data = $fileName;
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 }

@@ -67,6 +67,7 @@ Route::post('/bonus_rules/edit/{id}', 'App\Http\Controllers\Api\BonusRulesContro
 Route::post('/bonus_rules/list', 'App\Http\Controllers\Api\BonusRulesController@list_bonus_rules');
 Route::get('/bonus_rules/get/{id}', 'App\Http\Controllers\Api\BonusRulesController@get_bonus_rule');
 Route::get('/bonus_rules/delete/{id}', 'App\Http\Controllers\Api\BonusRulesController@delete_bonus_rules');
+Route::get('/bonus_rules/history/{id}', 'App\Http\Controllers\Api\BonusRulesController@bonus_rule_history');
 
 //Route::post('/sales/create', 'App\Http\Controllers\Api\AdminController@edit_sale');
 //Route::post('/sales/edit/{id}', 'App\Http\Controllers\Api\AdminController@edit_sale');
@@ -131,12 +132,13 @@ Route::patch('/bills/edit_value/{id}', 'App\Http\Controllers\Api\AdminController
 
 Route::get('/statistic/sales', 'App\Http\Controllers\Api\StatController@sales');
 Route::get('/statistic/product_rates', 'App\Http\Controllers\Api\StatController@product_rates');
-Route::get('/statistic/bonus_bills_summary', 'App\Http\Controllers\Api\StatController@bonus_bills_summary');
+Route::get('/statistic/bonus_bills_summary/{id}', 'App\Http\Controllers\Api\StatController@bonus_bills_summary');
 
 Route::get('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@get_rate_store');
 Route::patch('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@update_rate_store');
 
 Route::post('/generate_report', 'App\Http\Controllers\Api\AdminController@generate_report');
+Route::get('/generate_bonus_rules_report/{id}', 'App\Http\Controllers\Api\BonusRulesController@generate_bonus_rules_report');
 
 /****** CLIENTS ******/
 

@@ -109,21 +109,19 @@ class StatController extends Controller
     }
 
     /**
-     * @api {get} /api/statistic/bonus_bills_summary Bonus Bills Summary
+     * @api {get} /api/statistic/bonus_bills_summary/:id Bonus Bills Summary
      * @apiName BonusBillsSummary
      * @apiGroup AdminStat
      *
      * @apiHeader {string} Authorization Basic current user token
-     *
-     * @apiParam {integer} bonus_rule_id
      */
 
-    public function bonus_bills_summary(Request $request)
+    public function bonus_bills_summary($id)
     {
         $errors = [];
         $httpStatus = 200;
         $data = null;
-        $validator = Validator::make($request->all(), ['bonus_rule_id' => 'required|exists:bonus_rules,id']);
+        $validator = Validator::make(['id' => $id], ['id' => 'required|exists:bonus_rules,id']);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
@@ -131,24 +129,24 @@ class StatController extends Controller
         if (empty($errors)) {
             $cardsCount = Cards::distinct()
                 ->join('bills', 'bills.card_id', '=', 'cards.id')
-                ->where('bills.rule_id', '=', $request->bonus_rule_id)
+                ->where('bills.rule_id', '=', $id)
                 ->count();
 
             $cards = Cards::select('bills.id', 'card_history.data')
                 ->join('bills', 'bills.card_id', '=', 'cards.id')
                 ->join('card_history', 'card_history.card_id', '=', 'cards.id')
-                ->where([['bills.rule_id', '=', $request->bonus_rule_id], ['card_history.type', '=', CardHistory::BONUS_BY_RULE_ADDED]])
+                ->where([['bills.rule_id', '=', $id], ['card_history.type', '=', CardHistory::BONUS_BY_RULE_ADDED]])
                 ->get();
             $addedAmount = 0;
             foreach ($cards as $card) {
                 $historyData = json_decode($card->data);
-                if ($historyData->rule_id == $request->bonus_rule_id) {
+                if ($historyData->rule_id == $id) {
                     $addedAmount += $historyData->value;
                 }
             }
             $bills = Bills::select('bonus_history.debited')
                 ->join('bonus_history', 'bonus_history.bill_id', '=', 'bills.id')
-                ->where('bills.rule_id', '=', $request->bonus_rule_id)->get();
+                ->where('bills.rule_id', '=', $id)->get();
             $debitedCount = count($bills->toArray());
             $debitedAmount = array_sum(array_column($bills->toArray(), 'debited'));
             $data = [

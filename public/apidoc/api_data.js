@@ -422,6 +422,29 @@ define({ "api": [
     "groupTitle": "AdminBillTypes"
   },
   {
+    "type": "get",
+    "url": "/api/bonus_rules/history/:id",
+    "title": "Bonus Rule History",
+    "name": "BonusRuleHistory",
+    "group": "AdminBonusRules",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/BonusRulesController.php",
+    "groupTitle": "AdminBonusRules"
+  },
+  {
     "type": "post",
     "url": "/api/bonus_rules/create",
     "title": "Create Bonus Rule",
@@ -3261,6 +3284,29 @@ define({ "api": [
     "groupTitle": "AdminProducts"
   },
   {
+    "type": "get",
+    "url": "/api/generate_bonus_rules_report/:id",
+    "title": "Generate Bonus Rules Report",
+    "name": "GenerateBonusRulesReport",
+    "group": "AdminReports",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/BonusRulesController.php",
+    "groupTitle": "AdminReports"
+  },
+  {
     "type": "post",
     "url": "/api/generate_report",
     "title": "Generate Report",
@@ -3490,7 +3536,7 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/api/statistic/bonus_bills_summary",
+    "url": "/api/statistic/bonus_bills_summary/:id",
     "title": "Bonus Bills Summary",
     "name": "BonusBillsSummary",
     "group": "AdminStat",
@@ -3503,19 +3549,6 @@ define({ "api": [
             "optional": false,
             "field": "Authorization",
             "description": "<p>Basic current user token</p>"
-          }
-        ]
-      }
-    },
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "integer",
-            "optional": false,
-            "field": "bonus_rule_id",
-            "description": ""
           }
         ]
       }

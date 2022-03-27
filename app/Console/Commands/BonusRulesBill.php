@@ -43,7 +43,7 @@ class BonusRulesBill extends Command
      */
     public function handle()
     {
-        self::delete();
+    //    self::delete();
         self::create();
         return 0;
     }

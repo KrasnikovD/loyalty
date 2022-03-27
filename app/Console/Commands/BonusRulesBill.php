@@ -8,6 +8,8 @@ use App\Models\BillTypes;
 use App\Models\BonusRules;
 use App\Models\Cards;
 use App\Models\CommonActions;
+use App\Models\Devices;
+use App\Notifications\WelcomeNotification;
 use Illuminate\Console\Command;
 
 class BonusRulesBill extends Command
@@ -93,7 +95,7 @@ class BonusRulesBill extends Command
                 // Birthday duration
                 $duration = 8;
             }
-            $q = Cards::select('cards.id', 'cards.number', 'cards.is_physical', 'cards.is_main', 'cards.phone', 'bills.rule_id', 'users.birthday')
+            $q = Cards::select('cards.id', 'cards.number', 'cards.is_physical', 'cards.is_main', 'cards.phone', 'bills.rule_id', 'users.birthday', 'users.id as user_id')
                 ->join('users', 'users.id', '=', 'cards.user_id')
                 ->join('bills', 'bills.card_id', '=', 'cards.id');
             if (is_null($rule->sex))
@@ -144,10 +146,16 @@ class BonusRulesBill extends Command
                 $bill->remaining_amount = $remainingAmount;
                 $bill->value = $rule->value;
                 $bill->rule_id = $rule->id;
-                $bill->end_dt = $card->startDt;
+                $bill->end_dt = strtotime($card->startDt . ' + ' . $duration . ' days');
                 $bill->rule_name = $rule->name;
                 $bill->save();
                 CommonActions::cardHistoryLogAddBonusByRule($card, $bill);
+
+                $title = __('messages.im_bill_by_bonus_rule_added_title');
+                $body = __('messages.im_bill_by_bonus_rule_added_body', ['end_date' => date('d.m.y', $bill->end_dt)]);
+                $device = Devices::where('user_id', '=', $card->user_id)->first();
+                if ($device)
+                    $device->notify(new WelcomeNotification($title, $body));
             }
         }
     }

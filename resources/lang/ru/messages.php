@@ -15,6 +15,9 @@ return [
     'im_bonus_debited_title' => 'Вы совершили покупку',
     'im_bonus_debited_body' => 'Вы совершили покупку. С вашего счета списано: :sum р.',
 
+    'im_bill_by_bonus_rule_added_title' => 'Вам начислен бонус',
+    'im_bill_by_bonus_rule_added_body' => 'Вам начислен бонус, действующий до :end_date',
+
     'error_text_bind_card_non_exist' => 'Карта с таким номером не найдена.',
     'error_text_bind_card_busy' => 'Карта с этим номером связана с другим пользователем.',
 ];

@@ -15,6 +15,9 @@ return [
     'im_bonus_debited_title' => 'You have made a purchase',
     'im_bonus_debited_body' => 'You have made a purchase. Debited from your account: :sum',
 
+    'im_bill_by_bonus_rule_added_title' => 'You have received a bonus',
+    'im_bill_by_bonus_rule_added_body' => 'You have received a bonus valid until :end_date',
+
     'error_text_bind_card_non_exist' => 'No card with this number found.',
     'error_text_bind_card_busy' => 'The card with this number is associated with another user.',
 ];

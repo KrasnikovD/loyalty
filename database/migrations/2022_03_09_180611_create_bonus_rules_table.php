@@ -19,10 +19,13 @@ class CreateBonusRulesTable extends Migration
             $table->unsignedInteger('month')->nullable()->default(null);
             $table->unsignedInteger('day')->nullable()->default(null);
             $table->unsignedInteger('duration')->nullable()->default(null);
-            $table->unsignedBigInteger('field_id');
-            $table->foreign('field_id')->references('id')->on('fields');
+            $table->unsignedBigInteger('field_id')->nullable()->default(null);
+            //$table->foreign('field_id')->references('id')->on('fields');
             $table->tinyInteger('enabled')->default(1);
             $table->unsignedInteger('value')->default(0);
+            $table->tinyInteger('is_birthday')->default(0);
+            $table->string('sex')->nullable()->default(null);
+            $table->string('name');
             $table->softDeletes();
             $table->timestamps();
         });

@@ -16,12 +16,15 @@ class BonusRulesController extends Controller
      *
      * @apiHeader {string} Authorization Basic current user token
      *
+     * @apiParam {string} name
      * @apiParam {string} [start_dt]
      * @apiParam {integer} [month]
      * @apiParam {integer} [day]
      * @apiParam {integer} duration
      * @apiParam {integer} field_id
      * @apiParam {integer} value
+     * @apiParam {integer=0,1} [sex]
+     * @apiParam {integer=0,1} [is_birthday]
      * @apiParam {integer=0,1} [enabled]
      */
 
@@ -32,11 +35,13 @@ class BonusRulesController extends Controller
      *
      * @apiHeader {string} Authorization Basic current user token
      *
+     * @apiParam {string} [name]
      * @apiParam {string} [start_dt]
      * @apiParam {integer} [month]
      * @apiParam {integer} [day]
      * @apiParam {integer} duration
      * @apiParam {integer} [value]
+     * @apiParam {integer=0,1} [is_birthday]
      * @apiParam {integer=0,1} [enabled]
      */
 
@@ -49,13 +54,16 @@ class BonusRulesController extends Controller
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [
             'start_dt' => 'nullable|date|date_format:Y-m-d',
-            'month' => 'nullable|integer|between:0,12',
-            'day' => 'nullable|integer|between:0,31',
-            'duration' => (!$id ? 'required|' : 'nullable|') . 'integer',
+            'month' => 'nullable|integer|between:1,12',
+            'day' => 'nullable|integer|between:1,31',
+            'sex' => 'nullable|integer|in:0,1',
+            'is_birthday' => 'nullable|integer|in:0,1',
+            'duration' => 'nullable|integer',
         ];
         if (!$id) {
-            $validatorRules['field_id'] = 'required|exists:fields,id';
+            $validatorRules['field_id'] = 'nullable|exists:fields,id';
             $validatorRules['value'] = 'required|integer';
+            $validatorRules['name'] = 'required';
         } else
             $validatorRules['id'] = 'exists:bonus_rules,id';
 
@@ -66,21 +74,33 @@ class BonusRulesController extends Controller
         }
         if (empty($errors)) {
             $bonus = $id ? BonusRules::where('id', '=', $id)->first() : new BonusRules;
-            if ($request->start_dt)
-                $bonus->start_dt = $request->start_dt;
-            elseif ($request->month && $request->day) {
-                $bonus->month = $request->month;
-                $bonus->day = $request->day;
+            if ($request->is_birthday == 1) {
+                $bonus->is_birthday = $request->is_birthday;
+                $bonus->duration = $bonus->start_dt = $bonus->month = $bonus->day = null;
+            } else {
+                if ($request->start_dt) {
+                    $bonus->start_dt = $request->start_dt;
+                    $bonus->month = $bonus->day = null;
+                } elseif ($request->month && $request->day) {
+                    $bonus->month = $request->month;
+                    $bonus->day = $request->day;
+                    $bonus->start_dt = null;
+                }
+                if ($request->start_dt || ($request->month && $request->day))
+                    $bonus->is_birthday = 0;
+                if ($request->duration)
+                    $bonus->duration = $request->duration;
             }
-            if ($request->month === '0') {
-                $bonus->month = $bonus->day = null;
+            if (!$id) {
+                if (isset($request->sex))
+                    $bonus->sex = $request->sex;
+                elseif ($request->field_id)
+                    $bonus->field_id = $request->field_id;
             }
-            if ($request->duration)
-                $bonus->duration = $request->duration;
-            if (!$id)
-                $bonus->field_id = $request->field_id;
             if ($request->value)
                 $bonus->value = $request->value;
+            if ($request->name)
+                $bonus->name = $request->name;
 
             $bonus->save();
         }

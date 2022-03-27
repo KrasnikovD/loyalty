@@ -233,7 +233,8 @@ class CommonActions extends Model
             'bill_id' => $bonusBill->id,
             'rule_id' => $bonusBill->rule_id,
             'value' => $bonusBill->value,
-            'end_dt' => $bonusBill->end_dt
+            'end_dt' => $bonusBill->end_dt,
+            'rule_name' => $bonusBill->rule_name,
         ];
         $logSale->data = json_encode($data);
         $logSale->save();
@@ -251,7 +252,8 @@ class CommonActions extends Model
             'phone' => $card->phone,
             'bill_id' => $bonusBill->id,
             'rule_id' => $bonusBill->rule_id,
-            'end_dt' => $bonusBill->end_dt
+            'end_dt' => $bonusBill->end_dt,
+            'rule_name' => $bonusBill->rule_name,
         ];
         $logSale->data = json_encode($data);
         $logSale->save();

@@ -43,7 +43,7 @@ class BonusRulesBill extends Command
      */
     public function handle()
     {
-        self::delete();
+    //    self::delete();
         self::create();
         return 0;
     }
@@ -80,52 +80,78 @@ class BonusRulesBill extends Command
     private function create()
     {
         foreach(BonusRules::where('enabled', '=', 1)->get() as $rule) {
-            print $rule->id."\n";
+            print "rule_id = ".$rule->id."\n";
             $startDt = $rule->start_dt;
-            if (!$startDt) {
-                $startDt = date('Y') . '-' . $rule->month . '-' . $rule->day;
+            $duration = $rule->duration;
+            if ($rule->is_birthday == 0) {
+                if (!$startDt) {
+                    $startDt = date('Y') . '-' . $rule->month . '-' . $rule->day;
+                }
+                if (time() <= strtotime($startDt) || time() >= strtotime($startDt . ' + ' . $duration . ' days')) {
+                    continue;
+                }
+            } else {
+                // Birthday duration
+                $duration = 8;
             }
-            if (time() <= strtotime($startDt) || time() >= strtotime($startDt . ' + ' . $rule->duration . ' days')) {
-                continue;
-            }
-            $cards = Cards::select('cards.id', 'cards.number', 'cards.is_physical', 'cards.is_main', 'cards.phone', 'bills.rule_id')
-                ->join('fields_users', 'fields_users.user_id', '=', 'cards.user_id')
-                ->join('bills', 'bills.card_id', '=', 'cards.id')
-                ->where([['fields_users.value', '=', 1], ['fields_users.field_id', '=', $rule->field_id]])
-                ->get();
+            $q = Cards::select('cards.id', 'cards.number', 'cards.is_physical', 'cards.is_main', 'cards.phone', 'bills.rule_id', 'users.birthday')
+                ->join('users', 'users.id', '=', 'cards.user_id')
+                ->join('bills', 'bills.card_id', '=', 'cards.id');
+            if (is_null($rule->sex))
+                $q->join('fields_users', 'fields_users.user_id', '=', 'users.id')
+                    ->where([['fields_users.value', '=', 1], ['fields_users.field_id', '=', $rule->field_id]]);
+            else
+                $q->where('users.sex', '=', $rule->sex);
+            $cards = $q->get();
 
-            $excludeCardList = [];
+            $excludedCardsList = [];
             foreach ($cards as $card) {
-                if ($card->rule_id == $rule->id)
-                    $excludeCardList[] = $card->id;
+           //     print $card->number." rule_id1 = ".$card->rule_id.' rule_id2 = '.$rule->id."\n";
+                if ($card->rule_id == $rule->id) {
+                    $excludedCardsList[] = $card->id;
+                    continue;
+                }
+                if ($rule->is_birthday == 1) {
+                    $month = date('m', strtotime($card->birthday));
+                    $day = date('d', strtotime($card->birthday));
+                    $userBirthday = date('Y')  . '-' . $month . '-' . $day;
+                    $startDt = date('Y-m-d', strtotime($userBirthday . ' - ' . ($duration / 2) . ' days'));
+                }
+                if (time() <= strtotime($startDt) || time() >= strtotime($startDt . ' + ' . $duration . ' days')) {
+                    $excludedCardsList[] = $card->id;
+                    continue;
+                }
+                $card->startDt = $startDt;
             }
-            $excludeCardList = array_unique($excludeCardList);
+            $cardList = [];
+            $excludedCardsList = array_unique($excludedCardsList);
 
+            foreach ($cards as $card) {
+                if (in_array($card->id, $excludedCardsList))
+                    continue;
+                $cardList[$card->id] = $card/*->toArray()*/;
+            }
+          //  print_r($cardList);
+         //   continue;
             $billProgramId = $remainingAmount = null;
             $programs = BillPrograms::orderBy('from', 'asc')->get();
             if (isset($programs[0]) && $programs[0]->from == 0) {
                 $billProgramId = $programs[0]->id;
                 $remainingAmount = isset($programs[1]) ? $programs[1]->from : $programs[0]->to;
             }
-            foreach (array_unique(array_column($cards->toArray(), 'id')) as $cardId) {
-                if (in_array($cardId, $excludeCardList))
-                    continue;
+            foreach ($cardList as $card) {
+                print "rule_name = ".$rule->name." number = ".$card->number."\n";
                 $bill = new Bills;
-                $bill->card_id = $cardId;
+                $bill->card_id = $card->id;
                 $bill->bill_type_id = BillTypes::where('name', BillTypes::TYPE_BONUS)->value('id');
                 $bill->bill_program_id = $billProgramId;
                 $bill->remaining_amount = $remainingAmount;
                 $bill->value = $rule->value;
                 $bill->rule_id = $rule->id;
-                $bill->end_dt = date('Y-m-d', strtotime($startDt . ' + ' . $rule->duration . ' days'));
+                $bill->end_dt = $card->startDt;
+                $bill->rule_name = $rule->name;
                 $bill->save();
-
-                foreach ($cards as $card) {
-                    if ($card->id == $cardId) {
-                        CommonActions::cardHistoryLogAddBonusByRule($card, $bill);
-                        break;
-                    }
-                }
+                CommonActions::cardHistoryLogAddBonusByRule($card, $bill);
             }
         }
     }

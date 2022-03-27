@@ -446,6 +446,13 @@ define({ "api": [
           {
             "group": "Parameter",
             "type": "string",
+            "optional": false,
+            "field": "name",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
             "optional": true,
             "field": "start_dt",
             "description": ""
@@ -483,6 +490,28 @@ define({ "api": [
             "type": "integer",
             "optional": false,
             "field": "value",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "sex",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "is_birthday",
             "description": ""
           },
           {
@@ -552,6 +581,13 @@ define({ "api": [
             "group": "Parameter",
             "type": "string",
             "optional": true,
+            "field": "name",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
             "field": "start_dt",
             "description": ""
           },
@@ -581,6 +617,17 @@ define({ "api": [
             "type": "integer",
             "optional": true,
             "field": "value",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "is_birthday",
             "description": ""
           },
           {
@@ -3834,6 +3881,18 @@ define({ "api": [
             "optional": true,
             "field": "code",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1",
+              "-1"
+            ],
+            "optional": true,
+            "field": "sex",
+            "description": ""
           }
         ]
       }
@@ -3967,6 +4026,17 @@ define({ "api": [
             "type": "integer",
             "optional": true,
             "field": "code",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "sex",
             "description": ""
           }
         ]

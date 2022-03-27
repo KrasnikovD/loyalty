@@ -258,6 +258,7 @@ class AdminController extends Controller
      * @apiParam {integer=0,1,2} type
      * @apiParam {object[]} [fields]
      * @apiParam {integer} [code]
+     * @apiParam {integer=0,1,-1} [sex]
      */
 
     /**
@@ -278,6 +279,7 @@ class AdminController extends Controller
      * @apiParam {integer=0,1,2} [type]
      * @apiParam {object[]} [fields]
      * @apiParam {integer} [code]
+     * @apiParam {integer=0,1} [sex]
      */
 
     public function edit_user(Request $request, $id = null)
@@ -319,6 +321,7 @@ class AdminController extends Controller
         $validatorRules['fields'] = 'nullable|array';
         $validatorRules['fields.*'] = 'field_validation';
         $validatorRules['code'] = 'nullable|integer';
+        $validatorRules['sex'] = 'nullable|in:0,1';
 
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
@@ -338,6 +341,7 @@ class AdminController extends Controller
             $active = $request->active;
             if (isset($archived)) $user->archived = $request->archived;
             if (isset($active)) $user->active = $request->active;
+            if (isset($request->sex)) $user->sex = $request->sex;
             $user->save();
 
             if($user->type == 1) {

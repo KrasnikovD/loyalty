@@ -1313,19 +1313,49 @@ class AdminController extends Controller
         }
 
         if (empty($errors)) {
-            foreach ($request->client_ids as $clientId) {
-                $fieldsUser = FieldsUsers::where([
-                    ['field_id', $request->field_id],
-                    ['user_id', $clientId]])->first();
-                if ($fieldsUser) {
-                    $fieldsUser->value = $request->value;
-                    $fieldsUser->save();
-                }
-            }
+            FieldsUsers::where('field_id', '=', $request->field_id)
+                ->whereIn('user_id', $request->client_ids)
+                ->update(['value' => $request->value]);
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
 
+    /**
+     * @api {post} /api/fields/clear_client_field_value Clear Client Field Value
+     * @apiName ClearClientFieldValue
+     * @apiGroup AdminFields
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer[]} client_ids list of client ids
+     * @apiParam {integer} field_id field
+     */
+
+    public function clear_client_field_value(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+
+        $validatorRules = [
+            'client_ids' => 'required|array',
+            'client_ids.*' => 'exists:users,id',
+            'field_id' => 'required|exists:fields,id'
+        ];
+
+        $validator = Validator::make($request->all(), $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+
+        if (empty($errors)) {
+            FieldsUsers::where('field_id', '=', $request->field_id)
+                ->whereIn('user_id', $request->client_ids)
+                ->update(['value' => null]);
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
 
     /**
      * @api {post} /api/categories/create Create Category

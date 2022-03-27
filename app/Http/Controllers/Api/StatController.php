@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Baskets;
+use App\Models\Bills;
+use App\Models\CardHistory;
+use App\Models\Cards;
 use App\Models\Sales;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -101,6 +104,59 @@ class StatController extends Controller
             if ($request->limit)
                 $q->limit($request->limit);
             $data = $q->get();
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/statistic/bonus_bills_summary Bonus Bills Summary
+     * @apiName BonusBillsSummary
+     * @apiGroup AdminStat
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} bonus_rule_id
+     */
+
+    public function bonus_bills_summary(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validator = Validator::make($request->all(), ['bonus_rule_id' => 'required|exists:bonus_rules,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $cardsCount = Cards::distinct()
+                ->join('bills', 'bills.card_id', '=', 'cards.id')
+                ->where('bills.rule_id', '=', $request->bonus_rule_id)
+                ->count();
+
+            $cards = Cards::select('bills.id', 'card_history.data')
+                ->join('bills', 'bills.card_id', '=', 'cards.id')
+                ->join('card_history', 'card_history.card_id', '=', 'cards.id')
+                ->where([['bills.rule_id', '=', $request->bonus_rule_id], ['card_history.type', '=', CardHistory::BONUS_BY_RULE_ADDED]])
+                ->get();
+            $addedAmount = 0;
+            foreach ($cards as $card) {
+                $historyData = json_decode($card->data);
+                if ($historyData->rule_id == $request->bonus_rule_id) {
+                    $addedAmount += $historyData->value;
+                }
+            }
+            $bills = Bills::select('bonus_history.debited')
+                ->join('bonus_history', 'bonus_history.bill_id', '=', 'bills.id')
+                ->where('bills.rule_id', '=', $request->bonus_rule_id)->get();
+            $debitedCount = count($bills->toArray());
+            $debitedAmount = array_sum(array_column($bills->toArray(), 'debited'));
+            $data = [
+                'card_count' => $cardsCount,
+                'total_added_amount' => $addedAmount,
+                'debit_count' => $debitedCount,
+                'total_debited_amount' => $debitedAmount
+            ];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

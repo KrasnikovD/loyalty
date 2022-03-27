@@ -60,6 +60,7 @@ Route::post('/fields/list', 'App\Http\Controllers\Api\AdminController@list_field
 Route::get('/fields/get/{id}', 'App\Http\Controllers\Api\AdminController@list_fields');
 Route::get('/fields/delete/{id}', 'App\Http\Controllers\Api\AdminController@delete_field');
 Route::post('/fields/set_client_field_value', 'App\Http\Controllers\Api\AdminController@set_client_field_value');
+Route::post('/fields/clear_client_field_value', 'App\Http\Controllers\Api\AdminController@clear_client_field_value');
 
 Route::post('/bonus_rules/create', 'App\Http\Controllers\Api\BonusRulesController@edit_bonus_rules');
 Route::post('/bonus_rules/edit/{id}', 'App\Http\Controllers\Api\BonusRulesController@edit_bonus_rules');
@@ -130,6 +131,7 @@ Route::patch('/bills/edit_value/{id}', 'App\Http\Controllers\Api\AdminController
 
 Route::get('/statistic/sales', 'App\Http\Controllers\Api\StatController@sales');
 Route::get('/statistic/product_rates', 'App\Http\Controllers\Api\StatController@product_rates');
+Route::get('/statistic/bonus_bills_summary', 'App\Http\Controllers\Api\StatController@bonus_bills_summary');
 
 Route::get('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@get_rate_store');
 Route::patch('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@update_rate_store');

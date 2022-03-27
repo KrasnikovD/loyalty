@@ -1695,6 +1695,49 @@
   },
   {
     "type": "post",
+    "url": "/api/fields/clear_client_field_value",
+    "title": "Clear Client Field Value",
+    "name": "ClearClientFieldValue",
+    "group": "AdminFields",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer[]",
+            "optional": false,
+            "field": "client_ids",
+            "description": "<p>list of client ids</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "field_id",
+            "description": "<p>field</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminFields"
+  },
+  {
+    "type": "post",
     "url": "/api/fields/create",
     "title": "Create Field",
     "name": "CreateField",
@@ -3436,6 +3479,42 @@
             "type": "string",
             "optional": true,
             "field": "date_to",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/StatController.php",
+    "groupTitle": "AdminStat"
+  },
+  {
+    "type": "get",
+    "url": "/api/statistic/bonus_bills_summary",
+    "title": "Bonus Bills Summary",
+    "name": "BonusBillsSummary",
+    "group": "AdminStat",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "bonus_rule_id",
             "description": ""
           }
         ]

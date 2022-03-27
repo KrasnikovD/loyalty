@@ -43,7 +43,7 @@ class BonusRulesBill extends Command
      */
     public function handle()
     {
-    //    self::delete();
+        self::delete();
         self::create();
         return 0;
     }
@@ -80,7 +80,6 @@ class BonusRulesBill extends Command
     private function create()
     {
         foreach(BonusRules::where('enabled', '=', 1)->get() as $rule) {
-            print "rule_id = ".$rule->id."\n";
             $startDt = $rule->start_dt;
             $duration = $rule->duration;
             if ($rule->is_birthday == 0) {
@@ -106,7 +105,6 @@ class BonusRulesBill extends Command
 
             $excludedCardsList = [];
             foreach ($cards as $card) {
-           //     print $card->number." rule_id1 = ".$card->rule_id.' rule_id2 = '.$rule->id."\n";
                 if ($card->rule_id == $rule->id) {
                     $excludedCardsList[] = $card->id;
                     continue;
@@ -129,10 +127,9 @@ class BonusRulesBill extends Command
             foreach ($cards as $card) {
                 if (in_array($card->id, $excludedCardsList))
                     continue;
-                $cardList[$card->id] = $card/*->toArray()*/;
+                $cardList[$card->id] = $card;
             }
-          //  print_r($cardList);
-         //   continue;
+
             $billProgramId = $remainingAmount = null;
             $programs = BillPrograms::orderBy('from', 'asc')->get();
             if (isset($programs[0]) && $programs[0]->from == 0) {
@@ -140,7 +137,6 @@ class BonusRulesBill extends Command
                 $remainingAmount = isset($programs[1]) ? $programs[1]->from : $programs[0]->to;
             }
             foreach ($cardList as $card) {
-                print "rule_name = ".$rule->name." number = ".$card->number."\n";
                 $bill = new Bills;
                 $bill->card_id = $card->id;
                 $bill->bill_type_id = BillTypes::where('name', BillTypes::TYPE_BONUS)->value('id');

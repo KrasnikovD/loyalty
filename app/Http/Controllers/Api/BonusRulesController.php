@@ -55,7 +55,7 @@ class BonusRulesController extends Controller
     public function edit_bonus_rules(Request $request, $id = null)
     {
         $errors = [];
-        $httpStatus = 200;
+        $httpStatus = 400;
         $bonus = null;
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
@@ -77,17 +77,18 @@ class BonusRulesController extends Controller
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
-            $httpStatus = 400;
         }
         if (!isset($request->field_id) && !isset($request->sex)) {
             $errors['field_id'] = 'Either field_id or sex must be specified';
-            $httpStatus = 400;
         }
         if (!isset($request->is_birthday) && !isset($request->start_dt) && !isset($request->month)) {
             $errors['field_id'] = 'Either is_birthday or start_dt or month & day must be specified';
-            $httpStatus = 400;
+        }
+        if ((isset($request->month) || isset($request->day)) && (!isset($request->month) || !isset($request->day))) {
+            $errors['field_id'] = 'month and day - both fields must be specified';
         }
         if (empty($errors)) {
+            $httpStatus = 200;
             $bonus = $id ? BonusRules::where('id', '=', $id)->first() : new BonusRules;
             if ($request->is_birthday == 1) {
                 $bonus->is_birthday = $request->is_birthday;

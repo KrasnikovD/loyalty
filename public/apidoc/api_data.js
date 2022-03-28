@@ -1940,6 +1940,17 @@ define({ "api": [
             "optional": true,
             "field": "limit",
             "description": "<p>row count</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "without_user_editable",
+            "description": "<p>row count</p>"
           }
         ]
       }
@@ -3999,8 +4010,7 @@ define({ "api": [
             "type": "integer",
             "allowedValues": [
               "0",
-              "1",
-              "-1"
+              "1"
             ],
             "optional": true,
             "field": "sex",

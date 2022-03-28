@@ -258,7 +258,7 @@ class AdminController extends Controller
      * @apiParam {integer=0,1,2} type
      * @apiParam {object[]} [fields]
      * @apiParam {integer} [code]
-     * @apiParam {integer=0,1,-1} [sex]
+     * @apiParam {integer=0,1} [sex]
      */
 
     /**
@@ -1200,6 +1200,7 @@ class AdminController extends Controller
      * @apiParam {string} [dir] order direction
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
+     * @apiParam {integer=0,1} [without_user_editable] row count
      */
 
     /**
@@ -1224,6 +1225,7 @@ class AdminController extends Controller
                 'order' => 'in:id,name,created_at,updated_at',
                 'offset' => 'integer',
                 'limit' => 'integer',
+                'without_user_editable' => 'nullable|in:0,1',
             ];
         } else {
             $validatorRules = ['id' => 'exists:fields,id'];
@@ -1244,6 +1246,8 @@ class AdminController extends Controller
                 $dir = $request->dir ?: 'asc';
                 $offset = $request->offset;
                 $limit = $request->limit;
+                if ($request->without_user_editable == 1)
+                    $query->where('is_user_editable', '!=', 1);
                 $query->orderBy($order, $dir);
                 if ($limit) {
                     $query->limit($limit);

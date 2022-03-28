@@ -65,18 +65,22 @@ class BonusRulesController extends Controller
             'day' => 'nullable|integer|between:1,31',
             'sex' => 'nullable|integer|in:0,1',
             'is_birthday' => 'nullable|integer|in:0,1',
-            'duration' => 'nullable|integer',
         ];
         if (!$id) {
             $validatorRules['field_id'] = 'nullable|exists:fields,id';
             $validatorRules['value'] = 'required|integer';
             $validatorRules['name'] = 'required';
+            $validatorRules['duration'] = 'required|integer';
         } else
             $validatorRules['id'] = 'exists:bonus_rules,id';
 
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (!isset($request->field_id) && !isset($request->sex)) {
+            $errors['field_id'] = 'Either field_id or sex must be specified';
             $httpStatus = 400;
         }
         if (empty($errors)) {
@@ -95,9 +99,8 @@ class BonusRulesController extends Controller
                 }
                 if ($request->start_dt || ($request->month && $request->day))
                     $bonus->is_birthday = 0;
-                if ($request->duration)
-                    $bonus->duration = $request->duration;
             }
+
             if (!$id) {
                 if (isset($request->sex))
                     $bonus->sex = $request->sex;
@@ -108,6 +111,11 @@ class BonusRulesController extends Controller
                 $bonus->value = $request->value;
             if ($request->name)
                 $bonus->name = $request->name;
+            if ($request->duration) {
+                $bonus->duration = $request->duration;
+                if ($request->is_birthday == 1 && $request->duration % 2 !== 0)
+                    $bonus->duration ++;
+            }
 
             $bonus->save();
         }

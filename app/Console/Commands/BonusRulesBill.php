@@ -45,7 +45,7 @@ class BonusRulesBill extends Command
      */
     public function handle()
     {
-    //    self::delete();
+        self::delete();
         self::create();
         return 0;
     }
@@ -91,9 +91,6 @@ class BonusRulesBill extends Command
                 if (time() <= strtotime($startDt) || time() >= strtotime($startDt . ' + ' . $duration . ' days')) {
                     continue;
                 }
-            } else {
-                // Birthday duration
-                $duration = 8;
             }
             $q = Cards::select('cards.id', 'cards.number', 'cards.is_physical', 'cards.is_main', 'cards.phone', 'bills.rule_id', 'users.birthday', 'users.id as user_id')
                 ->join('users', 'users.id', '=', 'cards.user_id')
@@ -146,13 +143,13 @@ class BonusRulesBill extends Command
                 $bill->remaining_amount = $remainingAmount;
                 $bill->value = $rule->value;
                 $bill->rule_id = $rule->id;
-                $bill->end_dt = strtotime($card->startDt . ' + ' . $duration . ' days');
+                $bill->end_dt = date('Y-m-d', strtotime($card->startDt . ' + ' . $duration . ' days'));
                 $bill->rule_name = $rule->name;
                 $bill->save();
                 CommonActions::cardHistoryLogAddBonusByRule($card, $bill);
 
                 $title = __('messages.im_bill_by_bonus_rule_added_title');
-                $body = __('messages.im_bill_by_bonus_rule_added_body', ['end_date' => date('d.m.y', $bill->end_dt)]);
+                $body = __('messages.im_bill_by_bonus_rule_added_body', ['end_date' => date('d.m.y', strtotime($bill->end_dt))]);
                 $device = Devices::where('user_id', '=', $card->user_id)->first();
                 if ($device)
                     $device->notify(new WelcomeNotification($title, $body));

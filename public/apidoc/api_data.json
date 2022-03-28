@@ -497,6 +497,17 @@
           {
             "group": "Parameter",
             "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "is_birthday",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
             "optional": false,
             "field": "duration",
             "description": ""
@@ -524,17 +535,6 @@
             ],
             "optional": true,
             "field": "sex",
-            "description": ""
-          },
-          {
-            "group": "Parameter",
-            "type": "integer",
-            "allowedValues": [
-              "0",
-              "1"
-            ],
-            "optional": true,
-            "field": "is_birthday",
             "description": ""
           },
           {
@@ -631,6 +631,17 @@
           {
             "group": "Parameter",
             "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "is_birthday",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
             "optional": false,
             "field": "duration",
             "description": ""
@@ -640,17 +651,6 @@
             "type": "integer",
             "optional": true,
             "field": "value",
-            "description": ""
-          },
-          {
-            "group": "Parameter",
-            "type": "integer",
-            "allowedValues": [
-              "0",
-              "1"
-            ],
-            "optional": true,
-            "field": "is_birthday",
             "description": ""
           },
           {

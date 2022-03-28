@@ -27,11 +27,11 @@ class BonusRulesController extends Controller
      * @apiParam {string} [start_dt]
      * @apiParam {integer} [month]
      * @apiParam {integer} [day]
+     * @apiParam {integer=0,1} [is_birthday]
      * @apiParam {integer} duration
      * @apiParam {integer} field_id
      * @apiParam {integer} value
      * @apiParam {integer=0,1} [sex]
-     * @apiParam {integer=0,1} [is_birthday]
      * @apiParam {integer=0,1} [enabled]
      */
 
@@ -46,9 +46,9 @@ class BonusRulesController extends Controller
      * @apiParam {string} [start_dt]
      * @apiParam {integer} [month]
      * @apiParam {integer} [day]
+     * @apiParam {integer=0,1} [is_birthday]
      * @apiParam {integer} duration
      * @apiParam {integer} [value]
-     * @apiParam {integer=0,1} [is_birthday]
      * @apiParam {integer=0,1} [enabled]
      */
 
@@ -81,6 +81,10 @@ class BonusRulesController extends Controller
         }
         if (!isset($request->field_id) && !isset($request->sex)) {
             $errors['field_id'] = 'Either field_id or sex must be specified';
+            $httpStatus = 400;
+        }
+        if (!isset($request->is_birthday) && !isset($request->start_dt) && !isset($request->month)) {
+            $errors['field_id'] = 'Either is_birthday or start_dt or month & day must be specified';
             $httpStatus = 400;
         }
         if (empty($errors)) {

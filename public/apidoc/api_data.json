@@ -515,15 +515,8 @@
           {
             "group": "Parameter",
             "type": "integer",
-            "optional": false,
+            "optional": true,
             "field": "field_id",
-            "description": ""
-          },
-          {
-            "group": "Parameter",
-            "type": "integer",
-            "optional": false,
-            "field": "value",
             "description": ""
           },
           {
@@ -535,6 +528,13 @@
             ],
             "optional": true,
             "field": "sex",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "value",
             "description": ""
           },
           {
@@ -642,7 +642,7 @@
           {
             "group": "Parameter",
             "type": "integer",
-            "optional": false,
+            "optional": true,
             "field": "duration",
             "description": ""
           },

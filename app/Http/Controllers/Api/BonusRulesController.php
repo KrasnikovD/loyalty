@@ -29,9 +29,9 @@ class BonusRulesController extends Controller
      * @apiParam {integer} [day]
      * @apiParam {integer=0,1} [is_birthday]
      * @apiParam {integer} duration
-     * @apiParam {integer} field_id
-     * @apiParam {integer} value
+     * @apiParam {integer} [field_id]
      * @apiParam {integer=0,1} [sex]
+     * @apiParam {integer} value
      * @apiParam {integer=0,1} [enabled]
      */
 
@@ -47,7 +47,7 @@ class BonusRulesController extends Controller
      * @apiParam {integer} [month]
      * @apiParam {integer} [day]
      * @apiParam {integer=0,1} [is_birthday]
-     * @apiParam {integer} duration
+     * @apiParam {integer} [duration]
      * @apiParam {integer} [value]
      * @apiParam {integer=0,1} [enabled]
      */

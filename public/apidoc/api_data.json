@@ -2065,6 +2065,13 @@
             "optional": true,
             "field": "push",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "object[]",
+            "optional": true,
+            "field": "questions",
+            "description": ""
           }
         ]
       }
@@ -2137,6 +2144,13 @@
             "type": "integer",
             "optional": true,
             "field": "file_content",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "object[]",
+            "optional": true,
+            "field": "questions",
             "description": ""
           }
         ]

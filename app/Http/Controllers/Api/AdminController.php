@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Exports\CardExport;
 use App\Http\Controllers\Controller;
+use App\Models\AnswerOptions;
 use App\Models\Baskets;
 use App\Models\BillPrograms;
 use App\Models\Bills;
@@ -21,6 +22,7 @@ use App\Models\News;
 use App\Models\Outlet;
 use App\Models\Product;
 use App\Models\PushTokens;
+use App\Models\Questions;
 use App\Models\Reviews;
 use App\Models\Sales;
 use App\Models\Stocks;
@@ -2300,6 +2302,7 @@ class AdminController extends Controller
      * @apiParam {integer} file_content
      * @apiParam {boolean} [sms]
      * @apiParam {boolean} [push]
+     * @apiParam {object[]} [questions]
      */
 
     /**
@@ -2312,13 +2315,14 @@ class AdminController extends Controller
      * @apiParam {string} [name]
      * @apiParam {string} [description]
      * @apiParam {integer} [file_content]
+     * @apiParam {object[]} [questions]
      */
 
     public function edit_news(Request $request, $id = null)
     {
         $errors = [];
         $httpStatus = 200;
-        $news = null;
+        $outData = null;
 
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
@@ -2350,6 +2354,29 @@ class AdminController extends Controller
                 $news->file = $fileName;
             }
             $news->save();
+            if (isset($request->questions)) {
+                if ($id) {
+                    $questions = Questions::where('news_id', '=', $id)->get();
+                    $questionIds = array_column($questions->toArray(), 'id');
+                    AnswerOptions::whereIn('question_id', $questionIds)->delete();
+                    Questions::where('news_id', '=', $id)->delete();
+                }
+                foreach ($request->questions as $question) {
+                    $q = new Questions;
+                    $q->news_id = $news['id'];
+                    $q->type = $question['type'];
+                    $q->text = $question['text'];
+                    $q->save();
+                    if (isset($question['options'])) {
+                        foreach ($question['options'] as $option) {
+                            $o = new AnswerOptions;
+                            $o->question_id = $q->id;
+                            $o->text = $option['text'];
+                            $o->save();
+                        }
+                    }
+                }
+            }
 
             if (!$id) {
                 $sms = $request->sms;
@@ -2385,8 +2412,11 @@ class AdminController extends Controller
                     }
                 }
             }
+            $temp = [$news->toArray()];
+            DataHelper::collectQuestionsInfo($temp);
+            $outData = $temp[0];
         }
-        return response()->json(['errors' => $errors, 'data' => $news], $httpStatus);
+        return response()->json(['errors' => $errors, 'data' => $outData], $httpStatus);
     }
 
     /**
@@ -2440,6 +2470,7 @@ class AdminController extends Controller
                 }
             }
             $list = $query->get()->toArray();
+            DataHelper::collectQuestionsInfo($list);
             if ($id) $data = $list[0];
             else $data = ['count' => $count, 'list' => $list];
         }

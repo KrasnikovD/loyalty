@@ -119,4 +119,31 @@ class DataHelper extends Model
             $cardItem['bills'] = @$billsMap[$cardItem['id']];
         }
     }
+
+    public static function collectQuestionsInfo(&$data)
+    {
+        $newsIds = array_column($data, 'id');
+        $questions = Questions::whereIn('news_id', $newsIds)->get();
+        $questionIds = array_column($questions->toArray(), 'id');
+        $answerOptions = AnswerOptions::whereIn('question_id', $questionIds)->get();
+        $answersMap = [];
+        foreach ($answerOptions as $answerOption) {
+            if (!isset($answersMap[$answerOption->question_id]))
+                $answersMap[$answerOption->question_id] = [];
+            $answersMap[$answerOption->question_id][] = $answerOption;
+        }
+
+        foreach ($questions as &$question) {
+            $question['answers_options'] = @$answersMap[$question->id];
+        }
+        $questionMap = [];
+        foreach ($questions as $question) {
+            if (!isset($questionMap[$question->news_id]))
+                $questionMap[$question->news_id] = [];
+            $questionMap[$question->news_id][] = $question;
+        }
+        foreach ($data as &$newsItem) {
+            $newsItem['questions'] = @$questionMap[$newsItem['id']];
+        }
+    }
 }

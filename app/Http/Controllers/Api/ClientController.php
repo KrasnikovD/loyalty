@@ -9,6 +9,7 @@ use App\Models\BillPrograms;
 use App\Models\Bills;
 use App\Models\BillTypes;
 use App\Models\BonusHistory;
+use App\Models\BonusRules;
 use App\Models\Cards;
 use App\Models\Categories;
 use App\Models\ClientAnswers;
@@ -24,10 +25,12 @@ use App\Models\Files;
 use App\Models\News;
 use App\Models\Outlet;
 use App\Models\Product;
+use App\Models\Questions;
 use App\Models\Reviews;
 use App\Models\Sales;
 use App\Models\Stocks;
 use App\Models\Users;
+use App\Notifications\WelcomeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -1685,8 +1688,39 @@ class ClientController extends Controller
                     $answer->question_id = $item['question_id'];
                     $answer->value = $item['value'];
                     $answer->client_id = Auth::user()->id;
-                    $answer->save();
+                   $answer->save();
                 }
+            }
+            $questionId = $request->answer[0]['question_id'];
+            $ruleId = Questions::join('news', 'news.id', '=', 'questions.news_id')
+                ->where('questions.id', '=', $questionId)->value('bonus_rule_id');
+            $rule = BonusRules::where('id', $ruleId)->first();
+
+            $billProgramId = $remainingAmount = null;
+            $programs = BillPrograms::orderBy('from', 'asc')->get();
+            if (isset($programs[0]) && $programs[0]->from == 0) {
+                $billProgramId = $programs[0]->id;
+                $remainingAmount = isset($programs[1]) ? $programs[1]->from : $programs[0]->to;
+            }
+            $cards = Cards::where('user_id', Auth::user()->id)->get();
+            foreach ($cards as $card) {
+                $bill = new Bills;
+                $bill->card_id = $card->id;
+                $bill->bill_type_id = BillTypes::where('name', BillTypes::TYPE_BONUS)->value('id');
+                $bill->bill_program_id = $billProgramId;
+                $bill->remaining_amount = $remainingAmount;
+                $bill->value = $rule->value;
+                $bill->rule_id = $rule->id;
+                $bill->end_dt = date('Y-m-d', strtotime(date('Y-m-d') . ' + ' . $rule->duration . ' days'));
+                $bill->rule_name = $rule->name;
+                $bill->save();
+                CommonActions::cardHistoryLogAddBonusByRule($card, $bill);
+
+                $title = __('messages.im_bill_by_bonus_rule_added_title');
+                $body = __('messages.im_bill_by_bonus_rule_added_body', ['end_date' => date('d.m.y', strtotime($bill->end_dt))]);
+                $device = Devices::where('user_id', '=', $card->user_id)->first();
+                if ($device)
+                    $device->notify(new WelcomeNotification($title, $body));
             }
         }
         return response()->json(['errors' => $errors, 'data' => null], $httpStatus);

@@ -10,6 +10,7 @@ use App\Models\BillPrograms;
 use App\Models\Bills;
 use App\Models\BillTypes;
 use App\Models\BonusHistory;
+use App\Models\BonusRules;
 use App\Models\CardHistory;
 use App\Models\Cards;
 use App\Models\Categories;
@@ -2303,6 +2304,8 @@ class AdminController extends Controller
      * @apiParam {boolean} [sms]
      * @apiParam {boolean} [push]
      * @apiParam {object[]} [questions]
+     * @apiParam {integer} [question_bonus_duration]
+     * @apiParam {integer} [question_bonus_value]
      */
 
     /**
@@ -2316,14 +2319,15 @@ class AdminController extends Controller
      * @apiParam {string} [description]
      * @apiParam {integer} [file_content]
      * @apiParam {object[]} [questions]
+     * @apiParam {integer} [question_bonus_duration]
+     * @apiParam {integer} [question_bonus_value]
      */
 
     public function edit_news(Request $request, $id = null)
     {
         $errors = [];
-        $httpStatus = 200;
+        $httpStatus = 400;
         $outData = null;
-
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [];
@@ -2334,10 +2338,17 @@ class AdminController extends Controller
         } else
             $validatorRules['id'] = 'exists:news,id';
 
+        $validatorRules['questions'] = 'nullable|array';
+
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
-            $httpStatus = 400;
+        }
+        if (isset($request->questions)) {
+            if (!isset($request->question_bonus_duration))
+                $errors['question_bonus_duration'] = ["The question_bonus_duration field is required."];
+            if (!isset($request->question_bonus_value))
+                $errors['question_bonus_value'] = ["The question_bonus_value field is required."];
         }
         if (empty($errors)) {
             $news = $id ? News::where('id', '=', $id)->first() : new News;
@@ -2363,7 +2374,7 @@ class AdminController extends Controller
                 }
                 foreach ($request->questions as $question) {
                     $q = new Questions;
-                    $q->news_id = $news['id'];
+                    $q->news_id = $news->id;
                     $q->type = $question['type'];
                     $q->text = $question['text'];
                     $q->save();
@@ -2376,6 +2387,14 @@ class AdminController extends Controller
                         }
                     }
                 }
+                $bonus = isset($news->bonus_rule_id) ? BonusRules::where('id', $news->bonus_rule_id)->first() : new BonusRules;
+                $bonus->name = $news->name;
+                $bonus->duration = $request->question_bonus_duration;
+                $bonus->value = $request->question_bonus_value;
+                $bonus->type = BonusRules::TYPE_QUESTION;
+                $bonus->save();
+                $news->bonus_rule_id = $bonus->id;
+                $news->save();
             }
 
             if (!$id) {
@@ -2415,6 +2434,7 @@ class AdminController extends Controller
             $temp = [$news->toArray()];
             DataHelper::collectQuestionsInfo($temp);
             $outData = $temp[0];
+            $httpStatus = 200;
         }
         return response()->json(['errors' => $errors, 'data' => $outData], $httpStatus);
     }

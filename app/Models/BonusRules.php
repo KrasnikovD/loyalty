@@ -12,4 +12,7 @@ class BonusRules extends Model
     use SoftDeletes;
 
     protected $table = 'bonus_rules';
+
+    const TYPE_BONUS = 'bonus';
+    const TYPE_QUESTION = 'question';
 }

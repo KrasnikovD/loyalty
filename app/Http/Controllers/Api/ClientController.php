@@ -11,6 +11,7 @@ use App\Models\BillTypes;
 use App\Models\BonusHistory;
 use App\Models\Cards;
 use App\Models\Categories;
+use App\Models\ClientAnswers;
 use App\Models\CommonActions;
 use App\Models\Coupons;
 use App\Models\DataHelper;
@@ -765,6 +766,7 @@ class ClientController extends Controller
                 }
             }
             $list = $query->get()->toArray();
+            DataHelper::collectQuestionsInfo($list, Auth::user()->id);
             if ($id) $data = $list[0];
             else $data = ['count' => $count, 'list' => $list];
         }
@@ -1645,4 +1647,49 @@ class ClientController extends Controller
                 ->subject('Support email');
         });
     }
+
+    /**
+     * @api {post} /api/clients/answer Answer
+     * @apiName Answer
+     * @apiGroup ClientAnswer
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {object[]} answer
+     */
+
+    public function answer(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $validatorData = $request->all();
+        $validatorRules = [];
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            foreach ($request->answer as $item) {
+                if (is_array($item['value'])) {
+                    foreach ($item['value'] as $value) {
+                        $answer = new ClientAnswers;
+                        $answer->question_id = $item['question_id'];
+                        $answer->answer_option_id = $value['answers_option_id'];
+                        $answer->value = $value['value'];
+                        $answer->client_id = Auth::user()->id;
+                        $answer->save();
+                    }
+                } else {
+                    $answer = new ClientAnswers;
+                    $answer->question_id = $item['question_id'];
+                    $answer->value = $item['value'];
+                    $answer->client_id = Auth::user()->id;
+                    $answer->save();
+                }
+            }
+        }
+        return response()->json(['errors' => $errors, 'data' => null], $httpStatus);
+    }
+
 }

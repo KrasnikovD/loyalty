@@ -4282,6 +4282,42 @@ define({ "api": [
   },
   {
     "type": "post",
+    "url": "/api/clients/answer",
+    "title": "Answer",
+    "name": "Answer",
+    "group": "ClientAnswer",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "object[]",
+            "optional": false,
+            "field": "answer",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/ClientController.php",
+    "groupTitle": "ClientAnswer"
+  },
+  {
+    "type": "post",
     "url": "/api/clients/check_auth",
     "title": "Check Auth",
     "name": "CheckAuth",

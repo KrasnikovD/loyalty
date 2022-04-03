@@ -197,6 +197,9 @@ Route::post('/clients/set_location', 'App\Http\Controllers\Api\ClientController@
 
 Route::post('/clients/send_support_email', 'App\Http\Controllers\Api\ClientController@send_support_email');
 
+Route::post('/clients/answer', 'App\Http\Controllers\Api\ClientController@answer');
+
+
 /****** OUTLETS ******/
 
 Route::post('/outlets/sales/create', 'App\Http\Controllers\Api\OutletController@edit_sale');

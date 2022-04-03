@@ -120,10 +120,15 @@ class DataHelper extends Model
         }
     }
 
-    public static function collectQuestionsInfo(&$data)
+    public static function collectQuestionsInfo(&$data, $userId = null)
     {
+        $answers = ClientAnswers::where('client_id', $userId)->get();
+        $questionIds = array_column($answers->toArray(),'question_id');
+
         $newsIds = array_column($data, 'id');
-        $questions = Questions::whereIn('news_id', $newsIds)->get();
+        $questions = Questions::whereIn('news_id', $newsIds)
+            ->whereNotIn('id', $questionIds)
+            ->get();
         $questionIds = array_column($questions->toArray(), 'id');
         $answerOptions = AnswerOptions::whereIn('question_id', $questionIds)->get();
         $answersMap = [];

@@ -22,6 +22,7 @@ class CreateClientAnswersTable extends Migration
             $table->foreign('client_id')->references('id')->on('users');
             $table->text('value');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

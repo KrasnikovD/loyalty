@@ -2072,6 +2072,20 @@
             "optional": true,
             "field": "questions",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "question_bonus_duration",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "question_bonus_value",
+            "description": ""
           }
         ]
       }
@@ -2151,6 +2165,20 @@
             "type": "object[]",
             "optional": true,
             "field": "questions",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "question_bonus_duration",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "question_bonus_value",
             "description": ""
           }
         ]

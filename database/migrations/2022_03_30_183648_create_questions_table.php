@@ -20,6 +20,7 @@ class CreateQuestionsTable extends Migration
             $table->integer('type')->default(1);
             $table->string('text');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

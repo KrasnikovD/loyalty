@@ -2328,6 +2328,20 @@ class AdminController extends Controller
         $errors = [];
         $httpStatus = 400;
         $outData = null;
+        Validator::extend('questions_validate', function($attribute, $value, $parameters, $validator) {
+            if (!isset($value['type']) || !isset($value['text']))
+                return false;
+            if (isset($value['options'])) {
+                foreach ($value['options'] as $option) {
+                    if (!isset($option['text']))
+                        return false;
+                }
+            }
+            if (!in_array($value['type'], [1, 2, 3, 4]))
+                return false;
+            return true;
+        });
+
         $validatorData = $request->all();
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [];
@@ -2339,11 +2353,13 @@ class AdminController extends Controller
             $validatorRules['id'] = 'exists:news,id';
 
         $validatorRules['questions'] = 'nullable|array';
+        $validatorRules['questions.*'] = 'nullable|questions_validate';
 
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
         }
+
         if (isset($request->questions)) {
             if (!isset($request->question_bonus_duration))
                 $errors['question_bonus_duration'] = ["The question_bonus_duration field is required."];
@@ -2368,10 +2384,13 @@ class AdminController extends Controller
             if (isset($request->questions)) {
                 if ($id) {
                     $questions = Questions::where('news_id', '=', $id)->get();
-                    $questionIds = array_column($questions->toArray(), 'id');
-                    AnswerOptions::whereIn('question_id', $questionIds)->delete();
-                    Questions::where('news_id', '=', $id)->delete();
+                    if ($questions) {
+                        $questionIds = array_column($questions->toArray(), 'id');
+                        AnswerOptions::whereIn('question_id', $questionIds)->delete();
+                        Questions::where('news_id', '=', $id)->delete();
+                    }
                 }
+
                 foreach ($request->questions as $question) {
                     $q = new Questions;
                     $q->news_id = $news->id;

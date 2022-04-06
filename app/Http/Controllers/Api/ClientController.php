@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 //use App\CustomClasses\Events\OnLogin\SixPercentBonus;
 use App\Http\Controllers\Controller;
+use App\Models\AnswerOptions;
 use App\Models\Baskets;
 use App\Models\BillPrograms;
 use App\Models\Bills;
@@ -1665,8 +1666,20 @@ class ClientController extends Controller
     {
         $errors = [];
         $httpStatus = 200;
+        Validator::extend('answer_validate', function($attribute, $value, $parameters, $validator) {
+            if (!isset($value['question_id']) || !isset($value['value']))
+                return false;
+            if(!Questions::where('id', '=', $value['question_id'])->exists())
+                return false;
+            if(isset($value['answers_option_id']) && !AnswerOptions::where('id', '=', $value['answers_option_id'])->exists())
+                return false;
+            return true;
+        });
         $validatorData = $request->all();
-        $validatorRules = [];
+        $validatorRules = [
+            'answer' => 'array',
+            'answer.*' => 'required|answer_validate',
+        ];
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();

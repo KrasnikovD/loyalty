@@ -7,6 +7,7 @@ use App\Models\Baskets;
 use App\Models\Bills;
 use App\Models\CardHistory;
 use App\Models\Cards;
+use App\Models\ClientAnswers;
 use App\Models\Sales;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -154,6 +155,56 @@ class StatController extends Controller
                 'total_added_amount' => $addedAmount,
                 'debit_count' => $debitedCount,
                 'total_debited_amount' => $debitedAmount
+            ];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/statistic/question_summary/:id Question Summary
+     * @apiName QuestionSummary
+     * @apiGroup AdminStat
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function question_summary($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validator = Validator::make(['id' => $id], ['id' => 'required|exists:news,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $clientsCount = ClientAnswers::join('questions', 'questions.id', '=', 'client_answers.question_id')
+                ->where('questions.news_id', '=', $id)
+                ->groupBy('client_id')->count();
+            $answerPercents = ClientAnswers::select(DB::raw('count(*) as count'), 'questions.text')
+                ->join('questions', 'questions.id', '=', 'client_answers.question_id')
+                ->whereNotNull('answer_option_id')
+                ->where('questions.news_id', '=', $id)
+                ->groupBy('client_answers.answer_option_id')
+                ->get()->toArray();
+            if (count($answerPercents)) {
+                $total = array_sum(array_column($answerPercents, 'count'));
+                foreach ($answerPercents as &$answer) {
+                    $answer['percent'] = round($answer['count'] / $total, 2) * 100;
+                }
+            }
+
+            $answers = ClientAnswers::select('cards.user_id', 'questions.news_id', 'cards.number', 'client_answers.value', 'questions.text')
+                ->join('questions', 'questions.id', '=', 'client_answers.question_id')
+                ->join('cards', 'cards.user_id', '=', 'client_answers.client_id')
+                ->where('questions.news_id', '=', $id)
+                ->whereIn('questions.type', [1,2])
+                ->get();
+            $data = [
+                'clients_count' => $clientsCount,
+                'answer_percents' => $answerPercents,
+                'answers' => $answers,
             ];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);

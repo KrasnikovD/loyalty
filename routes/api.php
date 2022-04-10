@@ -140,6 +140,7 @@ Route::patch('/translations/rate_store', 'App\Http\Controllers\Api\TranslationCo
 
 Route::post('/generate_report', 'App\Http\Controllers\Api\AdminController@generate_report');
 Route::get('/generate_bonus_rules_report/{id}', 'App\Http\Controllers\Api\BonusRulesController@generate_bonus_rules_report');
+Route::get('/generate_questions_report/{id}', 'App\Http\Controllers\Api\AdminController@generate_questions_report');
 
 /****** CLIENTS ******/
 

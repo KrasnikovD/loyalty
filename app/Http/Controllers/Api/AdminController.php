@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exports\CardExport;
+use App\Exports\QuestionExport;
 use App\Http\Controllers\Controller;
 use App\Models\AnswerOptions;
 use App\Models\Baskets;
@@ -14,6 +15,7 @@ use App\Models\BonusRules;
 use App\Models\CardHistory;
 use App\Models\Cards;
 use App\Models\Categories;
+use App\Models\ClientAnswers;
 use App\Models\CommonActions;
 use App\Models\Coupons;
 use App\Models\DataHelper;
@@ -3345,6 +3347,35 @@ class AdminController extends Controller
             $fileName = "reports/" . date('Y-m-d_H_i_s') . '_cards.xlsx';
             Storage::disk('local')->put($fileName, '');
             $export = new CardExport($programId, $dtStart, $dtEnd);
+            Excel::store($export, Storage::path($fileName));
+            $data = $fileName;
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {get} /api/generate_questions_report/:id Generate Questions Report
+     * @apiName GenerateQuestionsReport
+     * @apiGroup AdminReports
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     */
+
+    public function generate_questions_report($id)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validator = Validator::make(['id' => $id], ['id' => 'required|exists:news,id']);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $fileName = "reports/" . date('Y-m-d_H_i_s') . '_questions.xlsx';
+            Storage::disk('local')->put($fileName, '');
+            $export = new QuestionExport($id);
             Excel::store($export, Storage::path($fileName));
             $data = $fileName;
         }

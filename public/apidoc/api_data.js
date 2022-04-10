@@ -3360,6 +3360,29 @@ define({ "api": [
     "groupTitle": "AdminReports"
   },
   {
+    "type": "get",
+    "url": "/api/generate_questions_report/:id",
+    "title": "Generate Questions Report",
+    "name": "GenerateQuestionsReport",
+    "group": "AdminReports",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminReports"
+  },
+  {
     "type": "post",
     "url": "/api/generate_report",
     "title": "Generate Report",

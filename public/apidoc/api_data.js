@@ -475,6 +475,29 @@ define({ "api": [
           },
           {
             "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "1",
+              "2",
+              "3"
+            ],
+            "optional": false,
+            "field": "date_trigger_type",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "1",
+              "2"
+            ],
+            "optional": false,
+            "field": "trigger_type",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
             "type": "string",
             "optional": true,
             "field": "start_dt",
@@ -605,6 +628,29 @@ define({ "api": [
             "type": "string",
             "optional": true,
             "field": "name",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "1",
+              "2",
+              "3"
+            ],
+            "optional": true,
+            "field": "date_trigger_type",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "1",
+              "2"
+            ],
+            "optional": true,
+            "field": "trigger_type",
             "description": ""
           },
           {

@@ -66,7 +66,7 @@ class BonusRulesController extends Controller
             $month = $parameters[0];
             $day = $parameters[1];
             $startDt = $parameters[2];
-            $isBirthday = $parameters[3];
+            $isBirthday = $parameters[3] === "" ? null : $parameters[3];
             if ($value == BonusRules::TYPE_DATE_TRIGGER_DATE) {
                 return !empty($startDt) && empty($month) && empty($day) && !isset($isBirthday);
             }
@@ -79,7 +79,7 @@ class BonusRulesController extends Controller
             return false;
         });
         Validator::extend('trigger_validate', function($attribute, $value, $parameters, $validator) {
-            $sex = $parameters[0];
+            $sex = $parameters[0] === "" ? null : $parameters[0];
             $fieldId = $parameters[1];
             if ($value == BonusRules::TYPE_TRIGGER_SEX) {
                 return isset($sex) && empty($fieldId);
@@ -122,7 +122,6 @@ class BonusRulesController extends Controller
             $errors['field_id'] = 'month and day - both fields must be specified';
         }
         if (empty($errors)) {
-            die("done");
             $httpStatus = 200;
             $bonus = $id ? BonusRules::where('id', '=', $id)->first() : new BonusRules;
             if ($request->is_birthday == 1) {

@@ -68,13 +68,13 @@ class BonusRulesController extends Controller
             $startDt = $parameters[2];
             $isBirthday = $parameters[3];
             if ($value == BonusRules::TYPE_DATE_TRIGGER_DATE) {
-                return !empty($startDt) && empty($month) && empty($day) && empty($isBirthday);
+                return !empty($startDt) && empty($month) && empty($day) && !isset($isBirthday);
             }
             if ($value == BonusRules::TYPE_DATE_TRIGGER_MONTHDAY) {
-                return !empty($month) && !empty($day) && empty($startDt) && empty($isBirthday);
+                return !empty($month) && !empty($day) && empty($startDt) && !isset($isBirthday);
             }
             if ($value == BonusRules::TYPE_DATE_TRIGGER_BIRTHDAY) {
-                return empty($month) && empty($day) && empty($startDt) && !empty($isBirthday);
+                return empty($month) && empty($day) && empty($startDt) && isset($isBirthday);
             }
             return false;
         });
@@ -82,10 +82,10 @@ class BonusRulesController extends Controller
             $sex = $parameters[0];
             $fieldId = $parameters[1];
             if ($value == BonusRules::TYPE_TRIGGER_SEX) {
-                return !empty($sex) && empty($fieldId);
+                return isset($sex) && empty($fieldId);
             }
             if ($value == BonusRules::TYPE_TRIGGER_FIELD) {
-                return empty($sex) && !empty($fieldId);
+                return !isset($sex) && !empty($fieldId);
             }
             return false;
         });

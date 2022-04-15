@@ -104,7 +104,7 @@ class BonusRulesController extends Controller
             $validatorRules['field_id'] = 'nullable|exists:fields,id';
             $validatorRules['value'] = 'required|integer';
             $validatorRules['name'] = 'required';
-            $validatorRules['duration'] = 'required|integer|in:1,365';
+            $validatorRules['duration'] = 'required|integer|between:1,365';
         } else
             $validatorRules['id'] = 'exists:bonus_rules,id';
 

@@ -441,6 +441,7 @@ class ClientController extends Controller
                 $item['is_favorite'] = intval(in_array($item['id'], $favoritesIds));
                 $item['reviews_list'] = @$reviewsMap[$item['id']];
                 $item['images'] = @$filesMap[$item['id']];
+                $item['file'] = @$filesMap[$item['id']][0]['name'];
             }
         }
         return response()->json([
@@ -481,6 +482,7 @@ class ClientController extends Controller
 
             $files = Files::where('parent_item_id', '=', $product->id)->get();
             $product['images'] = $files;
+            $product['file'] = @$files[0]['name'];
         }
         return response()->json(['errors' => $errors, 'data' => $product], $httpStatus);
     }

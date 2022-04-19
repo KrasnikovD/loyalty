@@ -141,6 +141,7 @@ class BonusRulesController extends Controller
             }
 
             if (!$id) {
+                $bonus->trigger_type = $request->trigger_type;
                 if (isset($request->sex))
                     $bonus->sex = $request->sex;
                 elseif ($request->field_id)
@@ -157,9 +158,6 @@ class BonusRulesController extends Controller
             }
             if ($request->date_trigger_type)
                 $bonus->date_trigger_type = $request->date_trigger_type;
-
-            if ($request->trigger_type)
-                $bonus->trigger_type = $request->trigger_type;
 
             if (isset($request->enabled))
                 $bonus->enabled = $request->enabled;

@@ -155,6 +155,11 @@ class BonusRulesController extends Controller
                 if ($request->is_birthday == 1 && $request->duration % 2 !== 0)
                     $bonus->duration ++;
             }
+            if ($request->date_trigger_type)
+                $bonus->date_trigger_type = $request->date_trigger_type;
+
+            if ($request->trigger_type)
+                $bonus->trigger_type = $request->trigger_type;
 
             $bonus->save();
         }

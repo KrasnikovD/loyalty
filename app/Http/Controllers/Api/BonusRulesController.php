@@ -161,7 +161,7 @@ class BonusRulesController extends Controller
             if ($request->trigger_type)
                 $bonus->trigger_type = $request->trigger_type;
 
-            if ($request->enabled)
+            if (isset($request->enabled))
                 $bonus->enabled = $request->enabled;
 
             $bonus->save();

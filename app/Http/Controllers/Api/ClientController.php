@@ -437,7 +437,7 @@ class ClientController extends Controller
             }
 
             $favoritesIds = null;
-            if (Auth::user()->id) {
+            if (Auth::id()) {
                 $favorites = Favorites::select('product_id')
                     ->where('user_id', '=', Auth::user()->id)->get()->toArray();
                 $favoritesIds = array_column($favorites, 'product_id');

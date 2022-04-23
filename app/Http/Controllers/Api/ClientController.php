@@ -416,6 +416,7 @@ class ClientController extends Controller
             $list = $products->get()->toArray();
             $productsIds = array_column($list, 'id');
             $reviewsMap = [];
+            $filesMap = [];
             if ($productsIds) {
                 $reviews = Reviews::select('reviews.*', 'users.first_name as user_first_name', 'users.second_name as user_second_name')
                     ->where('reviews.type', '=', Reviews::TYPE_PRODUCT)
@@ -427,7 +428,6 @@ class ClientController extends Controller
                     $reviewsMap[$item['object_id']][] = $item;
                 }
 
-                $filesMap = [];
                 $files = Files::whereIn('parent_item_id', $productsIds)->get();
                 foreach ($files as $file) {
                     if (!isset($filesMap[$file['parent_item_id']]))
@@ -436,12 +436,15 @@ class ClientController extends Controller
                 }
             }
 
-            $favorites = Favorites::select('product_id')
-                ->where('user_id', '=', Auth::user()->id)->get()->toArray();
-            $favoritesIds = array_column($favorites, 'product_id');
+            $favoritesIds = null;
+            if (Auth::user()->id) {
+                $favorites = Favorites::select('product_id')
+                    ->where('user_id', '=', Auth::user()->id)->get()->toArray();
+                $favoritesIds = array_column($favorites, 'product_id');
+            }
 
             foreach ($list as &$item) {
-                $item['is_favorite'] = intval(in_array($item['id'], $favoritesIds));
+                $item['is_favorite'] = @intval(in_array($item['id'], $favoritesIds));
                 $item['reviews_list'] = @$reviewsMap[$item['id']];
                 $item['images'] = @$filesMap[$item['id']];
                 $item['file'] = @$filesMap[$item['id']][0]['name'];

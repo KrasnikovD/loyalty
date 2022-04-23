@@ -930,8 +930,8 @@ class AdminController extends Controller
         if ($id) $validatorData = array_merge($validatorData, ['id' => $id]);
         $validatorRules = [
             'phone' => (!$id ? 'required|' : '') . 'unique:outlets,phone,' . $id,
-            'lon' => (!$id ? 'required|' : '') . 'regex:/^\d+(\.\d+)?$/',
-            'lat' => (!$id ? 'required|' : '') . 'regex:/^\d+(\.\d+)?$/',
+            'lon' => (!$id ? 'required|' : '') . 'regex:/^[-]?\d+(\.\d+)?$/',
+            'lat' => (!$id ? 'required|' : '') . 'regex:/^[-]?\d+(\.\d+)?$/',
             'from' => (!$id ? 'required|' : '') . 'regex:/^\d{2}:\d{2}$/',
             'to' => (!$id ? 'required|' : '') . 'regex:/^\d{2}:\d{2}$/',
         ];

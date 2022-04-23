@@ -47,7 +47,9 @@ class ClientController extends Controller
                 'login',
                 'check_auth',
                 'send_auth_sms',
-                'device_init'
+                'device_init',
+                'list_outlets',
+                'list_categories'
             ]]);
     }
 

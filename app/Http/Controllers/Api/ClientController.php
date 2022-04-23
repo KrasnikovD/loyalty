@@ -1088,8 +1088,8 @@ class ClientController extends Controller
         $outlets = null;
         $validatorData = $request->all();
         $validatorRules = [
-            'lon' => 'regex:/^\d+(\.\d+)?$/',
-            'lat' => 'regex:/^\d+(\.\d+)?$/',
+            'lon' => 'regex:/^[-]?\d+(\.\d+)?$/',
+            'lat' => 'regex:/^[-]?\d+(\.\d+)?$/',
         ];
         $validator = Validator::make($validatorData, $validatorRules);
         if ($validator->fails()) {

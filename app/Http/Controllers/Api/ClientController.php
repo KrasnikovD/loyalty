@@ -444,7 +444,7 @@ class ClientController extends Controller
             }
 
             foreach ($list as &$item) {
-                $item['is_favorite'] = @intval(in_array($item['id'], $favoritesIds));
+                $item['is_favorite'] = $favoritesIds ? intval(in_array($item['id'], $favoritesIds)) : null;
                 $item['reviews_list'] = @$reviewsMap[$item['id']];
                 $item['images'] = @$filesMap[$item['id']];
                 $item['file'] = @$filesMap[$item['id']][0]['name'];

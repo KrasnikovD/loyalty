@@ -2495,7 +2495,8 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $count = 0;
-            $query = News::select('*');
+            $query = $query = News::leftJoin('bonus_rules', 'bonus_rules.id', '=', 'news.bonus_rule_id')
+                ->select('news.*', 'bonus_rules.duration as question_bonus_duration', 'bonus_rules.value as question_bonus_value');
             if ($id) $query->where('id', '=', $id);
             else {
                 $count = $query->count();

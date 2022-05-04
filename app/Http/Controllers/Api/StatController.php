@@ -179,15 +179,18 @@ class StatController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $clientsCount = ClientAnswers::join('questions', 'questions.id', '=', 'client_answers.question_id')
+            $clients = ClientAnswers::join('questions', 'questions.id', '=', 'client_answers.question_id')
                 ->where('questions.news_id', '=', $id)
-                ->groupBy('client_id')->count();
-            $answerPercents = ClientAnswers::select(DB::raw('count(*) as count'), 'questions.text')
+                ->groupBy('client_id')->get();
+            $clientsCount = count($clients->toArray());
+            $answerPercents = ClientAnswers::select(DB::raw('count(*) as count'), 'answer_options.text as option_text', 'questions.text as question_text', 'client_answers.answer_option_id')
                 ->join('questions', 'questions.id', '=', 'client_answers.question_id')
+                ->join('answer_options', 'answer_options.id', '=', 'client_answers.answer_option_id')
                 ->whereNotNull('answer_option_id')
                 ->where('questions.news_id', '=', $id)
                 ->groupBy('client_answers.answer_option_id')
                 ->get()->toArray();
+
             if (count($answerPercents)) {
                 $total = array_sum(array_column($answerPercents, 'count'));
                 foreach ($answerPercents as &$answer) {

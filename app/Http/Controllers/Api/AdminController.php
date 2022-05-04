@@ -2497,7 +2497,7 @@ class AdminController extends Controller
             $count = 0;
             $query = $query = News::leftJoin('bonus_rules', 'bonus_rules.id', '=', 'news.bonus_rule_id')
                 ->select('news.*', 'bonus_rules.duration as question_bonus_duration', 'bonus_rules.value as question_bonus_value');
-            if ($id) $query->where('id', '=', $id);
+            if ($id) $query->where('news.id', '=', $id);
             else {
                 $count = $query->count();
                 $order = $request->order ?: 'news.id';

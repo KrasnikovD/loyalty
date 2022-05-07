@@ -2408,10 +2408,15 @@ class AdminController extends Controller
                         }
                     }
                 }
+            }
+
+            if (isset($request->questions) || isset($news->bonus_rule_id)) {
                 $bonus = isset($news->bonus_rule_id) ? BonusRules::where('id', $news->bonus_rule_id)->first() : new BonusRules;
                 $bonus->name = $news->name;
-                $bonus->duration = $request->question_bonus_duration;
-                $bonus->value = $request->question_bonus_value;
+                if ($request->question_bonus_duration)
+                    $bonus->duration = $request->question_bonus_duration;
+                if ($request->question_bonus_value)
+                    $bonus->value = $request->question_bonus_value;
                 $bonus->type = BonusRules::TYPE_QUESTION;
                 $bonus->save();
                 $news->bonus_rule_id = $bonus->id;
@@ -2455,6 +2460,13 @@ class AdminController extends Controller
             $temp = [$news->toArray()];
             DataHelper::collectQuestionsInfo($temp);
             $outData = $temp[0];
+            $outData['question_bonus_duration'] = null;
+            $outData['question_bonus_value'] = null;
+            if ($outData['bonus_rule_id']) {
+                $bonusRule = BonusRules::where('id', '=', $outData['bonus_rule_id'])->first();
+                $outData['question_bonus_duration'] = $bonusRule->duration;
+                $outData['question_bonus_value'] = $bonusRule->value;
+            }
             $httpStatus = 200;
         }
         return response()->json(['errors' => $errors, 'data' => $outData], $httpStatus);

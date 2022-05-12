@@ -2462,7 +2462,7 @@ class AdminController extends Controller
             $outData = $temp[0];
             $outData['question_bonus_duration'] = null;
             $outData['question_bonus_value'] = null;
-            if ($outData['bonus_rule_id']) {
+            if (@$outData['bonus_rule_id']) {
                 $bonusRule = BonusRules::where('id', '=', $outData['bonus_rule_id'])->first();
                 $outData['question_bonus_duration'] = $bonusRule->duration;
                 $outData['question_bonus_value'] = $bonusRule->value;

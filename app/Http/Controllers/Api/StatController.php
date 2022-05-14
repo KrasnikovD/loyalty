@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AnswerOptions;
 use App\Models\Baskets;
 use App\Models\Bills;
 use App\Models\CardHistory;
 use App\Models\Cards;
 use App\Models\ClientAnswers;
+use App\Models\Questions;
 use App\Models\Sales;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -179,11 +181,100 @@ class StatController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
+            $table = [];
+            $questionsData = Questions::where('news_id', '=', $id)->get();
+            $optionsData = AnswerOptions::join('questions', 'questions.id', '=', 'answer_options.question_id')
+                ->where([['questions.type', '=', 4], ['questions.news_id', '=', $id]])
+                ->whereNull('questions.deleted_at')
+                ->select('answer_options.text', 'answer_options.question_id')
+                ->get();
+            $options = [];
+            foreach ($optionsData as $datum) {
+                if (!isset($options[$datum['question_id']]))
+                    $options[$datum['question_id']] = [];
+                $options[$datum['question_id']][] = $datum->toArray();
+            }
+
+            $answersData = ClientAnswers::select('cards.user_id', 'users.first_name', 'users.second_name', 'cards.number', 'client_answers.value', 'client_answers.question_id', 'answer_option_id')
+                ->join('questions', 'questions.id', '=', 'client_answers.question_id')
+                ->join('cards', 'cards.user_id', '=', 'client_answers.client_id')
+                ->join('users', 'users.id', '=', 'client_answers.client_id')
+                ->whereNull('questions.deleted_at')
+                ->where('questions.news_id', '=', $id)
+                ->get();
+
+            $clientIds = array_unique(array_column($answersData->toArray(), 'user_id'));
+            $answersMap = [];
+            $answersMap2 = [];
+            foreach ($answersData as $datum) {
+                if (!isset($answersMap[$datum['question_id'] . "_" . $datum['user_id']]))
+                    $answersMap[$datum['question_id'] . "_" . $datum['user_id']] = [];
+                $answersMap[$datum['question_id'] . "_" . $datum['user_id']][] = $datum->toArray();
+
+                if (!isset($answersMap2[$datum['question_id']]))
+                    $answersMap2[$datum['question_id']] = [];
+                $answersMap2[$datum['question_id']][] = $datum->toArray();
+            }
+
+            foreach ($questionsData as $datum) {
+                $answers = [];
+                $summary = null;
+                $positiveCount = 0;
+                if(!empty($clientIds)) {
+                    foreach ($clientIds as $clientId) {
+                        $value = implode(array_column($answersMap[$datum->id . "_" . $clientId], 'value'), ', ');
+                        if ($datum->type == Questions::TYPE_BOOLEAN) {
+                            if ($value == 1) {
+                                $value = 'Да';
+                                $positiveCount ++;
+                            } else
+                                $value = 'Нет';
+                        }
+                        $mapItem = $answersMap[$datum->id . "_" . $clientId][0];
+                        $answers[$datum->id][] = [
+                            'client_name' => trim($mapItem['first_name'] . " " . $mapItem['second_name']),
+                            'client_card_number' => $mapItem['number'],
+                            'value' => $value
+                        ];
+                    }
+
+                    if ($datum->type == Questions::TYPE_BOOLEAN) {
+                        $summary = [
+                            'Да' => round(($positiveCount / count($clientIds)) * 100, 2),
+                            'Нет' => round(((count($clientIds) - $positiveCount) / count($clientIds)) * 100, 2)
+                        ];
+                    }
+                    if ($datum->type == Questions::TYPE_OPTIONS) {
+                        $answers2 = [];
+                        foreach ($answersMap2[$datum->id] as $item) {
+                            if (!isset($answers2[$item['value']]))
+                                $answers2[$item['value']] = [];
+                            $answers2[$item['value']][] = $item;
+                        }
+                        $values = array_unique(array_column($answersMap2[$datum->id], 'value'));
+                        $summary = [];
+
+                        foreach ($values as $value) {
+                            $summary[$value] = round((count($answers2[$value]) / count(@$options[$datum->id])) * 100, 2);
+                        }
+                    }
+                }
+
+                $table[] = [
+                    'question_name' => $datum->text,
+                    'options' => $datum->type == Questions::TYPE_BOOLEAN ? ['Да', 'Нет'] : @$options[$datum->id],
+                    'answers' => @$answers[$datum->id],
+                    'summary' => $summary
+                ];
+            }
+            print_r($table);
+            die();
+
             $clients = ClientAnswers::join('questions', 'questions.id', '=', 'client_answers.question_id')
                 ->where('questions.news_id', '=', $id)
                 ->groupBy('client_id')->get();
             $clientsCount = count($clients->toArray());
-            $answerPercents = ClientAnswers::select(DB::raw('count(*) as count'), 'answer_options.text as option_text', 'questions.text as question_text', 'client_answers.answer_option_id')
+            /*$answerPercents = ClientAnswers::select(DB::raw('count(*) as count'), 'answer_options.text as option_text', 'questions.text as question_text', 'client_answers.answer_option_id')
                 ->join('questions', 'questions.id', '=', 'client_answers.question_id')
                 ->join('answer_options', 'answer_options.id', '=', 'client_answers.answer_option_id')
                 ->whereNotNull('answer_option_id')
@@ -208,6 +299,10 @@ class StatController extends Controller
                 'clients_count' => $clientsCount,
                 'answer_percents' => $answerPercents,
                 'answers' => $answers,
+            ];*/
+            $data = [
+                'clients_count' => $clientsCount,
+                'table' => $table,
             ];
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);

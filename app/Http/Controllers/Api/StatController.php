@@ -267,39 +267,12 @@ class StatController extends Controller
                     'summary' => $summary
                 ];
             }
-            print_r($table);
-            die();
 
             $clients = ClientAnswers::join('questions', 'questions.id', '=', 'client_answers.question_id')
                 ->where('questions.news_id', '=', $id)
                 ->groupBy('client_id')->get();
             $clientsCount = count($clients->toArray());
-            /*$answerPercents = ClientAnswers::select(DB::raw('count(*) as count'), 'answer_options.text as option_text', 'questions.text as question_text', 'client_answers.answer_option_id')
-                ->join('questions', 'questions.id', '=', 'client_answers.question_id')
-                ->join('answer_options', 'answer_options.id', '=', 'client_answers.answer_option_id')
-                ->whereNotNull('answer_option_id')
-                ->where('questions.news_id', '=', $id)
-                ->groupBy('client_answers.answer_option_id')
-                ->get()->toArray();
 
-            if (count($answerPercents)) {
-                $total = array_sum(array_column($answerPercents, 'count'));
-                foreach ($answerPercents as &$answer) {
-                    $answer['percent'] = round($answer['count'] / $total, 2) * 100;
-                }
-            }
-
-            $answers = ClientAnswers::select('cards.user_id', 'questions.news_id', 'cards.number', 'client_answers.value', 'questions.text')
-                ->join('questions', 'questions.id', '=', 'client_answers.question_id')
-                ->join('cards', 'cards.user_id', '=', 'client_answers.client_id')
-                ->where('questions.news_id', '=', $id)
-                ->whereIn('questions.type', [1,2])
-                ->get();
-            $data = [
-                'clients_count' => $clientsCount,
-                'answer_percents' => $answerPercents,
-                'answers' => $answers,
-            ];*/
             $data = [
                 'clients_count' => $clientsCount,
                 'table' => $table,

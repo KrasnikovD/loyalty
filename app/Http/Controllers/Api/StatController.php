@@ -192,7 +192,8 @@ class StatController extends Controller
             foreach ($optionsData as $datum) {
                 if (!isset($options[$datum['question_id']]))
                     $options[$datum['question_id']] = [];
-                $options[$datum['question_id']][] = $datum->toArray();
+                //$options[$datum['question_id']][] = $datum->toArray();
+                $options[$datum['question_id']][] = $datum->text;
             }
 
             $answersData = ClientAnswers::select('cards.user_id', 'users.first_name', 'users.second_name', 'cards.number', 'client_answers.value', 'client_answers.question_id', 'answer_option_id')

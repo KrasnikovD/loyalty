@@ -1696,13 +1696,15 @@ class ClientController extends Controller
         if (empty($errors)) {
             $addedAnswers = [];
             foreach ($request->answer as $item) {
-                if (in_array($item['question_id'], $addedAnswers))
+                $questionId = $item['question_id'];
+                $answersOptionId = @$item['answers_option_id'];
+                if (in_array($questionId.$answersOptionId, $addedAnswers))
                     continue;
-                $addedAnswers[] = $item['question_id'];
+                $addedAnswers[] = $questionId.$answersOptionId;
                 $answer = new ClientAnswers;
-                $answer->question_id = $item['question_id'];
-                if (isset($item['answers_option_id']))
-                    $answer->answer_option_id = $item['answers_option_id'];
+                $answer->question_id = $questionId;
+                if (isset($answersOptionId))
+                    $answer->answer_option_id = $answersOptionId;
                 $answer->value = $item['value'];
                 $answer->client_id = Auth::user()->id;
                 $answer->save();

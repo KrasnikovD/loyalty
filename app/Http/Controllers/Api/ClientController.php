@@ -1694,7 +1694,11 @@ class ClientController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
+            $addedAnswers = [];
             foreach ($request->answer as $item) {
+                if (in_array($item['question_id'], $addedAnswers))
+                    continue;
+                $addedAnswers[] = $item['question_id'];
                 $answer = new ClientAnswers;
                 $answer->question_id = $item['question_id'];
                 if (isset($item['answers_option_id']))
@@ -1702,22 +1706,6 @@ class ClientController extends Controller
                 $answer->value = $item['value'];
                 $answer->client_id = Auth::user()->id;
                 $answer->save();
-             /*   if () {
-                    foreach ($item['value'] as $value) {
-                        $answer = new ClientAnswers;
-                        $answer->question_id = $item['question_id'];
-                        $answer->answer_option_id = $value['answers_option_id'];
-                        $answer->value = $value['value'];
-                        $answer->client_id = Auth::user()->id;
-                        $answer->save();
-                    }
-                } else {
-                    $answer = new ClientAnswers;
-                    $answer->question_id = $item['question_id'];
-                    $answer->value = $item['value'];
-                    $answer->client_id = Auth::user()->id;
-                   $answer->save();
-                }*/
             }
             $questionId = $request->answer[0]['question_id'];
             $ruleId = Questions::join('news', 'news.id', '=', 'questions.news_id')

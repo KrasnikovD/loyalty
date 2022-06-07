@@ -246,17 +246,22 @@ class StatController extends Controller
                         ];
                     }
                     if ($datum->type == Questions::TYPE_OPTIONS) {
+
                         $answers2 = [];
                         foreach ($answersMap2[$datum->id] as $item) {
                             if (!isset($answers2[$item['value']]))
                                 $answers2[$item['value']] = [];
                             $answers2[$item['value']][] = $item;
                         }
+
                         $values = array_unique(array_column($answersMap2[$datum->id], 'value'));
                         $summary = [];
-
+                   /*     print_r($answersMap2[$datum->id]);
+                        print_r($answers2);
+                        print_r($values);
+                        die();*/
                         foreach ($values as $value) {
-                            $summary[$value] = round((count($answers2[$value]) / count(@$options[$datum->id])) * 100, 2);
+                            $summary[$value] = round((count($answers2[$value]) / count($answersMap2[$datum->id])) * 100, 2);
                         }
                     }
                 }

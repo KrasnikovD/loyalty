@@ -16,7 +16,7 @@ class QuestionExport implements FromArray
 
     public function array(): array
     {
-        $answersData = ClientAnswers::select('questions.text as question_text', 'users.id as user_id', 'users.first_name', 'users.second_name', 'cards.number as card_number', 'client_answers.value as answer', 'client_answers.question_id', 'answer_option_id', 'questions.type')
+        $answersData = ClientAnswers::select('cards.number as card_number', 'users.second_name', 'users.first_name', 'questions.text as question_text', 'client_answers.value as answer', 'users.id as user_id', 'client_answers.question_id', 'answer_option_id', 'questions.type', 'client_answers.created_at')
             ->join('questions', 'questions.id', '=', 'client_answers.question_id')
             ->join('cards', 'cards.user_id', '=', 'client_answers.client_id')
             ->join('users', 'users.id', '=', 'client_answers.client_id')
@@ -30,7 +30,7 @@ class QuestionExport implements FromArray
         }
 
         $values = [];
-        foreach ($answersData as $datum) {
+        foreach ($answersData as &$datum) {
             $userId = $datum['user_id'];
             $questionId = $datum['question_id'];
             if (!isset($values[$userId . '_' . $questionId]))
@@ -48,9 +48,9 @@ class QuestionExport implements FromArray
             }
         }
         foreach ($map1 as &$item) {
+            $item['created_at'] = date("Y-m-d H:i:s", strtotime($item['created_at']));
             unset($item['type'], $item['answer_option_id'], $item['user_id'], $item['question_id']);
         }
-        $map1 = array_values($map1);
-        return $map1;
+        return array_merge([["№ карты","Фамилия","Имя","Вопрос","Ответ", "Дата"]], array_values($map1));
     }
 }

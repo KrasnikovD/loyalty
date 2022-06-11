@@ -196,7 +196,7 @@ class StatController extends Controller
                 $options[$datum['question_id']][] = $datum->text;
             }
 
-            $answersData = ClientAnswers::select('cards.user_id', 'users.first_name', 'users.second_name', 'cards.number', 'client_answers.value', 'client_answers.question_id', 'answer_option_id')
+            $answersData = ClientAnswers::select('cards.user_id', 'users.first_name', 'users.second_name', 'cards.number', 'client_answers.value', 'client_answers.question_id', 'answer_option_id', 'client_answers.created_at')
                 ->join('questions', 'questions.id', '=', 'client_answers.question_id')
                 ->join('cards', 'cards.user_id', '=', 'client_answers.client_id')
                 ->join('users', 'users.id', '=', 'client_answers.client_id')
@@ -235,7 +235,8 @@ class StatController extends Controller
                         $answers[$datum->id][] = [
                             'client_name' => trim($mapItem['first_name'] . " " . $mapItem['second_name']),
                             'client_card_number' => $mapItem['number'],
-                            'value' => $value
+                            'value' => $value,
+                            'date' => date("Y-m-d H:i:s", strtotime($mapItem['created_at'])),
                         ];
                     }
 
@@ -256,10 +257,7 @@ class StatController extends Controller
 
                         $values = array_unique(array_column($answersMap2[$datum->id], 'value'));
                         $summary = [];
-                   /*     print_r($answersMap2[$datum->id]);
-                        print_r($answers2);
-                        print_r($values);
-                        die();*/
+
                         foreach ($values as $value) {
                             $summary[$value] = round((count($answers2[$value]) / count($answersMap2[$datum->id])) * 100, 2);
                         }

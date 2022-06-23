@@ -6048,6 +6048,17 @@ define({ "api": [
             "optional": true,
             "field": "cert",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "1",
+              "2"
+            ],
+            "optional": true,
+            "field": "currency_type",
+            "description": ""
           }
         ]
       }

@@ -37,6 +37,7 @@ class OutletController extends Controller
      * @apiParam {integer=0,1} [is_bonus]
      * @apiParam {string=xml,json} [out_format]
      * @apiParam {integer=1,2,3} [cert]
+     * @apiParam {integer=1,2} [currency_type]
      */
 
     /**
@@ -123,7 +124,8 @@ class OutletController extends Controller
                 'products.*' => 'check_product:' . $request->card_number .',' . $saleId,
                 'out_format' => 'in:xml,json',
                 'debited' => 'integer|check_debited:' . $request->card_number . ',' . $request->is_bonus,
-                'cert' => 'nullable|integer|in:1,2,3'
+                'cert' => 'nullable|integer|in:1,2,3',
+                'currency_type' => 'nullable|integer|in:1,2'
             ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
@@ -291,7 +293,11 @@ class OutletController extends Controller
                 $currentTo = 0;
                 $added = 0;
                 if ($program) {
-                    $added = ($birthdayStockValue ?: $program->percent) * 0.01 * $sale->amount;
+                    $percent = $program->percent;
+                    if (isset($request->currency_type) && $request->currency_type == 2) {
+                        $percent += 3;
+                    }
+                    $added = ($birthdayStockValue ?: $percent) * 0.01 * $sale->amount;
                     if ($debited) $added = 0;
                     $added = ceil($added);
                     $currentFrom = $program->from;

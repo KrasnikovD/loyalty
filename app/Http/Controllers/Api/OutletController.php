@@ -337,7 +337,7 @@ class OutletController extends Controller
                 $card->save();
             }
         }
-        file_put_contents(getcwd() . '/sales.log', print_r($request->all(), true)."\n".print_r($sale->toArray(),true)."\n**************\n", FILE_APPEND);
+        file_put_contents(getcwd() . '/sales.log', "outlets\n" . print_r($request->all(), true)."\n".print_r($sale->toArray(),true)."\n**************\n", FILE_APPEND);
         if ($request->out_format == 'json')
             return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);
         else

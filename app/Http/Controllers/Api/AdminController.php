@@ -2004,6 +2004,7 @@ class AdminController extends Controller
             }
             $sale->save();
         }
+        file_put_contents(getcwd() . '/sales.log', "admin\n" . print_r($request->all(), true)."\n".print_r($sale->toArray(),true)."\n**************\n", FILE_APPEND);
         return response()->json(['errors' => $errors, 'data' => $sale], $httpStatus);
     }
 

@@ -193,7 +193,7 @@ class OutletController extends Controller
                     if (!empty($idsToDelete)) Baskets::whereIn('id', $idsToDelete)->delete();
                 }*/
                 $sale->save();
-                file_put_contents(getcwd() . '/sales.log', "outlets\n" . file_get_contents('php://input')."\n".print_r($sale->toArray(),true)."\n**************\n", FILE_APPEND);
+                file_put_contents(getcwd() . '/sales.log', file_get_contents('php://input')."\n".print_r($sale->toArray(),true)."\n", FILE_APPEND);
                 $productsMap = [];
                 if ($saleId) {
                 //    foreach (Product::whereIn('code', array_column($existedBasketProductMap, 'product_id'))->get() as $item)
@@ -321,7 +321,12 @@ class OutletController extends Controller
                     $historyEntry->dt = date('Y-m-d H:i:s');
                     if ($debited) $historyEntry->debited = $debited;
                     $historyEntry->save();
-                    CommonActions::sendSalePush($cardInfo->user_id, $added, $debited, $sale->outlet_id);
+                    try {
+                        CommonActions::sendSalePush($cardInfo->user_id, $added, $debited, $sale->outlet_id);
+                    } catch (\Exception $e) {
+                        file_put_contents(getcwd() . '/sales.log', print_r($sale->toArray(),true)."\n", FILE_APPEND);
+                    }
+                    file_put_contents(getcwd() . '/sales.log', "\n*****************\n", FILE_APPEND);
                 }
             }
             if ($debited) $sale->debited = $debited;

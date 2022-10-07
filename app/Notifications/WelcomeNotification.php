@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use App\Channels\ExpoChannel;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
 class WelcomeNotification extends Notification

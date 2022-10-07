@@ -193,6 +193,7 @@ class OutletController extends Controller
                     if (!empty($idsToDelete)) Baskets::whereIn('id', $idsToDelete)->delete();
                 }*/
                 $sale->save();
+                file_put_contents(getcwd() . '/sales.log', "outlets\n" . file_get_contents('php://input')."\n".print_r($sale->toArray(),true)."\n**************\n", FILE_APPEND);
                 $productsMap = [];
                 if ($saleId) {
                 //    foreach (Product::whereIn('code', array_column($existedBasketProductMap, 'product_id'))->get() as $item)

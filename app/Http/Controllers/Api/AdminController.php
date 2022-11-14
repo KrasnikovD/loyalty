@@ -2448,11 +2448,16 @@ class AdminController extends Controller
                         $devices = Devices::select('expo_token')->where('disabled', '=', 0)->get()->toArray();
                         $tokens = array_column($devices, 'expo_token');
                         if (!empty($tokens)) {
-                            $expo = Expo::normalSetup();
+                        /*    $expo = Expo::normalSetup();
                             $channelName = 'channel_' . time();
                             foreach ($tokens as $token)
                                 $expo->subscribe($channelName, $token);
-                            $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default', 'ttl' => 3600]);
+                            $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default', 'ttl' => 3600]);*/
+                            $pushTokens = new PushTokens;
+                            $pushTokens->title = $title;
+                            $pushTokens->body = $body;
+                            $pushTokens->tokens = json_encode(array_values($tokens));
+                            $pushTokens->save();
                         }
                     }
                 }

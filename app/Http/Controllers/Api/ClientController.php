@@ -102,8 +102,15 @@ class ClientController extends Controller
             $errors = $validator->errors()->toArray();
             $httpStatus = 400;
         }
-        if (empty($errors)) {
-            $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
+        $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
+        $blockedPhones = ['9025001199','+9025001199','9026341647','+9026341647'];
+        if (in_array($phone, $blockedPhones)) {
+            $data = [
+                "status" => "ERROR",
+                "status_text" => "*Номер находится в стоплисте"
+            ];
+        }
+        if (empty($errors) && empty($data)) {
             $user = Users::where([['type', '=', Users::TYPE_USER], ['phone', '=', $phone]])->first();
             $newUser = false;
             if (empty($user)) {

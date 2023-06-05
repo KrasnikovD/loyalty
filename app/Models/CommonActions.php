@@ -62,7 +62,7 @@ class CommonActions extends Model
             $params = [
                 'to' => $phonesStringify,
                 'msg' => $message,
-                'api_id' => "72866002-CB09-F8D8-C28E-2B76945CABA4",
+                'api_id' => "26827B43-6775-0290-0FF1-EC9640ACC672",
                 'json' => 1
             ];
             $params = http_build_query($params);
@@ -75,7 +75,7 @@ class CommonActions extends Model
     {
         $params = [
             'phone' => $phone,
-            'api_id' => "72866002-CB09-F8D8-C28E-2B76945CABA4",
+            'api_id' => "26827B43-6775-0290-0FF1-EC9640ACC672",
         ];
         $params = http_build_query($params);
         return CommonActions::curlExec('https://sms.ru/code/call', $params);

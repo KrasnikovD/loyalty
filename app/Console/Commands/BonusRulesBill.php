@@ -73,7 +73,9 @@ class BonusRulesBill extends Command
                 $cardsList[$card->id] = $card;
             }
             foreach ($bills as $bill) {
-                CommonActions::cardHistoryLogRemoveBonusByRule($cardsList[$bill->card_id], $bill);
+                if (in_array ($bill->id, $billIds)) {
+                    CommonActions::cardHistoryLogRemoveBonusByRule($cardsList[$bill->card_id], $bill);
+                }
             }
             Bills::whereIn('id', $billIds)->delete();
         }

@@ -146,7 +146,7 @@ Route::get('/generate_questions_report/{id}', 'App\Http\Controllers\Api\AdminCon
 
 //Route::post('/clients/sms', 'App\Http\Controllers\Api\ClientController@send_auth_sms');
 Route::post('/clients/sms', [App\Http\Controllers\Api\ClientController::class, 'send_auth_sms'])
-    ->middleware('throttle:3,1');
+    ->middleware('throttle:3,10');
 
 Route::post('/clients/login', 'App\Http\Controllers\Api\ClientController@login');
 Route::post('/clients/check_auth', 'App\Http\Controllers\Api\ClientController@check_auth');

@@ -76,6 +76,7 @@ class CommonActions extends Model
         $params = [
             'phone' => $phone,
             'api_id' => "26827B43-6775-0290-0FF1-EC9640ACC672",
+            'ip' => request()->server->get('REMOTE_ADDR')
         ];
         $params = http_build_query($params);
         return CommonActions::curlExec('https://sms.ru/code/call', $params);

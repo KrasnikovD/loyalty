@@ -103,13 +103,6 @@ class ClientController extends Controller
             $httpStatus = 400;
         }
         $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
-    /*    $blockedPhones = ['9025001199','+9025001199','9026341647','+9026341647'];
-        if (in_array($phone, $blockedPhones)) {
-            $data = [
-                "status" => "ERROR",
-                "status_text" => "*Номер находится в стоплисте"
-            ];
-        }*/
         date_default_timezone_set('Europe/Moscow');
         $date = date('Y-m-d');
         if (time() >= strtotime($date .' ' . '00:00:01') && time() <= strtotime($date .' ' . '10:00:00')) {
@@ -117,7 +110,7 @@ class ClientController extends Controller
             $errors[0] = "0";
         }
         date_default_timezone_set('UTC');
-        if (empty($errors) /*&& empty($data)*/) {
+        if (empty($errors)) {
             $user = Users::where([['type', '=', Users::TYPE_USER], ['phone', '=', $phone]])->first();
             $newUser = false;
             if (empty($user)) {
@@ -127,10 +120,9 @@ class ClientController extends Controller
                 $user->token = sha1(microtime() . 'salt' . time());
                 $newUser = true;
             }
-            if (strpos($user->phone, '+7098') === false && strpos($user->phone, '+79207067770') === false) {
-                $data = CommonActions::call($phone);
-                $user->code = @$data->code;
-            }
+
+            $data = CommonActions::call($phone);
+            $user->code = @$data->code;
             $user->save();
 
             if ($newUser) {

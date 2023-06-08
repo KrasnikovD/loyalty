@@ -3116,7 +3116,7 @@ class AdminController extends Controller
         }
         if (empty($errors)) {
             $count = 0;
-            $query = Reviews::select('reviews.id', 'reviews.reated_at', 'reviews.message', 'reviews.is_hidden', 'reviews.type', 'reviews.rating', 'reviews.object_id',
+            $query = Reviews::select('reviews.id', 'reviews.created_at', 'reviews.message', 'reviews.is_hidden', 'reviews.type', 'reviews.rating', 'reviews.object_id',
                 'users.first_name as user_first_name', 'users.second_name as user_second_name')
                 ->join('users', 'users.id', '=', 'reviews.user_id');
             if ($id) $query->where('id', '=', $id);

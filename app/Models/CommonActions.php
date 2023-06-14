@@ -38,7 +38,9 @@ class CommonActions extends Model
 
     public static function sendSms(array $phones, $message)
     {
-        return [];
+        $ruPhones = $phones;
+        $responseList = [];
+    /*    return [];
         $ruPnones = [];
         $phenixPhones = [];
         $responseList = [];
@@ -56,14 +58,15 @@ class CommonActions extends Model
             ];
             $params = json_encode($params);
             $responseList[] = self::curlExec('https://api.c-eda.ru/public/v1/send_sms', $params, true);
-        }
-        if (!empty($ruPnones)) {
-            $phonesStringify = implode(',', $ruPnones);
+        }*/
+        if (!empty($ruPhones)) {
+            $phonesStringify = implode(',', $ruPhones);
             $params = [
                 'to' => $phonesStringify,
                 'msg' => $message,
                 'api_id' => "26827B43-6775-0290-0FF1-EC9640ACC672",
-                'json' => 1
+                'json' => 1,
+                'ip' => request()->server->get('REMOTE_ADDR')
             ];
             $params = http_build_query($params);
             $responseList[] = self::curlExec('https://sms.ru/sms/send', $params);

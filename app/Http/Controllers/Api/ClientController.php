@@ -121,10 +121,14 @@ class ClientController extends Controller
                 $newUser = true;
             }
 
-            $data = CommonActions::call($phone);
+           /* $data = CommonActions::call($phone);
             $user->code = @$data->code;
+            $user->save();*/
+
+            $user->code = mt_rand(1000, 9000);
             $user->save();
 
+            $data = CommonActions::sendSms([$phone], $user->code);
             if ($newUser) {
                 $cardExists = false;
                 foreach (Cards::where('phone', '=', $phone)->get() as $card) {

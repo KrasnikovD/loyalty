@@ -202,6 +202,7 @@ class ClientController extends Controller
         }
         if (empty($errors)) {
         //    $code = substr($request->code, 0, 4);
+            $code = $request->code;
             $localeKey = null;
             $query = Users::where([['type', '=', Users::TYPE_USER], ['code', '=', $code]]);
             if (!empty($phone))

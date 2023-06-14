@@ -125,7 +125,7 @@ class ClientController extends Controller
             $user->code = @$data->code;
             $user->save();*/
 
-            $user->code = mt_rand(1000, 9000);
+            $user->code = mt_rand(10000, 90000);
             $user->save();
 
             $data = CommonActions::sendSms([$phone], $user->code);
@@ -201,7 +201,7 @@ class ClientController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $code = substr($request->code, 0, 4);
+        //    $code = substr($request->code, 0, 4);
             $localeKey = null;
             $query = Users::where([['type', '=', Users::TYPE_USER], ['code', '=', $code]]);
             if (!empty($phone))

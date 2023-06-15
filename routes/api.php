@@ -134,6 +134,7 @@ Route::get('/statistic/sales', 'App\Http\Controllers\Api\StatController@sales');
 Route::get('/statistic/product_rates', 'App\Http\Controllers\Api\StatController@product_rates');
 Route::get('/statistic/bonus_bills_summary/{id}', 'App\Http\Controllers\Api\StatController@bonus_bills_summary');
 Route::get('/statistic/question_summary/{id}', 'App\Http\Controllers\Api\StatController@question_summary');
+Route::post('/statistic/sales_migrations', 'App\Http\Controllers\Api\StatController@sales_migrations');
 
 Route::get('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@get_rate_store');
 Route::patch('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@update_rate_store');

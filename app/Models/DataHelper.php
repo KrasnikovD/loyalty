@@ -151,4 +151,129 @@ class DataHelper extends Model
             $newsItem['questions'] = @$questionMap[$newsItem['id']];
         }
     }
+
+    public static function collectSalesMigrationsInfo($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $outletIds,$onlyLosses = false) {
+        $rawData1 = Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, count(*) as count"))
+            ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')
+            ->join('users', 'users.id', '=', 'sales.user_id')
+            ->where(DB::raw('cast(sales.dt as date)'), '>=', $dateBegin1)
+            ->where(DB::raw('cast(sales.dt as date)'), '<=', $dateEnd1)
+            ->whereIn('outlets.id', $outletIds)
+            ->groupBy(DB::raw('outlets.id, users.id'))
+            ->orderBy('users.id')
+            ->get();
+
+        $rawData2 = Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, count(*) as count"))
+            ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')
+            ->join('users', 'users.id', '=', 'sales.user_id')
+            ->where(DB::raw('cast(sales.dt as date)'), '>=', $dateBegin2)
+            ->where(DB::raw('cast(sales.dt as date)'), '<=', $dateEnd2)
+            ->whereIn('outlets.id', $outletIds)
+            ->groupBy(DB::raw('outlets.id, users.id'))
+            ->orderBy('users.id')
+            ->get();
+
+        $map1 = [];
+        foreach ($rawData1 as $row) {
+            $index = $row['user_id'] . '_' . $row['outlet_id'] . '_1';
+            $map1[$index] = $row['count'];
+        }
+
+        $map2 = [];
+        foreach ($rawData2 as $row) {
+            $index = $row['user_id'] . '_' . $row['outlet_id'] . '_2';
+            $map2[$index] = $row['count'];
+        }
+
+        $outlets = [];
+        foreach ($outletIds as $outletId) {
+            foreach ($rawData1 as $row) {
+                if ($row['outlet_id'] == $outletId) {
+                    $outlets[$outletId] = [
+                        'id' => $row['outlet_id'],
+                        'name' => $row['outlet_name']
+                    ];
+                }
+            }
+            foreach ($rawData2 as $row) {
+                if ($row['outlet_id'] == $outletId) {
+                    $outlets[$outletId] = [
+                        'id' => $row['outlet_id'],
+                        'name' => $row['outlet_name']
+                    ];
+                }
+            }
+        }
+
+        $usersIds = [];
+        foreach ($rawData1 as $row) {
+            $usersIds[] = $row['user_id'];
+        }
+        foreach ($rawData2 as $row) {
+            $usersIds[] = $row['user_id'];
+        }
+        $usersIds = array_unique($usersIds);
+        $users = [];
+        foreach ($usersIds as $userId) {
+            foreach ($rawData1 as $row) {
+                if ($row['user_id'] == $userId) {
+                    $users[$userId] = [
+                        'id' => $row['user_id'],
+                        'name' => $row['name'],
+                        'phone' => $row['phone'],
+                        'outlets' => $outlets
+                    ];
+                }
+            }
+            foreach ($rawData2 as $row) {
+                if ($row['user_id'] == $userId) {
+                    $users[$userId] = [
+                        'id' => $row['user_id'],
+                        'name' => $row['name'],
+                        'phone' => $row['phone'],
+                        'outlets' => $outlets
+                    ];
+                }
+            }
+        }
+
+        foreach ($users as $userIndex => $user) {
+            foreach ($user['outlets'] as $outletIndex => $outlet) {
+                $period1Count = intval(@$map1[$user['id'] . '_' . $outlet['id'] . '_1']);
+                $period2Count = intval(@$map2[$user['id'] . '_' . $outlet['id'] . '_2']);
+                $users[$userIndex]['outlets'][$outletIndex]['period_1_count'] = $period1Count;
+                $users[$userIndex]['outlets'][$outletIndex]['period_2_count'] = $period2Count;
+                $users[$userIndex]['outlets'][$outletIndex]['diff'] = $period2Count - $period1Count;
+            }
+        }
+
+        if ($onlyLosses) {
+            $usersForDelete = [];
+            foreach ($users as $userIndex => $user) {
+                $outletsForDelete = [];
+                foreach ($user['outlets'] as $outletIndex => $outlet) {
+                    if ($outlet['diff'] >= 0) {
+                        $outletsForDelete[] = $outletIndex;
+                    }
+                }
+                foreach ($outletsForDelete as $outletIndex) {
+                    unset($users[$userIndex]['outlets'][$outletIndex]);
+                }
+                if (empty($users[$userIndex]['outlets'])) {
+                    $usersForDelete[] = $userIndex;
+                }
+            }
+            foreach ($usersForDelete as $userIndex) {
+                unset($users[$userIndex]);
+            }
+
+            foreach ($users as $userIndex => $user) {
+                $users[$userIndex]['outlets'] = array_values($users[$userIndex]['outlets']);
+            }
+            $users = array_values($users);
+        }
+
+        return $users;
+    }
+
 }

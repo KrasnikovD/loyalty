@@ -3754,6 +3754,81 @@ define({ "api": [
   },
   {
     "type": "post",
+    "url": "/api/statistic/sales_migrations",
+    "title": "Sales Migrations Statistic",
+    "name": "SalesMigrations",
+    "group": "AdminStat",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "date_begin_1",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "date_end_1",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "date_begin_2",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "date_end_2",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer[]",
+            "optional": false,
+            "field": "outlet_ids",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "only_losses",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/StatController.php",
+    "groupTitle": "AdminStat"
+  },
+  {
+    "type": "post",
     "url": "/api/stocks/create",
     "title": "Create Stock",
     "name": "CreateStock",

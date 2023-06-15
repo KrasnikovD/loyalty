@@ -9,6 +9,7 @@ use App\Models\Bills;
 use App\Models\CardHistory;
 use App\Models\Cards;
 use App\Models\ClientAnswers;
+use App\Models\DataHelper;
 use App\Models\Questions;
 use App\Models\Sales;
 use Illuminate\Http\Request;
@@ -281,6 +282,49 @@ class StatController extends Controller
                 'clients_count' => $clientsCount,
                 'table' => $table,
             ];
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/statistic/sales_migrations Sales Migrations Statistic
+     * @apiName SalesMigrations
+     * @apiGroup AdminStat
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} date_begin_1
+     * @apiParam {string} date_end_1
+     * @apiParam {string} date_begin_2
+     * @apiParam {string} date_end_2
+     * @apiParam {integer[]} outlet_ids
+     * @apiParam {integer=0,1} [only_losses]
+     */
+
+    public function sales_migrations(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validator = Validator::make($request->all(), [
+            'date_begin_1' => 'required',
+            'date_end_1' => 'required',
+            'date_begin_2' => 'required',
+            'date_end_2' => 'required',
+            'outlet_ids' => 'required|array',
+            'outlet_ids.*' => 'exists:outlets,id',
+            'only_losses' => 'nullable|in:0,1'
+        ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $dateBegin1 = date("Y-m-d", strtotime($request->date_begin_1));
+            $dateBegin2 = date("Y-m-d", strtotime($request->date_begin_2));
+            $dateEnd1 = date("Y-m-d", strtotime($request->date_end_1));
+            $dateEnd2 = date("Y-m-d", strtotime($request->date_end_2));
+            $data = DataHelper::collectSalesMigrationsInfo($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $request->outlet_ids, $request->only_losses);
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

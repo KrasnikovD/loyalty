@@ -266,13 +266,11 @@ class DataHelper extends Model
             foreach ($usersForDelete as $userIndex) {
                 unset($users[$userIndex]);
             }
-
-            foreach ($users as $userIndex => $user) {
-                $users[$userIndex]['outlets'] = array_values($users[$userIndex]['outlets']);
-            }
-            $users = array_values($users);
         }
-
+        foreach ($users as $userIndex => $user) {
+            $users[$userIndex]['outlets'] = array_values($users[$userIndex]['outlets']);
+        }
+        $users = array_values($users);
         return $users;
     }
 

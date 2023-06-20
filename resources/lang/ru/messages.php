@@ -20,4 +20,6 @@ return [
 
     'error_text_bind_card_non_exist' => 'Карта с таким номером не найдена.',
     'error_text_bind_card_busy' => 'Карта с этим номером связана с другим пользователем.',
+
+    'sms_enter_code_from_sms' => 'Введите код из смс',
 ];

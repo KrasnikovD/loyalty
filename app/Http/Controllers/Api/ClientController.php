@@ -130,7 +130,8 @@ class ClientController extends Controller
             }
             $user->save();
 
-            $data = CommonActions::sendSms([$phone], $user->code);
+            $data['service_response'] = CommonActions::sendSms([$phone], $user->code);
+            $data['message'] = __('messages.sms_enter_code_from_sms');
             if ($newUser) {
                 $cardExists = false;
                 foreach (Cards::where('phone', '=', $phone)->get() as $card) {

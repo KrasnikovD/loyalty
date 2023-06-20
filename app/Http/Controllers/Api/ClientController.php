@@ -125,7 +125,9 @@ class ClientController extends Controller
             $user->code = @$data->code;
             $user->save();*/
 
-            $user->code = mt_rand(10000, 90000);
+            if (strpos($user->phone, '+70988888888') === false || $newUser) {
+                $user->code = mt_rand(10000, 90000);
+            }
             $user->save();
 
             $data = CommonActions::sendSms([$phone], $user->code);

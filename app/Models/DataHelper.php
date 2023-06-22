@@ -152,7 +152,7 @@ class DataHelper extends Model
         }
     }
 
-    public static function collectSalesMigrationsInfo($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $outletIds,$onlyLosses = false) {
+    public static function collectSalesMigrationsInfo($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $outletIds, $onlyLosses = false) {
         $rawData1 = Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, count(*) as count"))
             ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')
             ->join('users', 'users.id', '=', 'sales.user_id')

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\SalesMigrations;
 use App\Http\Controllers\Controller;
 use App\Models\AnswerOptions;
 use App\Models\Baskets;
@@ -15,6 +16,8 @@ use App\Models\Sales;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StatController extends Controller
 {
@@ -325,6 +328,53 @@ class StatController extends Controller
             $dateEnd1 = date("Y-m-d", strtotime($request->date_end_1));
             $dateEnd2 = date("Y-m-d", strtotime($request->date_end_2));
             $data = DataHelper::collectSalesMigrationsInfo($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $request->outlet_ids, $request->only_losses);
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/statistic/sales_migrations_report Sales Migrations Statistic Report
+     * @apiName SalesMigrationsReport
+     * @apiGroup AdminReports
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} date_begin_1
+     * @apiParam {string} date_end_1
+     * @apiParam {string} date_begin_2
+     * @apiParam {string} date_end_2
+     * @apiParam {integer[]} outlet_ids
+     * @apiParam {integer=0,1} [only_losses]
+     */
+
+    public function sales_migrations_report(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validator = Validator::make($request->all(), [
+            'date_begin_1' => 'required',
+            'date_end_1' => 'required',
+            'date_begin_2' => 'required',
+            'date_end_2' => 'required',
+            'outlet_ids' => 'required|array',
+            'outlet_ids.*' => 'exists:outlets,id',
+            'only_losses' => 'nullable|in:0,1'
+        ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $dateBegin1 = date("Y-m-d", strtotime($request->date_begin_1));
+            $dateBegin2 = date("Y-m-d", strtotime($request->date_begin_2));
+            $dateEnd1 = date("Y-m-d", strtotime($request->date_end_1));
+            $dateEnd2 = date("Y-m-d", strtotime($request->date_end_2));
+            $fileName = "reports/" . date('Y-m-d_H_i_s') . '_sales_migrations_report.xlsx';
+            Storage::disk('local')->put($fileName, '');
+            $export = new SalesMigrations($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $request->outlet_ids, $request->only_losses);
+            Excel::store($export, Storage::path($fileName));
+            $data = $fileName;
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

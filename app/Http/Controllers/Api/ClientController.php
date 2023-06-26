@@ -123,6 +123,7 @@ class ClientController extends Controller
 
             $data['service_response'] = CommonActions::call($phone);
             $data['message'] = __('messages.sms_enter_code_from_sms');
+            $data['is_sms'] = 0;
             $user->code = @$data['service_response']->code;
             $user->save();
 

@@ -30,6 +30,7 @@ use App\Models\Questions;
 use App\Models\Reviews;
 use App\Models\Sales;
 use App\Models\Stocks;
+use App\Models\TranslationTexts;
 use App\Models\Users;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Http\Request;
@@ -122,7 +123,8 @@ class ClientController extends Controller
             }
 
             $data['service_response'] = CommonActions::call($phone);
-            $data['message'] = __('messages.sms_enter_code_from_sms');
+            $data['popup_text'] = TranslationTexts::getByKey(TranslationTexts::AUTH_ENTER_CODE_POPUP_TEXT, config('app.locale'));
+            $data['placeholder_text'] = TranslationTexts::getByKey(TranslationTexts::AUTH_ENTER_CODE_PLACEHOLDER_TEXT, config('app.locale'));
             $data['is_sms'] = 0;
             $user->code = @$data['service_response']->code;
             $user->save();

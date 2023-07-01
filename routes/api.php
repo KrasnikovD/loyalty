@@ -139,6 +139,8 @@ Route::post('/statistic/sales_migrations_report', 'App\Http\Controllers\Api\Stat
 
 Route::get('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@get_rate_store');
 Route::patch('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@update_rate_store');
+Route::get('/translations/auth_code_texts', 'App\Http\Controllers\Api\TranslationController@get_auth_code_texts');
+Route::patch('/translations/auth_code_texts', 'App\Http\Controllers\Api\TranslationController@update_auth_code_texts');
 
 Route::post('/generate_report', 'App\Http\Controllers\Api\AdminController@generate_report');
 Route::get('/generate_bonus_rules_report/{id}', 'App\Http\Controllers\Api\BonusRulesController@generate_bonus_rules_report');

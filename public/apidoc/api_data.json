@@ -4121,6 +4121,29 @@
   },
   {
     "type": "get",
+    "url": "/api/translations/auth_code_texts",
+    "title": "Get Auth Code Texts",
+    "name": "GetAuthCodeTexts",
+    "group": "AdminTranslations",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/TranslationController.php",
+    "groupTitle": "AdminTranslations"
+  },
+  {
+    "type": "get",
     "url": "/api/translations/rate_store",
     "title": "Get Store Rates Texts",
     "name": "GetStoreRatesTexts",
@@ -4134,6 +4157,49 @@
             "optional": false,
             "field": "Authorization",
             "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/TranslationController.php",
+    "groupTitle": "AdminTranslations"
+  },
+  {
+    "type": "patch",
+    "url": "/api/translations/auth_code_texts",
+    "title": "Set Auth Code Texts",
+    "name": "SetAuthCodeTexts",
+    "group": "AdminTranslations",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "popup_text",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": true,
+            "field": "placeholder_text",
+            "description": ""
           }
         ]
       }

@@ -11,8 +11,10 @@ class TranslationTexts extends Model
 
     protected $table = 'translation_texts';
 
-    const KEY_IM_RATE_STORE_TITLE = 'im_rate_store_title';
-    const KEY_IM_RATE_STORE_BODY = 'im_rate_store_body';
+    const IM_RATE_STORE_TITLE = 'im_rate_store_title';
+    const IM_RATE_STORE_BODY = 'im_rate_store_body';
+    const AUTH_ENTER_CODE_POPUP_TEXT = 'auth_enter_code_popup_text';
+    const AUTH_ENTER_CODE_PLACEHOLDER_TEXT = 'auth_enter_code_placeholder_text';
 
     public static function getByKey($key, $locale)
     {

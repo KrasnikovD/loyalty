@@ -23,8 +23,8 @@ class TranslationController extends Controller
 
     public function get_rate_store()
     {
-        $title = TranslationTexts::getByKey(TranslationTexts::KEY_IM_RATE_STORE_TITLE, config('app.locale'));
-        $body = TranslationTexts::getByKey(TranslationTexts::KEY_IM_RATE_STORE_BODY, config('app.locale'));
+        $title = TranslationTexts::getByKey(TranslationTexts::IM_RATE_STORE_TITLE, config('app.locale'));
+        $body = TranslationTexts::getByKey(TranslationTexts::IM_RATE_STORE_BODY, config('app.locale'));
         return response()->json(['errors' => [], 'data' => ['title' => $title, 'body' => $body]]);
     }
 
@@ -42,12 +42,50 @@ class TranslationController extends Controller
     public function update_rate_store(Request $request)
     {
         if ($request->title)
-            TranslationTexts::setByKey(TranslationTexts::KEY_IM_RATE_STORE_TITLE, config('app.locale'), $request->title);
+            TranslationTexts::setByKey(TranslationTexts::IM_RATE_STORE_TITLE, config('app.locale'), $request->title);
         if ($request->body)
-            TranslationTexts::setByKey(TranslationTexts::KEY_IM_RATE_STORE_BODY, config('app.locale'), $request->body);
-        
-        $title = TranslationTexts::getByKey(TranslationTexts::KEY_IM_RATE_STORE_TITLE, config('app.locale'));
-        $body = TranslationTexts::getByKey(TranslationTexts::KEY_IM_RATE_STORE_BODY, config('app.locale'));
+            TranslationTexts::setByKey(TranslationTexts::IM_RATE_STORE_BODY, config('app.locale'), $request->body);
+
+        $title = TranslationTexts::getByKey(TranslationTexts::IM_RATE_STORE_TITLE, config('app.locale'));
+        $body = TranslationTexts::getByKey(TranslationTexts::IM_RATE_STORE_BODY, config('app.locale'));
         return response()->json(['errors' => [], 'data' => ['title' => $title, 'body' => $body]]);
+    }
+
+    /**
+     * @api {get} /api/translations/auth_code_texts Get Auth Code Texts
+     * @apiName GetAuthCodeTexts
+     * @apiGroup AdminTranslations
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     */
+
+    public function get_auth_code_texts()
+    {
+        $popupText = TranslationTexts::getByKey(TranslationTexts::AUTH_ENTER_CODE_POPUP_TEXT, config('app.locale'));
+        $placeholderText = TranslationTexts::getByKey(TranslationTexts::AUTH_ENTER_CODE_PLACEHOLDER_TEXT, config('app.locale'));
+        return response()->json(['errors' => [], 'data' => ['popup_text' => $popupText, 'placeholder_text' => $placeholderText]]);
+    }
+
+    /**
+     * @api {patch} /api/translations/auth_code_texts Set Auth Code Texts
+     * @apiName SetAuthCodeTexts
+     * @apiGroup AdminTranslations
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} [popup_text]
+     * @apiParam {string} [placeholder_text]
+     */
+
+    public function update_auth_code_texts(Request $request)
+    {
+        if ($request->popup_text)
+            TranslationTexts::setByKey(TranslationTexts::AUTH_ENTER_CODE_POPUP_TEXT, config('app.locale'), $request->popup_text);
+        if ($request->placeholder_text)
+            TranslationTexts::setByKey(TranslationTexts::AUTH_ENTER_CODE_PLACEHOLDER_TEXT, config('app.locale'), $request->placeholder_text);
+
+        $popupText = TranslationTexts::getByKey(TranslationTexts::AUTH_ENTER_CODE_POPUP_TEXT, config('app.locale'));
+        $placeholderText = TranslationTexts::getByKey(TranslationTexts::AUTH_ENTER_CODE_PLACEHOLDER_TEXT, config('app.locale'));
+        return response()->json(['errors' => [], 'data' => ['popup_text' => $popupText, 'placeholder_text' => $placeholderText]]);
     }
 }

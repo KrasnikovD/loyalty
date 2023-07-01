@@ -20,7 +20,4 @@ return [
 
     'error_text_bind_card_non_exist' => 'No card with this number found.',
     'error_text_bind_card_busy' => 'The card with this number is associated with another user.',
-
-    //'sms_enter_code_from_sms' => 'Enter code from SMS',
-    'sms_enter_code_from_sms' => 'You will now be called, enter the last 4 digits of the number',
 ];

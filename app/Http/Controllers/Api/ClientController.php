@@ -122,20 +122,17 @@ class ClientController extends Controller
                 $newUser = true;
             }
 
-            $data['service_response'] = CommonActions::call($phone);
-            $data['popup_text'] = TranslationTexts::getByKey(TranslationTexts::AUTH_ENTER_CODE_POPUP_TEXT, config('app.locale'));
-            $data['placeholder_text'] = TranslationTexts::getByKey(TranslationTexts::AUTH_ENTER_CODE_PLACEHOLDER_TEXT, config('app.locale'));
-            $data['is_sms'] = 0;
-            $user->code = @$data['service_response']->code;
-            $user->save();
-
-       /*     if (strpos($user->phone, '+70988888888') === false || $newUser) {
+            //$data['service_response'] = CommonActions::call($phone);
+            //$user->code = @$data['service_response']->code;
+            if (strpos($user->phone, '+70988888888') === false || $newUser) {
                 $user->code = mt_rand(10000, 90000);
             }
-            $user->save();
-
             $data['service_response'] = CommonActions::sendSms([$phone], $user->code);
-            $data['message'] = __('messages.sms_enter_code_from_sms');*/
+            $user->save();
+            $data['popup_text'] = $data['message'] = TranslationTexts::getByKey(TranslationTexts::AUTH_ENTER_CODE_POPUP_TEXT, config('app.locale'));
+            $data['placeholder_text'] = TranslationTexts::getByKey(TranslationTexts::AUTH_ENTER_CODE_PLACEHOLDER_TEXT, config('app.locale'));
+            $data['is_sms'] = 1;
+
             if ($newUser) {
                 $cardExists = false;
                 foreach (Cards::where('phone', '=', $phone)->get() as $card) {
@@ -208,8 +205,8 @@ class ClientController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $code = substr($request->code, 0, 4);
-        //    $code = $request->code;
+        //    $code = substr($request->code, 0, 4);
+            $code = $request->code;
             $localeKey = null;
             $query = Users::where([['type', '=', Users::TYPE_USER], ['code', '=', $code]]);
             if (!empty($phone))

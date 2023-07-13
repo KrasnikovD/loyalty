@@ -127,7 +127,7 @@ class ClientController extends Controller
             if (strpos($user->phone, '+70988888888') === false || $newUser) {
                 $user->code = mt_rand(10000, 90000);
             }
-            $data['service_response'] = CommonActions::sendSms([$phone], "Код подтверждения: {$user->code}\nПриложение cheskylev");
+            $data['service_response'] = CommonActions::sendSms([$phone], "Код подтверждения: {$user->code}\nПриложение cheskylev")[0];
             $user->save();
             $data['popup_text'] = $data['message'] = TranslationTexts::getByKey(TranslationTexts::AUTH_ENTER_CODE_POPUP_TEXT, config('app.locale'));
             $data['placeholder_text'] = TranslationTexts::getByKey(TranslationTexts::AUTH_ENTER_CODE_PLACEHOLDER_TEXT, config('app.locale'));

@@ -152,6 +152,46 @@ class DataHelper extends Model
         }
     }
 
+    public static function collectUsersBySales1($dateFrom, $outletIds = null) {
+        $q = Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, max(sales.dt) as date"))
+            ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')
+            ->join('users', 'users.id', '=', 'sales.user_id')
+            ->where(DB::raw('cast(sales.dt as date)'), '>=', $dateFrom);
+        if ($outletIds) {
+            $q->whereIn('outlets.id', $outletIds);
+            $q->groupBy(DB::raw('outlets.id, users.id'));
+        } else {
+            $q->groupBy('users.id');
+        }
+        $raw = $q->get();
+        $users = [];
+        foreach ($raw as $item) {
+            if (!isset($users[$item['user_id']])) {
+                $users[$item['user_id']] = [
+                    'user_id' => $item['user_id'],
+                    'name' => $item['name'],
+                    'phone' => $item['phone'],
+                ];
+            }
+        }
+        $outlets = [];
+        foreach ($raw as $item) {
+            if (!isset($outlets[$item['user_id']])) {
+                $outlets[$item['user_id']] = [];
+            }
+            $outlets[$item['user_id']][] = [
+                'date' => $item['date'],
+                'outlet_id' => $outletIds ? $item['outlet_id'] : null,
+                'outlet_name' => $outletIds ? $item['outlet_name'] : null,
+            ];
+        }
+        foreach ($users as &$user) {
+            $user['outlets'] = $outlets[$user['user_id']];
+        }
+
+        return array_values($users);
+    }
+
     public static function collectSalesMigrationsInfo($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $outletIds, $onlyLosses = false) {
         $rawData1 = Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, count(*) as count"))
             ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')

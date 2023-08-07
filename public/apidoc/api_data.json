@@ -3904,6 +3904,49 @@
   },
   {
     "type": "post",
+    "url": "/api/statistic/users_sales_1",
+    "title": "User Sales Filter 1",
+    "name": "UserSalesFilter1",
+    "group": "AdminStat",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "date_from",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer[]",
+            "optional": true,
+            "field": "outlet_ids",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/StatController.php",
+    "groupTitle": "AdminStat"
+  },
+  {
+    "type": "post",
     "url": "/api/stocks/create",
     "title": "Create Stock",
     "name": "CreateStock",

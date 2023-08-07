@@ -378,4 +378,37 @@ class StatController extends Controller
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
+
+    /**
+     * @api {post} /api/statistic/users_sales_1 User Sales Filter 1
+     * @apiName UserSalesFilter1
+     * @apiGroup AdminStat
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} date_from
+     * @apiParam {integer[]} [outlet_ids]
+     */
+
+    public function users_sales_1(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validator = Validator::make($request->all(), [
+            'date_from' => 'required',
+            'outlet_ids' => 'nullable|array',
+            'outlet_ids.*' => 'exists:outlets,id',
+        ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $dateFrom = date("Y-m-d", strtotime($request->date_from));
+            $data = DataHelper::collectUsersBySales1($dateFrom, $request->outlet_ids);
+
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
 }

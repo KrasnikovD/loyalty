@@ -3552,6 +3552,17 @@
             "optional": true,
             "field": "only_losses",
             "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "only_gone",
+            "description": ""
           }
         ]
       }
@@ -3893,6 +3904,17 @@
             ],
             "optional": true,
             "field": "only_losses",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "only_gone",
             "description": ""
           }
         ]

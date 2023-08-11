@@ -192,7 +192,7 @@ class DataHelper extends Model
         return array_values($users);
     }
 
-    public static function collectSalesMigrationsInfo($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $outletIds, $onlyLosses = false) {
+    public static function collectSalesMigrationsInfo($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $outletIds, $onlyLosses = false, $onlyGone = false) {
         $rawData1 = Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, count(*) as count"))
             ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')
             ->join('users', 'users.id', '=', 'sales.user_id')
@@ -307,6 +307,28 @@ class DataHelper extends Model
                 unset($users[$userIndex]);
             }
         }
+
+        if (!$onlyLosses && $onlyGone) {
+            $usersForDelete = [];
+            foreach ($users as $userIndex => $user) {
+                $outletsForDelete = [];
+                foreach ($user['outlets'] as $outletIndex => $outlet) {
+                    if (!($outlet['period_2_count'] == 0 && $outlet['period_1_count'] != 0)) {
+                        $outletsForDelete[] = $outletIndex;
+                    }
+                }
+                foreach ($outletsForDelete as $outletIndex) {
+                    unset($users[$userIndex]['outlets'][$outletIndex]);
+                }
+                if (empty($users[$userIndex]['outlets'])) {
+                    $usersForDelete[] = $userIndex;
+                }
+            }
+            foreach ($usersForDelete as $userIndex) {
+                unset($users[$userIndex]);
+            }
+        }
+
         foreach ($users as $userIndex => $user) {
             $users[$userIndex]['outlets'] = array_values($users[$userIndex]['outlets']);
         }

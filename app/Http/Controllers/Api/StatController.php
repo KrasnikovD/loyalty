@@ -302,6 +302,7 @@ class StatController extends Controller
      * @apiParam {string} date_end_2
      * @apiParam {integer[]} outlet_ids
      * @apiParam {integer=0,1} [only_losses]
+     * @apiParam {integer=0,1} [only_gone]
      */
 
     public function sales_migrations(Request $request)
@@ -316,7 +317,8 @@ class StatController extends Controller
             'date_end_2' => 'required',
             'outlet_ids' => 'required|array',
             'outlet_ids.*' => 'exists:outlets,id',
-            'only_losses' => 'nullable|in:0,1'
+            'only_losses' => 'nullable|in:0,1',
+            'only_gone' => 'nullable|in:0,1'
         ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
@@ -327,7 +329,7 @@ class StatController extends Controller
             $dateBegin2 = date("Y-m-d", strtotime($request->date_begin_2));
             $dateEnd1 = date("Y-m-d", strtotime($request->date_end_1));
             $dateEnd2 = date("Y-m-d", strtotime($request->date_end_2));
-            $data = DataHelper::collectSalesMigrationsInfo($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $request->outlet_ids, $request->only_losses);
+            $data = DataHelper::collectSalesMigrationsInfo($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $request->outlet_ids, $request->only_losses, $request->only_gone);
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
@@ -345,6 +347,7 @@ class StatController extends Controller
      * @apiParam {string} date_end_2
      * @apiParam {integer[]} outlet_ids
      * @apiParam {integer=0,1} [only_losses]
+     * @apiParam {integer=0,1} [only_gone]
      */
 
     public function sales_migrations_report(Request $request)
@@ -359,7 +362,8 @@ class StatController extends Controller
             'date_end_2' => 'required',
             'outlet_ids' => 'required|array',
             'outlet_ids.*' => 'exists:outlets,id',
-            'only_losses' => 'nullable|in:0,1'
+            'only_losses' => 'nullable|in:0,1',
+            'only_gone' => 'nullable|in:0,1'
         ]);
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
@@ -372,7 +376,7 @@ class StatController extends Controller
             $dateEnd2 = date("Y-m-d", strtotime($request->date_end_2));
             $fileName = "reports/" . date('Y-m-d_H_i_s') . '_sales_migrations_report.xlsx';
             Storage::disk('local')->put($fileName, '');
-            $export = new SalesMigrations($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $request->outlet_ids, $request->only_losses);
+            $export = new SalesMigrations($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $request->outlet_ids, $request->only_losses, $request->only_gone);
             Excel::store($export, Storage::path($fileName));
             $data = $fileName;
         }

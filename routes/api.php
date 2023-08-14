@@ -137,6 +137,7 @@ Route::get('/statistic/question_summary/{id}', 'App\Http\Controllers\Api\StatCon
 Route::post('/statistic/sales_migrations', 'App\Http\Controllers\Api\StatController@sales_migrations');
 Route::post('/statistic/sales_migrations_report', 'App\Http\Controllers\Api\StatController@sales_migrations_report');
 Route::post('/statistic/users_sales_1', 'App\Http\Controllers\Api\StatController@users_sales_1');
+Route::post('/statistic/users_sales_2', 'App\Http\Controllers\Api\StatController@users_sales_2');
 
 Route::get('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@get_rate_store');
 Route::patch('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@update_rate_store');

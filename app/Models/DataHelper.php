@@ -192,6 +192,46 @@ class DataHelper extends Model
         return array_values($users);
     }
 
+    public static function collectUsersBySales2($min, $max, $outletIds) {
+        $raw = Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, sum(sales.amount) as sum"))
+            ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')
+            ->join('users', 'users.id', '=', 'sales.user_id')
+            ->where([['amount', '>=', $min], ['amount', '<=', $max]])
+            ->whereIn('outlets.id', $outletIds)
+            ->groupBy(DB::raw('outlets.id, users.id'))->get();
+
+        $users = [];
+        foreach ($raw as $item) {
+            if (!isset($users[$item['user_id']])) {
+                $users[$item['user_id']] = [
+                    'user_id' => $item['user_id'],
+                    'name' => $item['name'],
+                    'phone' => $item['phone'],
+                ];
+            }
+        }
+        $outlets = [];
+        foreach ($raw as $item) {
+            if (!isset($outlets[$item['user_id']])) {
+                $outlets[$item['user_id']] = [];
+            }
+            $outlets[$item['user_id']][] = [
+                'sum' => $item['sum'],
+                'outlet_name' => $item['outlet_name']
+            ];
+        }
+        foreach ($users as &$user) {
+            $total = 0;
+            foreach ($outlets[$user['user_id']] as $outlet) {
+                $total += $outlet['sum'];
+            }
+            $user['outlets'] = $outlets[$user['user_id']];
+            $user['total'] = $total;
+        }
+
+        return array_values($users);
+    }
+
     public static function collectSalesMigrationsInfo($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $outletIds, $onlyLosses = false, $onlyGone = false) {
         $rawData1 = Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, count(*) as count"))
             ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')

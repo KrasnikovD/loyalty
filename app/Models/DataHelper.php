@@ -193,15 +193,18 @@ class DataHelper extends Model
     }
 
     public static function collectUsersBySales2($min, $max, $outletIds) {
-        $raw = Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, sum(sales.amount) as sum"))
+        $q =  Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, count(*) as count"))
             ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')
             ->join('users', 'users.id', '=', 'sales.user_id')
-            ->where([['amount', '>=', $min], ['amount', '<=', $max]])
             ->whereIn('outlets.id', $outletIds)
-            ->groupBy(DB::raw('outlets.id, users.id'))->get();
-
+            ->groupBy(DB::raw('outlets.id, users.id'));
+        $raw = DB::table( DB::raw("({$q->toSql()}) as sub") )
+            ->mergeBindings($q->getQuery())
+            ->where([['count', '>=', $min], ['count', '<=', $max]])
+            ->get();
         $users = [];
         foreach ($raw as $item) {
+            $item = (array)$item;
             if (!isset($users[$item['user_id']])) {
                 $users[$item['user_id']] = [
                     'user_id' => $item['user_id'],
@@ -212,6 +215,51 @@ class DataHelper extends Model
         }
         $outlets = [];
         foreach ($raw as $item) {
+            $item = (array)$item;
+            if (!isset($outlets[$item['user_id']])) {
+                $outlets[$item['user_id']] = [];
+            }
+            $outlets[$item['user_id']][] = [
+                'count' => $item['count'],
+                'outlet_name' => $item['outlet_name']
+            ];
+        }
+        foreach ($users as &$user) {
+            $total = 0;
+            foreach ($outlets[$user['user_id']] as $outlet) {
+                $total += $outlet['count'];
+            }
+            $user['outlets'] = $outlets[$user['user_id']];
+            $user['total'] = $total;
+        }
+
+        return array_values($users);
+    }
+
+    public static function collectUsersBySales3($min, $max, $outletIds) {
+        $q =  Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, sum(sales.amount) as sum"))
+            ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')
+            ->join('users', 'users.id', '=', 'sales.user_id')
+            ->whereIn('outlets.id', $outletIds)
+            ->groupBy(DB::raw('outlets.id, users.id'));
+        $raw = DB::table( DB::raw("({$q->toSql()}) as sub") )
+            ->mergeBindings($q->getQuery())
+            ->where([['sum', '>=', $min], ['sum', '<=', $max]])
+            ->get();
+        $users = [];
+        foreach ($raw as $item) {
+            $item = (array)$item;
+            if (!isset($users[$item['user_id']])) {
+                $users[$item['user_id']] = [
+                    'user_id' => $item['user_id'],
+                    'name' => $item['name'],
+                    'phone' => $item['phone'],
+                ];
+            }
+        }
+        $outlets = [];
+        foreach ($raw as $item) {
+            $item = (array)$item;
             if (!isset($outlets[$item['user_id']])) {
                 $outlets[$item['user_id']] = [];
             }

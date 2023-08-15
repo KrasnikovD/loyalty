@@ -448,4 +448,37 @@ class StatController extends Controller
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
+
+    /**
+     * @api {post} /api/statistic/users_sales_3 User Sales Filter 3
+     * @apiName UserSalesFilter3
+     * @apiGroup AdminStat
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} min
+     * @apiParam {integer} max
+     * @apiParam {integer[]} outlet_ids
+     */
+
+    public function users_sales_3(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validator = Validator::make($request->all(), [
+            'min' => 'required|integer',
+            'max' => 'required|integer',
+            'outlet_ids' => 'required|array',
+            'outlet_ids.*' => 'exists:outlets,id',
+        ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $data = DataHelper::collectUsersBySales3($request->min, $request->max, $request->outlet_ids);
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
 }

@@ -236,12 +236,19 @@ class DataHelper extends Model
         return array_values($users);
     }
 
-    public static function collectUsersBySales3($min, $max, $outletIds) {
-        $q =  Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, sum(sales.amount) as sum"))
-            ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')
+    public static function collectUsersBySales3($dateBegin, $dateEnd, $min, $max, $outletIds = null) {
+        $q =  Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, sum(sales.amount) as sum, count(*) as count"))
             ->join('users', 'users.id', '=', 'sales.user_id')
-            ->whereIn('outlets.id', $outletIds)
-            ->groupBy(DB::raw('outlets.id, users.id'));
+            ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')
+            ->where(DB::raw('cast(sales.dt as date)'), '>=', $dateBegin)
+            ->where(DB::raw('cast(sales.dt as date)'), '<=', $dateEnd);
+        if ($outletIds) {
+            $q->whereIn('outlets.id', $outletIds)
+                ->groupBy(DB::raw('outlets.id, users.id'));
+        } else {
+            $q->groupBy(DB::raw('users.id'));
+        }
+
         $raw = DB::table( DB::raw("({$q->toSql()}) as sub") )
             ->mergeBindings($q->getQuery())
             ->where([['sum', '>=', $min], ['sum', '<=', $max]])
@@ -265,16 +272,12 @@ class DataHelper extends Model
             }
             $outlets[$item['user_id']][] = [
                 'sum' => $item['sum'],
+                'count' => $item['count'],
                 'outlet_name' => $item['outlet_name']
             ];
         }
         foreach ($users as &$user) {
-            $total = 0;
-            foreach ($outlets[$user['user_id']] as $outlet) {
-                $total += $outlet['sum'];
-            }
             $user['outlets'] = $outlets[$user['user_id']];
-            $user['total'] = $total;
         }
 
         return array_values($users);

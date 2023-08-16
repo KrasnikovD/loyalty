@@ -4055,6 +4055,20 @@ define({ "api": [
           },
           {
             "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "date_begin",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "date_end",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
             "type": "integer[]",
             "optional": false,
             "field": "outlet_ids",

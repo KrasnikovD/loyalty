@@ -458,6 +458,8 @@ class StatController extends Controller
      *
      * @apiParam {integer} min
      * @apiParam {integer} max
+     * @apiParam {string} date_begin
+     * @apiParam {string} date_end
      * @apiParam {integer[]} outlet_ids
      */
 
@@ -469,7 +471,9 @@ class StatController extends Controller
         $validator = Validator::make($request->all(), [
             'min' => 'required|integer',
             'max' => 'required|integer',
-            'outlet_ids' => 'required|array',
+            'date_begin' => 'required',
+            'date_end' => 'required',
+            'outlet_ids' => 'nullable|array',
             'outlet_ids.*' => 'exists:outlets,id',
         ]);
         if ($validator->fails()) {
@@ -477,7 +481,9 @@ class StatController extends Controller
             $httpStatus = 400;
         }
         if (empty($errors)) {
-            $data = DataHelper::collectUsersBySales3($request->min, $request->max, $request->outlet_ids);
+            $dateBegin = date("Y-m-d", strtotime($request->date_begin));
+            $dateEnd1 = date("Y-m-d", strtotime($request->date_end));
+            $data = DataHelper::collectUsersBySales3($dateBegin, $dateEnd1, $request->min, $request->max, $request->outlet_ids);
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

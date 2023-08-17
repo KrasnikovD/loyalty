@@ -273,7 +273,54 @@ class DataHelper extends Model
             $outlets[$item['user_id']][] = [
                 'sum' => $item['sum'],
                 'count' => $item['count'],
-                'outlet_name' => $item['outlet_name']
+                'outlet_name' => $outletIds ? $item['outlet_name'] : null
+            ];
+        }
+        foreach ($users as &$user) {
+            $user['outlets'] = $outlets[$user['user_id']];
+        }
+
+        return array_values($users);
+    }
+
+    public static function collectUsersBySales4($dateBegin, $dateEnd, $min, $max, $outletIds = null) {
+        $q =  Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, (sum(sales.amount) / count(*)) as sum, count(*) as count"))
+            ->join('users', 'users.id', '=', 'sales.user_id')
+            ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')
+            ->where(DB::raw('cast(sales.dt as date)'), '>=', $dateBegin)
+            ->where(DB::raw('cast(sales.dt as date)'), '<=', $dateEnd);
+        if ($outletIds) {
+            $q->whereIn('outlets.id', $outletIds)
+                ->groupBy(DB::raw('outlets.id, users.id'));
+        } else {
+            $q->groupBy(DB::raw('users.id'));
+        }
+
+        $raw = DB::table( DB::raw("({$q->toSql()}) as sub") )
+            ->mergeBindings($q->getQuery())
+            ->where([['sum', '>=', $min], ['sum', '<=', $max]])
+            ->get();
+        $users = [];
+        foreach ($raw as $item) {
+            $item = (array)$item;
+            if (!isset($users[$item['user_id']])) {
+                $users[$item['user_id']] = [
+                    'user_id' => $item['user_id'],
+                    'name' => $item['name'],
+                    'phone' => $item['phone'],
+                ];
+            }
+        }
+        $outlets = [];
+        foreach ($raw as $item) {
+            $item = (array)$item;
+            if (!isset($outlets[$item['user_id']])) {
+                $outlets[$item['user_id']] = [];
+            }
+            $outlets[$item['user_id']][] = [
+                'sum' => $item['sum'],
+                'count' => $item['count'],
+                'outlet_name' => $outletIds ? $item['outlet_name'] : null
             ];
         }
         foreach ($users as &$user) {

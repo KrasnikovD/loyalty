@@ -487,4 +487,43 @@ class StatController extends Controller
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
+
+    /**
+     * @api {post} /api/statistic/users_sales_4 User Sales Filter 4
+     * @apiName UserSalesFilter4
+     * @apiGroup AdminStat
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer} min
+     * @apiParam {integer} max
+     * @apiParam {string} date_begin
+     * @apiParam {string} date_end
+     * @apiParam {integer[]} outlet_ids
+     */
+
+    public function users_sales_4(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validator = Validator::make($request->all(), [
+            'min' => 'required|integer',
+            'max' => 'required|integer',
+            'date_begin' => 'required',
+            'date_end' => 'required',
+            'outlet_ids' => 'nullable|array',
+            'outlet_ids.*' => 'exists:outlets,id',
+        ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $dateBegin = date("Y-m-d", strtotime($request->date_begin));
+            $dateEnd1 = date("Y-m-d", strtotime($request->date_end));
+            $data = DataHelper::collectUsersBySales4($dateBegin, $dateEnd1, $request->min, $request->max, $request->outlet_ids);
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
 }

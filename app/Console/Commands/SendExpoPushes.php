@@ -54,6 +54,29 @@ class SendExpoPushes extends Command
             }
         }
 
+    /*    foreach (PushTokens::where('sent', '=', 0)->get() as $item) {
+            $storage = __DIR__ . "/../../../vendor/alymosul/exponent-server-sdk-php/storage/tokens.json";
+            if (file_exists($storage))
+                unlink($storage);
+            $item->sent = 1;
+            $item->status = "OK";
+            try {
+                $expo = Expo::normalSetup();
+                $channelName = 'channel_' . time();
+                print $channelName . "\n";
+                foreach (json_decode($item->tokens) as $token) {
+                    $expo->subscribe($channelName, $token);
+                }
+                $expo->notify([$channelName], ['title' => $item->title, 'body' => $item->body, 'sound' => 'default', 'ttl' => 3600]);
+            } catch (\Exception $exception) {
+                print $exception->getMessage() . "\n";
+                $item->status = $exception->getMessage();
+            }
+            $item->save();
+            usleep(1000000);
+        }*/
+
+
         return 0;
     }
 }

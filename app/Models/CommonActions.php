@@ -323,14 +323,14 @@ class CommonActions extends Model
         self::cardHistoryLogEditOrCreate($card, true);
     }
 
-    public static function addItemsToPushQueue($devices, $title, $body)
+    public static function addItemsToPushQueue($srcTokens, $title, $body)
     {
         $tokens = [];
         $i = 0;
         $j = 0;
-        foreach ($devices as $device) {
+        foreach ($srcTokens as $token) {
             $i++;
-            $tokens[$j][] = $device->expo_token;
+            $tokens[$j][] = $token;
             if ($i == 100) {
                 $i = 0;
                 $j ++;

@@ -1117,11 +1117,7 @@ class AdminController extends Controller
                 if ($distance <= $request->radius) $tokens[$user->id] = $user->expo_token;
             }
             if (!empty($tokens)) {
-                $pushTokens = new PushTokens;
-                $pushTokens->title = $request->title;
-                $pushTokens->body = $request->body;
-                $pushTokens->tokens = json_encode(array_values($tokens));
-                $pushTokens->save();
+                CommonActions::addItemsToPushQueue($tokens, $request->title, $request->body);
             /*    $expo = Expo::normalSetup();
                 $channelName = 'channel_' . time();
                 foreach ($tokens as $token)
@@ -2453,11 +2449,7 @@ class AdminController extends Controller
                             foreach ($tokens as $token)
                                 $expo->subscribe($channelName, $token);
                             $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default', 'ttl' => 3600]);*/
-                            $pushTokens = new PushTokens;
-                            $pushTokens->title = $title;
-                            $pushTokens->body = $body;
-                            $pushTokens->tokens = json_encode(array_values($tokens));
-                            $pushTokens->save();
+                            CommonActions::addItemsToPushQueue($tokens, $title, $body);
                         }
                     }
                 }
@@ -2645,11 +2637,12 @@ class AdminController extends Controller
                         $devices = Devices::select('expo_token')->where('disabled', '=', 0)->get()->toArray();
                         $tokens = array_column($devices, 'expo_token');
                         if (!empty($tokens)) {
-                            $expo = Expo::normalSetup();
+                        /*  $expo = Expo::normalSetup();
                             $channelName = 'channel_' . time();
                             foreach ($tokens as $token)
                                 $expo->subscribe($channelName, $token);
-                            $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default', 'ttl' => 3600]);
+                            $expo->notify([$channelName], ['title' => $title, 'body' => $body, 'sound' => 'default', 'ttl' => 3600]);*/
+                            CommonActions::addItemsToPushQueue($tokens, $title, $body);
                         }
                     }
                 }
@@ -2840,14 +2833,8 @@ class AdminController extends Controller
                         $device->notify(new WelcomeNotification($title, $body));
                     }
                 } else {
-                   $tokens = [];
-                    foreach ($devices as $device)
-                        $tokens[] = $device->expo_token;
-                    $pushTokens = new PushTokens;
-                    $pushTokens->title = $request->title;
-                    $pushTokens->body = $request->body;
-                    $pushTokens->tokens = json_encode(array_values($tokens));
-                    $pushTokens->save();
+                    $tokens = array_column($devices, 'expo_token');
+                    CommonActions::addItemsToPushQueue($tokens, $request->title, $request->body);
                 /*    $expo = Expo::normalSetup();
                     $channelName = 'channel_' . time();
 

@@ -6,6 +6,7 @@ use App\Models\Devices;
 use App\Models\PushTokens;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Console\Command;
+use ExponentPhpSDK\Expo;
 
 class SendExpoPushes extends Command
 {
@@ -40,9 +41,13 @@ class SendExpoPushes extends Command
      */
     public function handle()
     {
+        $storage = __DIR__ . "/../../../vendor/alymosul/exponent-server-sdk-php/storage/tokens.json";
+        $logName = '/' . date('Y-m-d') . '_' . 'pushes.log';
         foreach (PushTokens::where('sent', '=', 0)->get() as $item) {
             $item->sent = 1;
             $item->save();
+            if (file_exists($storage))
+                unlink($storage);
             foreach (json_decode($item->tokens) as $token) {
                 $device = Devices::where('expo_token', '=', $token)->first();
                 try {
@@ -50,6 +55,8 @@ class SendExpoPushes extends Command
                         json_encode(['sound' => 'default', 'ttl' => 30])));
                 } catch (\Exception $exception) {
                     print $exception->getMessage() . "\n";
+                    file_put_contents(getcwd() . $logName, $exception->getMessage(), FILE_APPEND);
+                    file_put_contents(getcwd() . $logName, "\n*****************\n", FILE_APPEND);
                 }
             }
         }

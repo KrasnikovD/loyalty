@@ -43,13 +43,17 @@ class SendExpoPushes extends Command
     {
         $storage = __DIR__ . "/../../../vendor/alymosul/exponent-server-sdk-php/storage/tokens.json";
         $logName = '/' . date('Y-m-d') . '_' . 'pushes.log';
-        foreach (PushTokens::where('sent', '=', 0)->get() as $item) {
-            $item->sent = 1;
-            $item->save();
+        $items = PushTokens::where('sent', '=', 0)->get();
+        $itemsIds = array_column($items->toArray(), 'id');
+        PushTokens::whereIn('id', $itemsIds)->update(['sent' => 1]);
+        foreach ($items as $item) {
             if (file_exists($storage))
                 unlink($storage);
             foreach (json_decode($item->tokens) as $token) {
                 $device = Devices::where('expo_token', '=', $token)->first();
+                if (!$device) {
+                    continue;
+                }
                 try {
                     $device->notify(new WelcomeNotification($item->title, $item->body,
                         json_encode(['sound' => 'default', 'ttl' => 30])));

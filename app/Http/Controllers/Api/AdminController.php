@@ -3386,4 +3386,75 @@ class AdminController extends Controller
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
+
+    /**
+     * @api {post} /api/bulk/bonus_add Bulk Bonus Add
+     * @apiName BulkBonusAdd
+     * @apiGroup AdminBulkOperations
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer[]} client_ids
+     * @apiParam {integer} duration
+     * @apiParam {integer} value
+     */
+
+    public function bulk_bonus_add(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+
+        $validatorData = $request->all();
+        $validatorRules = [
+            'client_ids' => 'required|array',
+            'client_ids.*' => 'exists:users,id',
+            'duration' => 'required|integer',
+            'value' => 'required|integer',
+        ];
+
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+
+        if (empty($errors)) {
+            $bonusRule = new BonusRules;
+            $bonusRule->name = "Статистика " . date('Y-m-d H:i:s');
+            $bonusRule->duration = $request->duration;
+            $bonusRule->value = $request->value;
+            $bonusRule->save();
+
+            $billProgramId = $remainingAmount = null;
+            $programs = BillPrograms::orderBy('from', 'asc')->get();
+            if (isset($programs[0]) && $programs[0]->from == 0) {
+                $billProgramId = $programs[0]->id;
+                $remainingAmount = isset($programs[1]) ? $programs[1]->from : $programs[0]->to;
+            }
+            foreach ($request->client_ids as $clientId) {
+                $cards = Cards::where('user_id', $clientId)->get();
+                foreach ($cards as $card) {
+                    $bill = new Bills;
+                    $bill->card_id = $card->id;
+                    $bill->bill_type_id = BillTypes::where('name', BillTypes::TYPE_BONUS)->value('id');
+                    $bill->bill_program_id = $billProgramId;
+                    $bill->remaining_amount = $remainingAmount;
+                    $bill->value = $bonusRule->value;
+                    $bill->rule_id = $bonusRule->id;
+                    $bill->end_dt = date('Y-m-d', strtotime(date('Y-m-d') . ' + ' . $bonusRule->duration . ' days'));
+                    $bill->rule_name = $bonusRule->name;
+                    $bill->save();
+                    CommonActions::cardHistoryLogAddBonusByRule($card, $bill);
+
+                    $title = __('messages.im_bill_by_bonus_rule_added_title');
+                    $body = __('messages.im_bill_by_bonus_rule_added_body', ['end_date' => date('d.m.y', strtotime($bill->end_dt))]);
+                    $device = Devices::where('user_id', '=', $card->user_id)->first();
+                    if ($device)
+                        $device->notify(new WelcomeNotification($title, $body));
+                }
+            }
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
 }

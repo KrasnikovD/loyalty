@@ -798,6 +798,56 @@ define({ "api": [
     "groupTitle": "AdminBonusRules"
   },
   {
+    "type": "post",
+    "url": "/api/bulk/bonus_add",
+    "title": "Bulk Bonus Add",
+    "name": "BulkBonusAdd",
+    "group": "AdminBulkOperations",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "integer[]",
+            "optional": false,
+            "field": "client_ids",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "duration",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": false,
+            "field": "value",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/AdminController.php",
+    "groupTitle": "AdminBulkOperations"
+  },
+  {
     "type": "patch",
     "url": "/api/cards/attach_user/:number",
     "title": "Attach / Detach User To Card",

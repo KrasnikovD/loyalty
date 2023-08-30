@@ -62,6 +62,8 @@ Route::get('/fields/delete/{id}', 'App\Http\Controllers\Api\AdminController@dele
 Route::post('/fields/set_client_field_value', 'App\Http\Controllers\Api\AdminController@set_client_field_value');
 Route::post('/fields/clear_client_field_value', 'App\Http\Controllers\Api\AdminController@clear_client_field_value');
 
+Route::post('/bulk/bonus_add', 'App\Http\Controllers\Api\AdminController@bulk_bonus_add');
+
 Route::post('/bonus_rules/create', 'App\Http\Controllers\Api\BonusRulesController@edit_bonus_rules');
 Route::post('/bonus_rules/edit/{id}', 'App\Http\Controllers\Api\BonusRulesController@edit_bonus_rules');
 Route::post('/bonus_rules/list', 'App\Http\Controllers\Api\BonusRulesController@list_bonus_rules');

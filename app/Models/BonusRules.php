@@ -15,6 +15,7 @@ class BonusRules extends Model
 
     const TYPE_BONUS = 'bonus';
     const TYPE_QUESTION = 'question';
+    const TYPE_STAT = 'statistics';
 
     const TYPE_DATE_TRIGGER_DATE = 1;
     const TYPE_DATE_TRIGGER_MONTHDAY = 2;

@@ -3423,6 +3423,7 @@ class AdminController extends Controller
             $bonusRule = new BonusRules;
             $bonusRule->name = "Статистика " . date('Y-m-d H:i:s');
             $bonusRule->duration = $request->duration;
+            $bonusRule->type = BonusRules::TYPE_STAT;
             $bonusRule->value = $request->value;
             $bonusRule->save();
 

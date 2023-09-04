@@ -3434,8 +3434,8 @@ class AdminController extends Controller
                 $remainingAmount = isset($programs[1]) ? $programs[1]->from : $programs[0]->to;
             }
             foreach ($request->client_ids as $clientId) {
-                $cards = Cards::where('user_id', $clientId)->get();
-                foreach ($cards as $card) {
+                $card = Cards::where([['user_id', $clientId],['is_main', 1]])->first();
+                if ($card) {
                     $bill = new Bills;
                     $bill->card_id = $card->id;
                     $bill->bill_type_id = BillTypes::where('name', BillTypes::TYPE_BONUS)->value('id');
@@ -3455,6 +3455,49 @@ class AdminController extends Controller
                         $device->notify(new WelcomeNotification($title, $body));
                 }
             }
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/bulk/send_push Bulk Send Push
+     * @apiName BulkSendPush
+     * @apiGroup AdminBulkOperations
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {integer[]} client_ids
+     * @apiParam {string} title
+     * @apiParam {string} body
+     */
+
+    public function bulk_send_push(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+
+        $validatorData = $request->all();
+        $validatorRules = [
+            'client_ids' => 'required|array',
+            'client_ids.*' => 'exists:users,id',
+            'title' => 'required|string',
+            'body' => 'required|string',
+        ];
+
+        $validator = Validator::make($validatorData, $validatorRules);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+
+        if (empty($errors)) {
+            $devices = Devices::select('expo_token')
+                ->where('disabled', '=', 0)
+                ->whereIn('user_id', $request->client_ids)
+                ->get()->toArray();
+            $tokens = array_column($devices, 'expo_token');
+            CommonActions::addItemsToPushQueue($tokens, $request->title, $request->body);
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

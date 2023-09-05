@@ -3435,6 +3435,9 @@ class AdminController extends Controller
             }
             foreach ($request->client_ids as $clientId) {
                 $card = Cards::where([['user_id', $clientId],['is_main', 1]])->first();
+                if (!$card) {
+                    $card = Cards::where('user_id', $clientId)->first();
+                }
                 if ($card) {
                     $bill = new Bills;
                     $bill->card_id = $card->id;

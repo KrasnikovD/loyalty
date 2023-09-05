@@ -4170,7 +4170,7 @@
           {
             "group": "Parameter",
             "type": "integer[]",
-            "optional": false,
+            "optional": true,
             "field": "outlet_ids",
             "description": ""
           }
@@ -4234,7 +4234,7 @@
           {
             "group": "Parameter",
             "type": "integer[]",
-            "optional": false,
+            "optional": true,
             "field": "outlet_ids",
             "description": ""
           }

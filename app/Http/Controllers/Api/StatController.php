@@ -460,7 +460,7 @@ class StatController extends Controller
      * @apiParam {integer} max
      * @apiParam {string} date_begin
      * @apiParam {string} date_end
-     * @apiParam {integer[]} outlet_ids
+     * @apiParam {integer[]} [outlet_ids]
      */
 
     public function users_sales_3(Request $request)
@@ -499,7 +499,7 @@ class StatController extends Controller
      * @apiParam {integer} max
      * @apiParam {string} date_begin
      * @apiParam {string} date_end
-     * @apiParam {integer[]} outlet_ids
+     * @apiParam {integer[]} [outlet_ids]
      */
 
     public function users_sales_4(Request $request)

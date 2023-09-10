@@ -3016,6 +3016,13 @@ define({ "api": [
             "optional": true,
             "field": "limit",
             "description": "<p>row count</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "boolean",
+            "optional": true,
+            "field": "is_top_product_needed",
+            "description": ""
           }
         ]
       }

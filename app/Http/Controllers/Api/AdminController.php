@@ -974,6 +974,7 @@ class AdminController extends Controller
      * @apiParam {string} [dir] order direction
      * @apiParam {integer} [offset] start row number, used only when limit is set
      * @apiParam {integer} [limit] row count
+     * @apiParam {boolean} [is_top_product_needed]
      */
 
     /**
@@ -998,6 +999,7 @@ class AdminController extends Controller
                 'order' => 'in:id,name,phone,address,city_name,street_name,house_name,lon,lat,created_at,updated_at',
                 'offset' => 'integer',
                 'limit' => 'integer',
+                'is_top_product_needed' => 'nullable|in:0,1,true,false'
             ];
         } else {
             $validatorRules = ['id' => 'exists:outlets,id'];
@@ -1010,6 +1012,7 @@ class AdminController extends Controller
 
         if (empty($errors)) {
             $count = 0;
+            $isTopProductNeeded = $request->is_top_product_needed;
             $query = Outlet::select('*');
             if ($id) $query->where('id', '=', $id);
             else {
@@ -1026,7 +1029,9 @@ class AdminController extends Controller
                 }
             }
             $list = $query->get()->toArray();
-            DataHelper::collectOutletStatInfo($list);
+            if (intval($isTopProductNeeded) === 1) {
+                DataHelper::collectOutletStatInfo($list);
+            }
             if ($id) $data = $list[0];
             else $data = ['count' => $count, 'list' => $list];
         }

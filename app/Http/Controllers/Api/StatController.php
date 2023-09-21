@@ -482,8 +482,8 @@ class StatController extends Controller
         }
         if (empty($errors)) {
             $dateBegin = date("Y-m-d", strtotime($request->date_begin));
-            $dateEnd1 = date("Y-m-d", strtotime($request->date_end));
-            $data = DataHelper::collectUsersBySales3($dateBegin, $dateEnd1, $request->min, $request->max, $request->outlet_ids);
+            $dateEnd = date("Y-m-d", strtotime($request->date_end));
+            $data = DataHelper::collectUsersBySales3($dateBegin, $dateEnd, $request->min, $request->max, $request->outlet_ids);
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }
@@ -521,8 +521,46 @@ class StatController extends Controller
         }
         if (empty($errors)) {
             $dateBegin = date("Y-m-d", strtotime($request->date_begin));
-            $dateEnd1 = date("Y-m-d", strtotime($request->date_end));
-            $data = DataHelper::collectUsersBySales4($dateBegin, $dateEnd1, $request->min, $request->max, $request->outlet_ids);
+            $dateEnd = date("Y-m-d", strtotime($request->date_end));
+            $data = DataHelper::collectUsersBySales4($dateBegin, $dateEnd, $request->min, $request->max, $request->outlet_ids);
+        }
+        return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
+    }
+
+    /**
+     * @api {post} /api/statistic/users_sales_5 User Sales Filter 5
+     * @apiName UserSalesFilter5
+     * @apiGroup AdminStat
+     *
+     * @apiHeader {string} Authorization Basic current user token
+     *
+     * @apiParam {string} date_begin
+     * @apiParam {string} date_end
+     * @apiParam {boolean} [is_novelty]
+     * @apiParam {integer} [is_stock]
+     * @apiParam {integer} [category_id]
+     */
+
+    public function users_sales_5(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $data = null;
+        $validator = Validator::make($request->all(), [
+            'is_novelty' => 'nullable|in:0,1,true,false',
+            'is_stock' => 'nullable|in:0,1,true,false',
+            'date_begin' => 'required',
+            'date_end' => 'required',
+            'category_id' => 'nullable|exists:categories,id',
+        ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            $dateBegin = date("Y-m-d", strtotime($request->date_begin));
+            $dateEnd = date("Y-m-d", strtotime($request->date_end));
+            $data = DataHelper::collectUsersBySales5($dateBegin, $dateEnd, $request->is_novelty, $request->is_stock, $request->category_id);
         }
         return response()->json(['errors' => $errors, 'data' => $data], $httpStatus);
     }

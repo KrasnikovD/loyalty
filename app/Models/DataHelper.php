@@ -330,6 +330,59 @@ class DataHelper extends Model
         return array_values($users);
     }
 
+    public static function collectUsersBySales5($dateBegin, $dateEnd, $isNovelty, $isStock, $categoryId = null) {
+        $q = Sales::select(DB::raw("products.id as product_id, products.code as product_code, products.name as product_name, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, count(*) as count, sum(baskets.count) as sale_count"))
+            ->join('users', 'users.id', '=', 'sales.user_id')
+            ->join('baskets', 'sales.id', '=', 'baskets.sale_id')
+            ->join('products', 'products.id', '=', 'baskets.product_id')
+            ->where(DB::raw('cast(sales.dt as date)'), '>=', $dateBegin)
+            ->where(DB::raw('cast(sales.dt as date)'), '<=', $dateEnd);
+        if ($isNovelty) {
+            $q->where('products.is_novelty', '=', 1);
+        }
+        if ($isStock) {
+            $q->where('products.is_stock', '=', 1);
+        }
+        if ($categoryId) {
+            $q->where('products.category_id', '=', $categoryId);
+        }
+        $raw = $q->groupBy(DB::raw('products.id, users.id'))
+            ->orderBy('users.id')
+            ->get();
+
+        $users = [];
+        foreach ($raw as $item) {
+            if (!isset($users[$item['user_id']])) {
+                $users[$item['user_id']] = [
+                    'user_id' => $item['user_id'],
+                    'name' => $item['name'],
+                    'phone' => $item['phone'],
+                ];
+            }
+        }
+
+        $products = [];
+        $totalCounts = [];
+        foreach ($raw as $item) {
+            if (!isset($products[$item['user_id']])) {
+                $products[$item['user_id']] = [];
+                $totalCounts[$item['user_id']] = 0;
+            }
+            $products[$item['user_id']][] = [
+                'id' => $item['product_id'],
+                'code' => $item['product_code'],
+                'name' => $item['product_name'],
+                'sale_count' => $item['sale_count'],
+            ];
+            $totalCounts[$item['user_id']] += $item['sale_count'];
+        }
+        foreach ($users as &$user) {
+            $user['products'] = $products[$user['user_id']];
+            $user['total'] =  $totalCounts[$user['user_id']];
+        }
+        return array_values($users);
+    }
+
     public static function collectSalesMigrationsInfo($dateBegin1, $dateBegin2, $dateEnd1, $dateEnd2, $outletIds, $onlyLosses = false, $onlyGone = false) {
         $rawData1 = Sales::select(DB::raw("outlets.name as outlet_name, outlets.id as outlet_id, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, count(*) as count"))
             ->join('outlets', 'outlets.id', '=', 'sales.outlet_id')

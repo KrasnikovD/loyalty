@@ -143,6 +143,7 @@ Route::post('/statistic/users_sales_1', 'App\Http\Controllers\Api\StatController
 Route::post('/statistic/users_sales_2', 'App\Http\Controllers\Api\StatController@users_sales_2');
 Route::post('/statistic/users_sales_3', 'App\Http\Controllers\Api\StatController@users_sales_3');
 Route::post('/statistic/users_sales_4', 'App\Http\Controllers\Api\StatController@users_sales_4');
+Route::post('/statistic/users_sales_5', 'App\Http\Controllers\Api\StatController@users_sales_5');
 
 Route::get('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@get_rate_store');
 Route::patch('/translations/rate_store', 'App\Http\Controllers\Api\TranslationController@update_rate_store');

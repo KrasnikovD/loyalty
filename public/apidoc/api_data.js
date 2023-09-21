@@ -4254,6 +4254,70 @@ define({ "api": [
   },
   {
     "type": "post",
+    "url": "/api/statistic/users_sales_5",
+    "title": "User Sales Filter 5",
+    "name": "UserSalesFilter5",
+    "group": "AdminStat",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "string",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Basic current user token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "date_begin",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "date_end",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "boolean",
+            "optional": true,
+            "field": "is_novelty",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "is_stock",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "optional": true,
+            "field": "category_id",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/StatController.php",
+    "groupTitle": "AdminStat"
+  },
+  {
+    "type": "post",
     "url": "/api/stocks/create",
     "title": "Create Stock",
     "name": "CreateStock",

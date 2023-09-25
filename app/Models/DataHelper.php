@@ -335,8 +335,8 @@ class DataHelper extends Model
             ->join('users', 'users.id', '=', 'sales.user_id')
             ->join('baskets', 'sales.id', '=', 'baskets.sale_id')
             ->join('products', 'products.id', '=', 'baskets.product_id')
-            ->where(DB::raw('cast(sales.dt as date)'), '>=', $dateBegin)
-            ->where(DB::raw('cast(sales.dt as date)'), '<=', $dateEnd);
+            ->where(DB::raw('cast(baskets.created_at as date)'), '>=', $dateBegin)
+            ->where(DB::raw('cast(baskets.created_at as date)'), '<=', $dateEnd);
         if ($isNovelty) {
             $q->where('products.is_novelty', '=', 1);
         }
@@ -349,7 +349,6 @@ class DataHelper extends Model
         $raw = $q->groupBy(DB::raw('products.id, users.id'))
             ->orderBy('users.id')
             ->get();
-
         $users = [];
         foreach ($raw as $item) {
             if (!isset($users[$item['user_id']])) {

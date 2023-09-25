@@ -3169,6 +3169,13 @@ define({ "api": [
           {
             "group": "Parameter",
             "type": "integer",
+            "optional": true,
+            "field": "is_stock",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
             "optional": false,
             "field": "is_by_weight",
             "description": ""
@@ -3294,6 +3301,17 @@ define({ "api": [
             ],
             "optional": true,
             "field": "is_novelty",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "integer",
+            "allowedValues": [
+              "0",
+              "1"
+            ],
+            "optional": true,
+            "field": "is_stock",
             "description": ""
           },
           {

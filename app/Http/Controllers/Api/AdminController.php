@@ -1581,6 +1581,7 @@ class AdminController extends Controller
      * @apiParam {string[]} images
      * @apiParam {integer} [is_hit]
      * @apiParam {integer} [is_novelty]
+     * @apiParam {integer} [is_stock]
      * @apiParam {integer} is_by_weight
      * @apiParam {integer} [visible]
      */
@@ -1600,6 +1601,7 @@ class AdminController extends Controller
      * @apiParam {string[]} [images]
      * @apiParam {integer=0,1} [is_hit]
      * @apiParam {integer=0,1} [is_novelty]
+     * @apiParam {integer=0,1} [is_stock]
      * @apiParam {integer=0,1} [is_by_weight]
      * @apiParam {integer=0,1} [visible]
      */
@@ -1630,6 +1632,7 @@ class AdminController extends Controller
       //  $validatorRules['price'] = 'integer';
         $validatorRules['is_hit'] = 'nullable|in:0,1,true,false';
         $validatorRules['is_novelty'] = 'nullable|in:0,1,true,false';
+        $validatorRules['is_stock'] = 'nullable|in:0,1,true,false';
         $validatorRules['is_by_weight'] = 'nullable|in:0,1,true,false';
         $validatorRules['visible'] = 'nullable|in:0,1,true,false';
 
@@ -1657,6 +1660,12 @@ class AdminController extends Controller
                     $request->is_novelty === true ||
                     intval($request->is_novelty) === 1);
                 $product->is_novelty = $isNovelty;
+            }
+            if (isset($request->is_stock)) {
+                $isStock = intval($request->is_stock === 'true' ||
+                    $request->is_stock === true ||
+                    intval($request->is_stock) === 1);
+                $product->is_stock = $isStock;
             }
             if (isset($request->is_by_weight)) {
                 $isByWeight = intval($request->is_by_weight === 'true' ||

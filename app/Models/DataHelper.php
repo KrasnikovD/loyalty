@@ -331,7 +331,7 @@ class DataHelper extends Model
     }
 
     public static function collectUsersBySales5($dateBegin, $dateEnd, $isNovelty, $isStock, $categoryId = null) {
-        $q = Sales::select(DB::raw("products.id as product_id, products.code as product_code, products.name as product_name, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, count(*) as count, sum(baskets.count) as sale_count"))
+        $q = Sales::select(DB::raw("products.id as product_id, products.code as product_code, products.name as product_name, users.id as user_id, concat(users.first_name, ' ', users.second_name) as name, users.phone, sum(baskets.count * baskets.amount) as sale_amount, sum(baskets.count) as sale_count"))
             ->join('users', 'users.id', '=', 'sales.user_id')
             ->join('baskets', 'sales.id', '=', 'baskets.sale_id')
             ->join('products', 'products.id', '=', 'baskets.product_id')
@@ -361,23 +361,20 @@ class DataHelper extends Model
         }
 
         $products = [];
-        $totalCounts = [];
         foreach ($raw as $item) {
             if (!isset($products[$item['user_id']])) {
                 $products[$item['user_id']] = [];
-                $totalCounts[$item['user_id']] = 0;
             }
             $products[$item['user_id']][] = [
                 'id' => $item['product_id'],
                 'code' => $item['product_code'],
                 'name' => $item['product_name'],
                 'sale_count' => $item['sale_count'],
+                'sale_amount' => $item['sale_amount'],
             ];
-            $totalCounts[$item['user_id']] += $item['sale_count'];
         }
         foreach ($users as &$user) {
             $user['products'] = $products[$user['user_id']];
-            $user['total'] =  $totalCounts[$user['user_id']];
         }
         return array_values($users);
     }

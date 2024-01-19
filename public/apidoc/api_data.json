@@ -6573,6 +6573,40 @@
     "groupTitle": "OutletCards"
   },
   {
+    "type": "post",
+    "url": "/api/outlets/card/get_by_phone",
+    "title": "Get Card by Phone",
+    "name": "GetCardByPhone",
+    "group": "OutletCards",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "phone",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "allowedValues": [
+              "xml",
+              "json"
+            ],
+            "optional": true,
+            "field": "out_format",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "../app/Http/Controllers/Api/OutletController.php",
+    "groupTitle": "OutletCards"
+  },
+  {
     "type": "get",
     "url": "/api/outlets/coupon/get/:id",
     "title": "Get Coupon",

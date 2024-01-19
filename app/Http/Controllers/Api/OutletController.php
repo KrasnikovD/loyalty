@@ -295,9 +295,9 @@ class OutletController extends Controller
                 $added = 0;
                 if ($program) {
                     $percent = $program->percent;
-                    if (isset($request->currency_type) && $request->currency_type == 2) {
+                /*    if (isset($request->currency_type) && $request->currency_type == 2) {
                         $percent += 3;
-                    }
+                    }*/
                     $added = ($birthdayStockValue ?: $percent) * 0.01 * $sale->amount;
                     if ($debited) $added = 0;
                     $added = ceil($added);
@@ -587,6 +587,67 @@ class OutletController extends Controller
             $card = Cards::select('cards.*', 'users.first_name as user_first_name', 'users.second_name as user_second_name', 'users.phone as user_phone', 'users.birthday as user_birthday')
                 ->leftJoin('users', 'users.id', '=', 'cards.user_id')
                 ->where('number', '=', $cardNumber)->get()->toArray();
+            DataHelper::collectCardsInfo($card);
+        }
+        if ($request->out_format == 'json')
+            return response()->json(['errors' => $errors, 'data' => $card], $httpStatus);
+        else
+            return response(ArrayToXml::convert(['errors' => $errors, 'data' => $card], [], true, 'UTF-8'), $httpStatus)
+                ->header('Content-Type', 'text/xml');
+    }
+
+    /**
+     * @api {post} /api/outlets/card/get_by_phone Get Card by Phone
+     * @apiName GetCardByPhone
+     * @apiGroup OutletCards
+     *
+     * @apiParam {string} phone
+     * @apiParam {string=xml,json} [out_format]
+     */
+
+    public function get_card_by_phone(Request $request)
+    {
+        $errors = [];
+        $httpStatus = 200;
+        $card = null;
+        $phone = str_replace(array("(", ")", " ", "-"), "", $request->phone);
+        $validatorRules = [
+            'phone' => 'required|exists:users,phone',
+            'out_format' => 'in:xml,json'
+        ];
+        $validator = Validator::make(
+            array_merge($request->all(), ['phone' => $phone]),
+            $validatorRules
+        );
+        if ($validator->fails()) {
+            $errors = $validator->errors()->toArray();
+            $httpStatus = 400;
+        }
+        if (empty($errors)) {
+            if (!Cards::select('cards.*')->leftJoin('users', 'users.id', '=', 'cards.user_id')
+                ->where('users.phone', '=', $phone)->exists()) {
+                $card = new Cards;
+                $card->number =  'Z' . CommonActions::randomString(7, true);
+                $card->save();
+                $billProgramId = $remainingAmount = null;
+                $programs = BillPrograms::orderBy('from', 'asc')->get();
+                if (isset($programs[0]) && $programs[0]->from == 0) {
+                    $billProgramId = $programs[0]->id;
+                    $remainingAmount = isset($programs[1]) ? $programs[1]->from : $programs[0]->to;
+                }
+
+                $bill = new Bills;
+                $bill->card_id = $card->id;
+                $bill->bill_type_id = BillTypes::where('name', '=', BillTypes::TYPE_DEFAULT)->value('id');
+                $bill->bill_program_id = $billProgramId;
+                $bill->remaining_amount = $remainingAmount;
+                $bill->save();
+
+                CommonActions::cardHistoryLogEditOrCreate($card, true);
+            }
+            $card = Cards::select('cards.*', 'users.first_name as user_first_name', 'users.second_name as user_second_name', 'users.phone as user_phone', 'users.birthday as user_birthday')
+                ->leftJoin('users', 'users.id', '=', 'cards.user_id')
+                ->where('users.phone', '=', $phone)->get()->toArray();
             DataHelper::collectCardsInfo($card);
         }
         if ($request->out_format == 'json')

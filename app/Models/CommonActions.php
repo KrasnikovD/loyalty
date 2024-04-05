@@ -307,8 +307,6 @@ class CommonActions extends Model
         if ($device) {
             $title = TranslationTexts::getByKey(TranslationTexts::IM_BONUS_NOTIFICATION_TITLE, config('app.locale'));
             $body = str_replace("{debited}", $debited, TranslationTexts::getByKey(TranslationTexts::IM_BONUS_NOTIFICATION_BODY, config('app.locale')));
-            print $title."\n".$body;
-            die();
             $device->notify(new WelcomeNotification($title, $body,
                 json_encode(['outlet_id' => $outletId, 'outlet_name' => $outletName])));
         }

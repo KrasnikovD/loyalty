@@ -343,7 +343,7 @@ class OutletController extends Controller
                 $card->save();
             }
 
-            if ($request->is_bonus) {
+            if ($debited !== 0) {
                 CommonActions::sendWriteOffBonusPush($cardInfo->user_id, $debited, $sale->outlet_id);
             }
         }

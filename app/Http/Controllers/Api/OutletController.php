@@ -588,7 +588,7 @@ class OutletController extends Controller
 
                 CommonActions::cardHistoryLogEditOrCreate($card, true);
             }
-            $card = Cards::select('cards.*', 'users.first_name as user_first_name', 'users.second_name as user_second_name', 'users.phone as user_phone', 'users.birthday as user_birthday')
+            $card = Cards::select('cards.*', 'users.active', 'users.first_name as user_first_name', 'users.second_name as user_second_name', 'users.phone as user_phone', 'users.birthday as user_birthday')
                 ->leftJoin('users', 'users.id', '=', 'cards.user_id')
                 ->where('number', '=', $cardNumber)->get()->toArray();
             DataHelper::collectCardsInfo($card);
@@ -649,7 +649,7 @@ class OutletController extends Controller
 
                 CommonActions::cardHistoryLogEditOrCreate($card, true);
             }
-            $card = Cards::select('cards.*', 'users.first_name as user_first_name', 'users.second_name as user_second_name', 'users.phone as user_phone', 'users.birthday as user_birthday')
+            $card = Cards::select('cards.*', 'users.active', 'users.first_name as user_first_name', 'users.second_name as user_second_name', 'users.phone as user_phone', 'users.birthday as user_birthday')
                 ->leftJoin('users', 'users.id', '=', 'cards.user_id')
                 ->where('users.phone', '=', $phone)->get()->toArray();
             DataHelper::collectCardsInfo($card);
